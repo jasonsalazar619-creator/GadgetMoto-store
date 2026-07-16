@@ -1,19 +1,142 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171a20;
+  /* Core brand colors */
+  --color-brand: #4c91c8;
+  --color-action: #1d67c1;
+  --color-bright: #247fe5;
+  --color-graphite: #37363b;
+  --color-ink: #171a20;
+  --color-ice: #f3f9fe;
+  --color-sky: #e3f2fc;
+  --color-white: #ffffff;
+
+  /* Supporting colors */
+  --color-border: #cbdce9;
+  --color-border-strong: #9db9cf;
+  --color-muted: #5b6773;
+  --color-success: #176b43;
+  --color-success-soft: #e8f6ee;
+  --color-warning: #805b0b;
+  --color-warning-soft: #fff4d6;
+  --color-error: #b42318;
+  --color-error-soft: #fff0ee;
+  --color-sale: #9f1239;
+  --color-sale-soft: #fff1f5;
+  --color-messenger: #0866ff;
+
+  /* Typography: planned families with local/system fallbacks */
+  --font-heading: "Space Grotesk", "Avenir Next", "Segoe UI", sans-serif;
+  --font-body: Inter, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --type-display: clamp(3rem, 2.25rem + 3.75vw, 6.75rem);
+  --type-h1: clamp(2.5rem, 2rem + 2.5vw, 4.75rem);
+  --type-h2: clamp(2rem, 1.7rem + 1.5vw, 3.25rem);
+  --type-h3: clamp(1.35rem, 1.2rem + 0.75vw, 2rem);
+  --type-body-lg: clamp(1.0625rem, 1rem + 0.3vw, 1.25rem);
+  --type-body: clamp(0.975rem, 0.94rem + 0.15vw, 1.0625rem);
+  --type-small: clamp(0.8125rem, 0.79rem + 0.1vw, 0.875rem);
+  --type-eyebrow: clamp(0.7rem, 0.68rem + 0.1vw, 0.75rem);
+
+  /* Layout and spacing */
+  --width-content: 75rem;
+  --width-reading: 46rem;
+  --space-section: clamp(4rem, 3rem + 5vw, 8rem);
+  --space-component: clamp(1.25rem, 1rem + 1vw, 2rem);
+  --space-page: clamp(1rem, 0.5rem + 2.5vw, 2.5rem);
+
+  /* Shape, depth, and interaction */
+  --radius-sm: 0.625rem;
+  --radius-md: 1rem;
+  --radius-lg: 1.5rem;
+  --radius-xl: 2rem;
+  --radius-round: 999px;
+  --shadow-sm: 0 1px 3px rgb(23 26 32 / 0.08);
+  --shadow-md: 0 12px 32px rgb(76 145 200 / 0.13);
+  --shadow-lg: 0 24px 64px rgb(29 103 193 / 0.16);
+  --focus-ring: 0 0 0 3px var(--color-white), 0 0 0 6px var(--color-action);
+  --duration-fast: 140ms;
+  --duration-base: 220ms;
+  --duration-slow: 420ms;
+  --ease-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  --background: var(--color-white);
+  --foreground: var(--color-ink);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: Arial, Helvetica, sans-serif;
-  --font-mono: "Courier New", Courier, monospace;
+  --color-brand: var(--color-brand);
+  --color-action: var(--color-action);
+  --color-bright: var(--color-bright);
+  --color-graphite: var(--color-graphite);
+  --color-ink: var(--color-ink);
+  --color-ice: var(--color-ice);
+  --color-sky: var(--color-sky);
+  --color-border: var(--color-border);
+  --color-muted: var(--color-muted);
+  --font-sans: var(--font-body);
+}
+
+* {
+  border-color: var(--color-border);
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body);
+  font-size: var(--type-body);
+}
+
+button,
+input {
+  font: inherit;
+}
+
+::selection {
+  background: var(--color-sky);
+  color: var(--color-ink);
+}
+
+.type-display,
+.type-h1,
+.type-h2,
+.type-h3 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+
+.type-display { font-size: var(--type-display); line-height: 0.95; }
+.type-h1 { font-size: var(--type-h1); line-height: 1; }
+.type-h2 { font-size: var(--type-h2); line-height: 1.08; }
+.type-h3 { font-size: var(--type-h3); line-height: 1.15; }
+.type-body-lg { font-size: var(--type-body-lg); line-height: 1.6; }
+.type-small { font-size: var(--type-small); line-height: 1.5; }
+.type-eyebrow {
+  font-size: var(--type-eyebrow);
+  font-weight: 750;
+  letter-spacing: 0.16em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+:focus-visible {
+  border-radius: var(--radius-sm);
+  box-shadow: var(--focus-ring);
+  outline: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }
