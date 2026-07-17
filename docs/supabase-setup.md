@@ -21,8 +21,11 @@
 - A Docker-related catalog-cache warning was non-blocking and did not prevent deployment.
 - Schema changes must continue through version-controlled migration files.
 - A second local migration now exists for the inventory foundation.
-- The inventory migration has not been dry-run or deployed, and this checkpoint did not change the hosted project.
+- Inventory Migration 2 passed a linked remote dry run that identified only `20260717160808_inventory_foundation.sql`.
+- Inventory Migration 2 remains unapplied, and remote migration history remains unchanged.
+- No inventory tables or records were created remotely.
 - Deployed Catalog Migration 1 was not edited.
+- Project references and credentials remain excluded.
 - The project reference, project URL, database password, access tokens, API keys, and connection strings are intentionally excluded.
 - API keys and database passwords must never be committed.
 - Local Supabase services are not running, and Docker is not required for this checkpoint.
