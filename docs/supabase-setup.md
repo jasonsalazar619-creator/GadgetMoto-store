@@ -29,10 +29,15 @@
 - Transactional stock mutation, reservations, expiry, and preorder behavior remain deferred.
 - The Docker-related catalog-cache warning was non-blocking.
 - All future schema changes must use new timestamped migration files.
-- Commerce Migration 3 exists locally as `20260717164359_commerce_foundation.sql` and remains unexecuted.
-- Commerce Migration 3 passed a linked remote dry run, which identified only `20260717164359_commerce_foundation.sql` as pending.
-- Commerce Migration 3 remains unapplied; the remote schema and migration history remain unchanged.
-- The two deployed migrations remain unchanged.
+- Commerce Migration 3 was successfully deployed to the healthy hosted GadgetMoTo project in Southeast Asia (Singapore).
+- Migration version `20260717164359` now matches in local and remote migration history.
+- The migration created seven empty commerce tables and added the inventory movement staff reference.
+- Fourteen application tables now exist, and all currently contain zero rows.
+- All seven commerce tables have RLS enabled and zero policies.
+- The commerce tables remain disabled from Data API access.
+- No staff accounts, orders, payments, payment events, or seed records were created.
+- The Docker-related catalog-cache warning was non-blocking and did not prevent deployment.
+- All three deployed migrations remain unchanged; future schema changes must use new timestamped migrations.
 - Project references and credentials remain excluded.
 - The project reference, project URL, database password, access tokens, API keys, and connection strings are intentionally excluded.
 - API keys and database passwords must never be committed.

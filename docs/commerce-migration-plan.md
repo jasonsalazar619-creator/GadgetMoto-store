@@ -292,6 +292,6 @@ These decisions do not block documentation planning.
 
 ## Migration status
 
-Commerce Migration 3 is drafted and committed locally as `20260717164359_commerce_foundation.sql` and remains unexecuted. It creates the seven planned commerce tables, adds the reviewed `inventory_movements.created_by` staff-profile foreign key, enables RLS, and revokes public-facing table privileges. It creates no policies, functions, staff accounts, orders, payments, or seed records.
+Commerce Migration 3, `20260717164359_commerce_foundation.sql`, deployed successfully. Local and remote migration histories now match. The seven empty commerce tables—`staff_profiles`, `orders`, `order_addresses`, `order_items`, `order_fulfillments`, `payments`, and `payment_events`—now exist remotely, and `inventory_movements.created_by` has the planned foreign key to `staff_profiles.user_id`.
 
-The linked remote dry run passed and identified only `20260717164359_commerce_foundation.sql`. The migration remains unapplied, so no commerce tables, staff profiles, orders, payments, or records were created remotely. A static deployment review remains required before deployment.
+RLS is enabled on all seven commerce tables, with zero policies and no public grants. Data API access remains disabled. No staff accounts, orders, payments, payment events, or seed records exist. Trusted order submission, inventory reservation, staff-access policies, and payment-provider integration remain deferred.
