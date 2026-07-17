@@ -45,17 +45,18 @@
 - The Migration 4 tables remain disabled from Data API access.
 - No subscribers, homepage content, placements, audit records, integrations, or seed data were created.
 - The Docker-related catalog-cache warning was non-blocking and did not prevent deployment.
-- All four deployed migrations remain unchanged; future schema changes must use new timestamped migrations.
-- Initial production catalog-data planning has started.
-- No seed file exists, and no remote database command ran for the catalog bootstrap checkpoint.
-- All four deployed migrations remain unchanged.
-- Before the local catalog bootstrap was drafted, the hosted database remained at eighteen empty application tables.
-- Local catalog bootstrap migration `20260717205111_catalog_bootstrap_data.sql` now exists.
-- The catalog bootstrap migration passed a linked remote dry run and has not been deployed.
-- Only `20260717205111_catalog_bootstrap_data.sql` is pending.
-- Remote migration history and database records remain unchanged.
-- The hosted database still contains eighteen empty application tables.
-- All four deployed schema migrations remain unchanged.
+- All five deployed migrations remain unchanged; future schema or data corrections must use new timestamped migrations.
+- Initial production catalog data is deployed and manually verified.
+- No seed file exists.
+- Catalog bootstrap migration `20260717205111_catalog_bootstrap_data.sql` is deployed and immutable.
+- The catalog bootstrap migration was deployed successfully.
+- Migration version `20260717205111` now matches locally and remotely.
+- Remote catalog row counts are 6 brands, 12 products, and 12 variants; every other application table remains empty.
+- Manual Table Editor checks confirmed product and variant parity.
+- The Docker catalog-cache warning was non-blocking.
+- No Dashboard record edits were made.
+- Static application data remains the live storefront source.
+- Future corrections must use a new timestamped migration or a protected administrative workflow.
 - Project references and credentials remain excluded.
 - The project reference, project URL, database password, access tokens, API keys, and connection strings are intentionally excluded.
 - API keys and database passwords must never be committed.

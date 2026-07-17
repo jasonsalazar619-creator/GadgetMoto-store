@@ -26,9 +26,11 @@ This document is the production data-model plan only. It does not create SQL, mi
 
 ## Catalog-data bootstrap planning
 
-All eighteen application tables are deployed and remain empty. Initial catalog-data mapping is documented in `docs/catalog-data-import-plan.md`. No seed file exists. The drafted local bootstrap data migration will cover only the approved brands, products, and variants and remains unexecuted. Product media and store locations are deferred because required details are unconfirmed. Inventory, homepage, commerce, alerts, and audit data will not be seeded.
+All eighteen application tables are deployed. Initial catalog-data mapping is documented in `docs/catalog-data-import-plan.md`. The deployed bootstrap contains only approved brands, products, and variants: 6 brand rows, 12 product rows, and 12 product-variant rows. Product media and store locations remain deferred because required details are unconfirmed. Inventory, homepage, commerce, alerts, and audit tables remain empty.
 
-Catalog bootstrap decisions are approved in `docs/catalog-bootstrap-decisions.md`. Initial catalog bootstrap migration `20260717205111_catalog_bootstrap_data.sql` is drafted and committed, passed its linked remote dry run, and is not yet deployed. It is expected to insert 30 total catalog rows: 6 brands, 12 products, and 12 product variants. It contains no schema changes or excluded-table inserts, and all other tables remain at zero rows.
+Catalog bootstrap decisions are approved in `docs/catalog-bootstrap-decisions.md`. Catalog bootstrap migration `20260717205111_catalog_bootstrap_data.sql` is deployed, and version `20260717205111` matches locally and remotely. Current row counts are 6 brands, 12 products, and 12 product variants; all remaining application tables have zero rows. The 18-table schema is unchanged because the bootstrap created no schema object.
+
+Product statuses, featured flags, publication timestamps, variant activation, SKUs, prices, and confirmed SRPs were manually verified. Product images, locations, inventory, homepage, commerce, alerts, and audit records remain absent. Application integration with PostgreSQL remains deferred.
 
 - PostgreSQL is the source of truth. Products and prices must not be permanently duplicated across application systems.
 - Cart contents remain client-side until a real order is submitted. A trusted server workflow will create orders.
@@ -301,9 +303,9 @@ No legal retention period is assumed.
 3. Staff profiles, orders, addresses, items, fulfillments, payments, and payment events.
 4. Price alerts, homepage content, and audit logs.
 5. RLS enablement, grants, initial policies, and secure views/functions.
-6. Seed the 12 verified prototype products only after schema approval.
+6. Deploy the reviewed 12-product catalog bootstrap after schema approval. This phase is complete.
 
-These phases remain the roadmap. Migrations 1, 2, 3, and 4 are deployed and unchanged, and the planned 18-table application schema is present. Trusted order creation, inventory reservation behavior, staff-access policies, public API access, alert workflows, email integration, homepage seeding, audit automation, and payment-provider integration remain deferred.
+The four schema migrations and the catalog bootstrap data migration are deployed and unchanged, and the planned 18-table application schema is present. Trusted order creation, inventory reservation behavior, staff-access policies, public API access, alert workflows, email integration, homepage content, audit automation, and payment-provider integration remain deferred.
 
 ## Entity relationships
 

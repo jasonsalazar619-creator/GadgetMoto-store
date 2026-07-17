@@ -2,7 +2,9 @@
 
 ## Status and scope
 
-This document records the reviewed data-import plan. No database record has been created and no seed file exists. The approved local migration `20260717205111_catalog_bootstrap_data.sql` passed its linked remote dry run but remains unexecuted and undeployed. No database data changed. Static application data remains the live storefront source, and deployment plus post-insert parity verification remain pending.
+This document records the reviewed data-import plan and deployment result. The approved migration `20260717205111_catalog_bootstrap_data.sql` is deployed. Post-deployment counts are 6 brands, 12 products, and 12 product variants; every other application table remains at zero rows. Product and variant records passed manual parity checks.
+
+No product images, store locations, inventory, homepage, staff, commerce, alert, or audit data was inserted. The application still renders from static source data. Database-backed application integration remains a separate future phase, and the static catalog must not be removed until database query integration and storefront parity tests pass.
 
 This checkpoint changes no frontend behavior, runs no database command, and creates no inventory, homepage, commerce, alert, or audit data.
 
@@ -42,17 +44,17 @@ All entries explicitly use `condition: "Brand New"`, `financingAvailable: true`,
 
 ## Source-of-truth transition
 
-### Before integration
+### Before application integration
 
 - Application source remains the active storefront source.
-- Supabase catalog tables remain empty.
+- Database catalog records are deployed and manually verified.
 - No frontend behavior changes.
 
-### During validation
+### Current validation state
 
-- The approved timestamped bootstrap migration remains local and unexecuted until a separate validation and deployment checkpoint.
-- The application will continue rendering static data.
-- Database records will be compared field by field against the static source.
+- The approved timestamped bootstrap migration is deployed.
+- The application continues rendering static data.
+- Database records passed manual field-by-field comparison against the static source.
 - No public Data API access will be enabled.
 
 ### After integration
@@ -193,7 +195,7 @@ A trusted server-side or staff-only importer is better for ongoing catalog opera
 
 ### Recommendation
 
-Use the reviewed versioned bootstrap data migration for the initial confirmed catalog, followed by protected staff/admin workflows for operational updates. The blocking SKUs and product publication/activation decisions are approved; the local migration is drafted but must remain unexecuted and undeployed in this checkpoint.
+The reviewed versioned bootstrap data migration established the initial confirmed catalog. Future operational updates should use protected staff/admin workflows or a new timestamped corrective migration; the deployed migration must not be edited in place.
 
 ## Deterministic reference strategy
 
@@ -230,4 +232,4 @@ The eventual import must reject duplicate brand names/slugs, product slugs, and 
 
 ## Decision-matrix status
 
-Bootstrap decisions are approved and documented in `docs/catalog-bootstrap-decisions.md`. Local migration `20260717205111_catalog_bootstrap_data.sql` passed its linked remote dry run and remains unexecuted and undeployed. It is expected to insert only 6 brands, 12 products, and 12 variants. No database data changed, static application data remains the live storefront source, and deployment plus post-insert parity verification remain pending.
+Bootstrap decisions are approved and documented in `docs/catalog-bootstrap-decisions.md`. Migration `20260717205111_catalog_bootstrap_data.sql` is deployed with verified counts of 6 brands, 12 products, and 12 variants; every other application table remains empty. Product and variant records passed manual parity checks. Static application data remains the live storefront source until database query integration and storefront parity tests pass.

@@ -2,7 +2,7 @@
 
 ## Status
 
-The user approved all catalog-bootstrap decisions. This document records approved bootstrap values; it is not executable SQL, and no database value has been inserted. The local bootstrap migration is drafted but remains unexecuted and undeployed.
+The user approved all catalog-bootstrap decisions. Migration version `20260717205111` deployed successfully, local and remote migration histories match, and the catalog bootstrap was manually verified. This document records the approved deployed values; it is not executable SQL.
 
 Approved decisions include the exact twelve internal SKUs, null iPhone RAM, null SRPs for Apple iPhone 17 and POCO F8 Ultra, active brands/products/variants, non-featured products, variant sort order 0, first-appearance brand ordering, one shared migration-derived UTC publication timestamp, and exclusion of every non-catalog-bootstrap table.
 
@@ -130,9 +130,9 @@ Ten products have explicit source-backed SRPs. Apple iPhone 17 and POCO F8 Ultra
 
 All conversions multiply the confirmed whole-peso value by 100 exactly.
 
-## Future bootstrap scope and row counts
+## Bootstrap scope and row counts
 
-The reviewed bootstrap migration should insert only:
+The reviewed bootstrap migration inserted only:
 
 - `brands`: 6
 - `products`: 12
@@ -142,18 +142,20 @@ Every other application table must remain at zero rows. The import specifically 
 
 The bootstrap uses the explicit approved UUID mapping above; no random UUID or insertion-order dependency is used. Routine catalog editing must later move to protected staff/admin workflows rather than permanent migration dependence.
 
-## Linked dry-run status
+## Deployment and parity status
 
-The approved bootstrap migration passed a linked remote dry run. The dry run listed only `20260717205111_catalog_bootstrap_data.sql`; the migration remains unapplied, and no catalog record was inserted remotely.
+The approved `20260717205111_catalog_bootstrap_data.sql` migration deployed successfully. Six brands, twelve products, and twelve variants now exist remotely, with the deterministic UUID relationships preserved. Product and variant values were manually compared through the Supabase Table Editor, including all twelve approved unique SKUs.
 
-Final static review confirmed exactly three data-only `INSERT` statements targeting only `public.brands`, `public.products`, and `public.product_variants`. All 30 explicit deterministic UUIDs and all 12 approved SKUs are unique. Apple iPhone 17 keeps `ram_gb` and `srp_centavos` null, POCO F8 Ultra keeps `srp_centavos` null, and every product uses the fixed shared publication timestamp `2026-07-17 20:51:11+00`. No excluded-table record is created.
+Apple iPhone 17 keeps `ram_gb` and `srp_centavos` null, and POCO F8 Ultra keeps `srp_centavos` null. All products are active and not featured, all variants are active with `sort_order = 0`, and every product uses the fixed shared publication timestamp `2026-07-17 20:51:11+00`. All excluded tables remain empty.
 
-Expected deployment row counts remain:
+Verified post-deployment row counts are:
 
 - `brands`: 6
 - `products`: 12
 - `product_variants`: 12
 - Every other application table: 0
+
+Static application catalog data remains the live storefront source until application/database query integration and storefront parity verification are completed.
 
 ## Approval record
 
