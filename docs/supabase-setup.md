@@ -37,11 +37,15 @@
 - The commerce tables remain disabled from Data API access.
 - No staff accounts, orders, payments, payment events, or seed records were created.
 - The Docker-related catalog-cache warning was non-blocking and did not prevent deployment.
-- All three deployed migrations remain unchanged; future schema changes must use new timestamped migrations.
-- Migration 4 now exists locally as `20260717184621_content_alerts_audit_foundation.sql`.
-- Migration 4 passed a linked remote dry run, which identified only `20260717184621_content_alerts_audit_foundation.sql` as pending.
-- Migration 4 remains unapplied; the remote schema and migration history remain unchanged.
-- The three previously deployed migrations remain unchanged.
+- Migration 4 was successfully deployed to the healthy hosted GadgetMoTo project in Southeast Asia (Singapore).
+- Migration version `20260717184621` now matches in local and remote migration history.
+- The migration created the empty `price_alert_subscriptions`, `homepage_sections`, `homepage_section_products`, and `audit_logs` tables.
+- The hosted application schema now contains 18 tables, all with zero rows.
+- All four Migration 4 tables have RLS enabled and zero policies.
+- The Migration 4 tables remain disabled from Data API access.
+- No subscribers, homepage content, placements, audit records, integrations, or seed data were created.
+- The Docker-related catalog-cache warning was non-blocking and did not prevent deployment.
+- All four deployed migrations remain unchanged; future schema changes must use new timestamped migrations.
 - Project references and credentials remain excluded.
 - The project reference, project URL, database password, access tokens, API keys, and connection strings are intentionally excluded.
 - API keys and database passwords must never be committed.

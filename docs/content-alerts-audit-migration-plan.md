@@ -274,6 +274,6 @@ These unresolved decisions do not block documentation planning and are not decid
 
 ## Migration status
 
-Migration 4 is drafted and committed locally as `20260717184621_content_alerts_audit_foundation.sql` and remains unexecuted. It creates the four planned tables and includes immediate RLS enablement and revocation of public-facing table privileges. It creates no policies, public access, records, functions, jobs, email integrations, views, or audit automation.
+Migration 4, `20260717184621_content_alerts_audit_foundation.sql`, deployed successfully. Local and remote migration histories now match. The four empty tables—`price_alert_subscriptions`, `homepage_sections`, `homepage_section_products`, and `audit_logs`—now exist remotely.
 
-The linked remote dry run passed and identified only `20260717184621_content_alerts_audit_foundation.sql`. Migration 4 remains unapplied, so no subscribers, homepage sections, placements, audit logs, policies, functions, views, jobs, or records were created remotely. A static deployment review remains required before deployment.
+RLS is enabled on all four tables, with zero policies and no public grants. Data API access remains disabled. No subscriber, homepage, placement, or audit records exist. Public storefront reads, alert subscription workflows, email integration, homepage seeding, and audit automation remain deferred.

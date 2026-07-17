@@ -14,9 +14,11 @@ Commerce Migration 3, `20260717164359_commerce_foundation.sql`, was deployed suc
 
 RLS is enabled on all seven commerce tables with zero policies, Data API access is disabled, and no public commerce access exists. No trusted order-creation function, inventory reservation automation, or payment-provider integration exists yet. Staff account creation and role assignment remain deferred.
 
-## Migration 4 planning status
+## Migration 4 status
 
-Planning is documented in `docs/content-alerts-audit-migration-plan.md`. Migration 4 is drafted and committed locally as `20260717184621_content_alerts_audit_foundation.sql`. Its linked remote dry run passed, but it is not deployed. The migration is expected to create `price_alert_subscriptions`, `homepage_sections`, `homepage_section_products`, and `audit_logs`, completing the planned 18-table application schema. Price-alert privacy, homepage-content separation, append-only audit intent, reviewed constraints, two `updated_at` triggers, RLS enablement, and public-facing privilege revocation are included. No public access, policies, functions, views, jobs, integrations, or seed data will be created during deployment. Public storefront access, alert workflows, email integration, homepage seeding, and audit automation remain deferred.
+Migration 4, `20260717184621_content_alerts_audit_foundation.sql`, was deployed successfully. Migration version `20260717184621` matches locally and remotely. The empty `price_alert_subscriptions`, `homepage_sections`, `homepage_section_products`, and `audit_logs` tables now exist remotely, completing the planned 18-table application schema. All 18 application tables currently contain zero rows.
+
+RLS is enabled on all four Migration 4 tables with zero policies, Data API access remains disabled, and no public homepage, alert, or audit access exists. No alert workflow, email integration, homepage seed data, safe view, public policy, scheduled job, or audit automation exists yet.
 
 ## Scope and design principles
 
@@ -295,7 +297,7 @@ No legal retention period is assumed.
 5. RLS enablement, grants, initial policies, and secure views/functions.
 6. Seed the 12 verified prototype products only after schema approval.
 
-These phases remain the roadmap. Migrations 1, 2, and 3 are deployed and unchanged. Commerce Migration 3 created the seven empty commerce tables and the staff reference from `inventory_movements`, together with the reviewed constraints, indexes, `updated_at` triggers, RLS enablement, and public-facing privilege revocation. Trusted order creation, inventory reservation behavior, staff-access policies, public API access, and payment-provider integration remain deferred.
+These phases remain the roadmap. Migrations 1, 2, 3, and 4 are deployed and unchanged, and the planned 18-table application schema is present. Trusted order creation, inventory reservation behavior, staff-access policies, public API access, alert workflows, email integration, homepage seeding, audit automation, and payment-provider integration remain deferred.
 
 ## Entity relationships
 
