@@ -46,6 +46,10 @@
 - No subscribers, homepage content, placements, audit records, integrations, or seed data were created.
 - The Docker-related catalog-cache warning was non-blocking and did not prevent deployment.
 - All four deployed migrations remain unchanged; future schema changes must use new timestamped migrations.
+- Initial production catalog-data planning has started.
+- No new data migration or seed file exists, and no remote database command ran.
+- All four deployed migrations remain unchanged.
+- The hosted database remains at eighteen empty application tables.
 - Project references and credentials remain excluded.
 - The project reference, project URL, database password, access tokens, API keys, and connection strings are intentionally excluded.
 - API keys and database passwords must never be committed.
