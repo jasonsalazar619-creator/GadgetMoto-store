@@ -43,7 +43,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
             <p className="type-eyebrow text-[var(--color-action)]">{product.brand} · {product.category}</p>
             <h1 className="type-h1 mt-5">{product.name}</h1>
             <dl className="product-facts mt-7"><div><dt>Variant</dt><dd>{product.variant}</dd></div><div><dt>Condition</dt><dd>{product.condition}</dd></div><div><dt>Availability</dt><dd>Confirm with our sales team</dd></div></dl>
-            <PriceDisplay className="mt-8" currentPrice={product.price} originalPrice={product.srp} />
+            <PriceDisplay className="mt-8" currentPrice={product.currentPrice} originalPrice={product.srp} />
             <p className="mt-3 text-sm leading-relaxed text-[var(--color-muted)]">VAT is calculated separately. The applicable VAT rate is pending confirmation.</p>
             <p className="mt-4 font-semibold text-[var(--color-action)]">{product.financingMessage}</p>
             <div className="product-actions mt-8">

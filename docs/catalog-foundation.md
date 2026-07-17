@@ -29,7 +29,7 @@ No colors, hardware specifications, ratings, reviews, stock quantities, warranti
 
 ## Intentionally deferred
 
-Live filters and search, cart and comparison state, checkout, accounts, authentication, inventory, reviews, payment integrations, database storage, and admin tools remain deferred.
+Catalog search, filtering, sorting, and local result states are implemented in Checkpoint 6A and documented in `docs/catalog-interactions.md`. URL synchronization, global search, cart and comparison state, checkout, accounts, authentication, inventory, reviews, payment integrations, database storage, and admin tools remain deferred.
 
 ## Future database migration
 

@@ -749,6 +749,41 @@ footer a:hover {
 @media (min-width: 1024px) { .catalog-toolbar { grid-template-columns: minmax(15rem, 0.7fr) 2fr; } .catalog-toolbar__controls { grid-template-columns: repeat(5, minmax(0, 1fr)); } .product-detail-grid { grid-template-columns: minmax(0, 1.15fr) minmax(22rem, 0.85fr); } }
 @media (max-width: 639px) { .catalog-toolbar__controls { grid-template-columns: 1fr; } .product-gallery__main { min-height: 23rem; padding: 2rem; } .product-gallery__main .device-placeholder--phone { height: 16rem; width: 8rem; } .product-gallery__main .device-placeholder--tablet { height: 10rem; width: 16rem; } .product-gallery__thumb { min-height: 4.75rem; } .product-facts > div { grid-template-columns: 1fr; gap: 0.2rem; } }
 
+/* Catalog search, filtering, sorting, and result states */
+.catalog-toolbar--functional { display: block; }
+.catalog-search-sort { align-items: end; display: grid; gap: 0.85rem; grid-template-columns: minmax(0, 1fr) minmax(12rem, 0.3fr); }
+.catalog-search, .catalog-field { display: grid; gap: 0.4rem; }
+.catalog-search > label, .catalog-field > span { color: var(--color-graphite); font-size: 0.78rem; font-weight: 750; }
+.catalog-search > div { position: relative; }
+.catalog-search input, .catalog-field select { background: white; border: 1px solid var(--color-border-strong); border-radius: var(--radius-sm); color: var(--color-ink); min-height: 3rem; padding: 0.65rem 0.85rem; width: 100%; }
+.catalog-search input { padding-right: 4.3rem; }
+.catalog-search button { color: var(--color-action); font-size: 0.78rem; font-weight: 750; padding: 0.5rem; position: absolute; right: 0.35rem; top: 50%; transform: translateY(-50%); }
+.catalog-filter-toggle { align-items: center; background: var(--color-action); border-radius: var(--radius-sm); color: white; display: none; font-weight: 750; justify-content: space-between; min-height: 3rem; padding-inline: 1rem; }
+.catalog-filter-panel { display: grid; gap: 0.75rem; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: 1rem; }
+.catalog-checkbox { align-items: center; background: var(--color-ice); border: 1px solid var(--color-border); border-radius: var(--radius-sm); cursor: pointer; display: flex; gap: 0.65rem; min-height: 3rem; padding: 0.65rem 0.8rem; }
+.catalog-checkbox input { accent-color: var(--color-action); height: 1.15rem; width: 1.15rem; }
+.catalog-checkbox span { font-size: 0.82rem; font-weight: 700; }
+.catalog-field--disabled { opacity: 0.62; }
+.catalog-results-bar { align-items: start; display: flex; gap: 1rem; justify-content: space-between; margin-block: 1.5rem 1.75rem; min-height: 2.5rem; }
+.catalog-result-count { font-family: var(--font-heading); font-size: 1.2rem; font-weight: 750; }
+.catalog-filter-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+.catalog-filter-chip { align-items: center; background: var(--color-sky); border: 1px solid var(--color-border); border-radius: var(--radius-round); color: var(--color-graphite); display: inline-flex; font-size: 0.78rem; font-weight: 700; gap: 0.4rem; min-height: 2.25rem; padding: 0.3rem 0.35rem 0.3rem 0.75rem; }
+.catalog-filter-chip button { align-items: center; background: white; border-radius: 50%; color: var(--color-action); display: inline-flex; font-size: 1rem; height: 1.55rem; justify-content: center; width: 1.55rem; }
+.catalog-clear-all, .catalog-reset { color: var(--color-action); font-size: 0.82rem; font-weight: 750; min-height: 2.25rem; padding: 0.35rem; text-decoration: underline; text-underline-offset: 0.2rem; }
+.catalog-results-grid { transition: opacity var(--duration-fast) var(--ease-standard); }
+.catalog-empty { align-items: flex-start; background: linear-gradient(145deg, white, var(--color-ice)); border: 1px solid var(--color-border); border-radius: var(--radius-xl); display: flex; flex-direction: column; min-height: 25rem; justify-content: center; padding: clamp(2rem, 6vw, 5rem); }
+
+@media (max-width: 1023px) { .catalog-filter-panel { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 767px) {
+  .catalog-search-sort { grid-template-columns: 1fr 1fr; }
+  .catalog-search { grid-column: 1 / -1; }
+  .catalog-filter-toggle { display: flex; }
+  .catalog-filter-panel { display: none; grid-template-columns: 1fr; }
+  .catalog-filter-panel--open { display: grid; }
+  .catalog-results-bar { margin-top: 1.25rem; }
+}
+@media (max-width: 420px) { .catalog-search-sort { grid-template-columns: 1fr; } .catalog-search { grid-column: auto; } .catalog-results-bar { flex-direction: column; } }
+
 /* Hero motion layers keep entrance, ambient, pointer, and scroll transforms isolated. */
 .hero-motion-layer {
   height: 100%;

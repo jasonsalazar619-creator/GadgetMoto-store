@@ -43,7 +43,7 @@ export function ProductCard({ product, layout = "standard" }: ProductCardProps) 
           <p className="mt-2 text-[0.95rem] text-[var(--color-muted)]">{product.variant}</p>
         </div>
         <div className="mt-auto pt-5">
-          <PriceDisplay className="product-price" currentPrice={product.price} originalPrice={product.srp} />
+          <PriceDisplay className="product-price" currentPrice={product.currentPrice} originalPrice={product.srp} />
           <p className="mt-4 text-sm font-medium text-[var(--color-action)]">{product.financingMessage}</p>
         </div>
       </div>
