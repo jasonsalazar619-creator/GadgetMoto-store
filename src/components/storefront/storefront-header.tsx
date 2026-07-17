@@ -1,5 +1,6 @@
 import { BrandLockup } from "@/components/brand/brand-lockup";
 import { Container } from "@/components/ui/container";
+import Link from "next/link";
 
 const messengerUrl = "https://www.facebook.com/profile.php?id=100063905416187";
 
@@ -18,13 +19,13 @@ export function StorefrontHeader() {
         <Container>Flexible ways to pay <span aria-hidden="true">•</span> Nationwide delivery <span aria-hidden="true">•</span> Store pickup in Cavite City</Container>
       </div>
       <Container className="storefront-container flex min-h-20 items-center justify-between gap-5 lg:min-h-24">
-        <a aria-label="GadgetMoTo home" className="storefront-lockup" href="#top"><BrandLockup variant="compact" /></a>
+        <Link aria-label="GadgetMoTo home" className="storefront-lockup" href="/"><BrandLockup variant="compact" /></Link>
         <nav aria-label="Main navigation" className="hidden items-center gap-6 text-[0.95rem] font-semibold text-[var(--color-graphite)] lg:flex xl:gap-8 xl:text-base">
-          <a className="nav-link" href="#new-arrivals">Shop</a>
-          <a className="nav-link" href="#new-arrivals">Phones</a>
-          <a className="nav-link" href="#tablets">Tablets</a>
-          <a className="nav-link" href="#compare">Compare</a>
-          <a className="nav-link" href="#payments">Financing</a>
+          <Link className="nav-link" href="/shop">Shop</Link>
+          <Link className="nav-link" href="/phones">Phones</Link>
+          <Link className="nav-link" href="/tablets">Tablets</Link>
+          <Link className="nav-link" href="/#compare">Compare</Link>
+          <Link className="nav-link" href="/#payments">Financing</Link>
         </nav>
         <div className="flex items-center gap-2">
           <button aria-label="Search products (preview)" className="header-icon-control icon-control" type="button"><SearchIcon /></button>
@@ -34,10 +35,11 @@ export function StorefrontHeader() {
       </Container>
       <nav aria-label="Mobile navigation" className="border-y border-[var(--color-border)] lg:hidden">
         <Container className="storefront-container flex gap-6 overflow-x-auto py-3.5 text-sm font-semibold text-[var(--color-graphite)]">
-          <a className="whitespace-nowrap" href="#new-arrivals">Phones</a>
-          <a className="whitespace-nowrap" href="#tablets">Tablets</a>
-          <a className="whitespace-nowrap" href="#compare">Compare</a>
-          <a className="whitespace-nowrap" href="#payments">Ways to pay</a>
+          <Link className="whitespace-nowrap" href="/shop">Shop</Link>
+          <Link className="whitespace-nowrap" href="/phones">Phones</Link>
+          <Link className="whitespace-nowrap" href="/tablets">Tablets</Link>
+          <Link className="whitespace-nowrap" href="/#compare">Compare</Link>
+          <Link className="whitespace-nowrap" href="/#payments">Ways to pay</Link>
           <a className="whitespace-nowrap text-[var(--color-action)]" href={messengerUrl} rel="noopener noreferrer" target="_blank">Message Us</a>
         </Container>
       </nav>

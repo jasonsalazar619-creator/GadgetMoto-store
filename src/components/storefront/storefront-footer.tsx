@@ -1,5 +1,6 @@
 import { BrandLockup } from "@/components/brand/brand-lockup";
 import { Container } from "@/components/ui/container";
+import Link from "next/link";
 
 const messengerUrl = "https://www.facebook.com/profile.php?id=100063905416187";
 
@@ -18,7 +19,7 @@ export function StorefrontFooter() {
           <div>
             <h2 className="font-bold">Shop</h2>
             <nav aria-label="Footer shop navigation" className="mt-6 flex flex-col items-start gap-3.5 text-[0.95rem] text-[#c7d1da]">
-              <a href="#new-arrivals">New arrivals</a><a href="#new-arrivals">Phones</a><a href="#tablets">Tablets</a><a href="#compare">Compare</a>
+              <Link href="/shop">All products</Link><Link href="/phones">Phones</Link><Link href="/tablets">Tablets</Link><Link href="/#compare">Compare</Link>
             </nav>
           </div>
           <div>
