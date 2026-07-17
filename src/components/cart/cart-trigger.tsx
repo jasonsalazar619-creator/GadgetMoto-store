@@ -1,0 +1,3 @@
+"use client";
+import { useCart } from "./cart-provider";
+export function CartTrigger() { const { itemCount, openCart } = useCart(); const label = itemCount ? `Open cart, ${itemCount} ${itemCount === 1 ? "item" : "items"}` : "Open cart"; return <button aria-label={label} className="header-icon-control icon-control cart-trigger" onClick={(event) => openCart(event.currentTarget)} type="button"><svg aria-hidden="true" className="size-5" fill="none" viewBox="0 0 24 24"><path d="M3 4h2l2.1 10.1a2 2 0 0 0 2 1.6h7.8a2 2 0 0 0 2-1.6L20 8H6M10 20h.01M17 20h.01" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" /></svg>{itemCount ? <span aria-hidden="true" className="cart-count">{itemCount}</span> : null}</button>; }

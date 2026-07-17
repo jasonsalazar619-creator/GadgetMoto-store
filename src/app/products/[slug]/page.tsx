@@ -8,6 +8,7 @@ import { ProductCard } from "@/components/storefront/product-card";
 import { StorefrontPageShell } from "@/components/storefront/storefront-page-shell";
 import { formatProductTitle, getAllProducts, getProductBySlug } from "@/data/prototype-products";
 import { ComparisonButton } from "@/components/comparison/comparison-button";
+import { AddToCartButton } from "@/components/cart/add-to-cart-button";
 
 const messengerUrl = "https://www.facebook.com/profile.php?id=100063905416187";
 type ProductPageProps = { params: Promise<{ slug: string }> };
@@ -48,7 +49,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
             <p className="mt-3 text-sm leading-relaxed text-[var(--color-muted)]">VAT is calculated separately. The applicable VAT rate is pending confirmation.</p>
             <p className="mt-4 font-semibold text-[var(--color-action)]">{product.financingMessage}</p>
             <div className="product-actions mt-8">
-              <button className="button-link button-link--primary" disabled type="button">Add to Cart — coming soon</button>
+              <AddToCartButton name={product.name} slug={product.slug} variant={product.variant} />
               <a className="button-link product-message-link" href={messengerUrl} rel="noopener noreferrer" target="_blank">Message Us</a>
               <ComparisonButton className="button-link button-link--secondary" name={product.name} slug={product.slug} />
             </div>

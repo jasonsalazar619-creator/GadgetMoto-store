@@ -3,12 +3,9 @@ import { Container } from "@/components/ui/container";
 import Link from "next/link";
 import { ComparisonCountLink } from "@/components/comparison/comparison-count-link";
 import { GlobalSearchTrigger } from "@/components/search/global-search-trigger";
+import { CartTrigger } from "@/components/cart/cart-trigger";
 
 const messengerUrl = "https://www.facebook.com/profile.php?id=100063905416187";
-
-function CartIcon() {
-  return <svg aria-hidden="true" className="size-5" fill="none" viewBox="0 0 24 24"><path d="M3 4h2l2.1 10.1a2 2 0 0 0 2 1.6h7.8a2 2 0 0 0 2-1.6L20 8H6M10 20h.01M17 20h.01" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" /></svg>;
-}
 
 export function StorefrontHeader() {
   return (
@@ -28,7 +25,7 @@ export function StorefrontHeader() {
         <div className="flex items-center gap-2">
           <GlobalSearchTrigger />
           <a className="hidden min-h-12 items-center rounded-[var(--radius-round)] bg-[var(--color-messenger)] px-5 text-sm font-semibold text-white shadow-[0_8px_20px_rgb(8_102_255_/_0.18)] transition-[background-color,transform] hover:-translate-y-0.5 hover:bg-[#0754d1] sm:inline-flex" href={messengerUrl} rel="noopener noreferrer" target="_blank">Messenger</a>
-          <button aria-label="View cart (preview)" className="header-icon-control icon-control" type="button"><CartIcon /></button>
+          <CartTrigger />
         </div>
       </Container>
       <nav aria-label="Mobile navigation" className="border-y border-[var(--color-border)] lg:hidden">

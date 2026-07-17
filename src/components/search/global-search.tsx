@@ -4,6 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { useRouter } from "next/navigation";
 import type { PrototypeProduct } from "@/data/prototype-products";
 import { SearchResultItem } from "./search-result-item";
+import { modalEvent } from "@/components/cart/cart-provider";
 
 const messengerUrl = "https://www.facebook.com/profile.php?id=100063905416187";
 const resultLimit = 6;
@@ -52,8 +53,11 @@ export function GlobalSearchProvider({ children, products }: { children: ReactNo
 
   const openSearch = useCallback((trigger?: HTMLElement | null) => {
     returnFocusRef.current = trigger ?? (document.activeElement instanceof HTMLElement ? document.activeElement : null);
+    window.dispatchEvent(new CustomEvent(modalEvent, { detail: "search" }));
     setOpen(true);
   }, []);
+
+  useEffect(() => { const closeForCart = (event: Event) => { if ((event as CustomEvent).detail === "cart") setOpen(false); }; window.addEventListener(modalEvent, closeForCart); return () => window.removeEventListener(modalEvent, closeForCart); }, []);
 
   const navigate = useCallback((href: string) => {
     setOpen(false);

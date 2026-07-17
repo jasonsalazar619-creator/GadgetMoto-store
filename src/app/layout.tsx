@@ -4,6 +4,8 @@ import { ComparisonProvider } from "@/components/comparison/comparison-provider"
 import { ComparisonTray } from "@/components/comparison/comparison-tray";
 import { GlobalSearchProvider } from "@/components/search/global-search";
 import { getAllProducts } from "@/data/prototype-products";
+import { CartProvider } from "@/components/cart/cart-provider";
+import { CartDrawer } from "@/components/cart/cart-drawer";
 
 export const metadata: Metadata = {
   title: "GadgetMoTo",
@@ -17,7 +19,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-full antialiased" data-scroll-behavior="smooth">
-      <body className="min-h-full flex flex-col"><ComparisonProvider><GlobalSearchProvider products={getAllProducts()}>{children}</GlobalSearchProvider><ComparisonTray /></ComparisonProvider></body>
+      <body className="min-h-full flex flex-col"><ComparisonProvider><CartProvider products={getAllProducts()}><GlobalSearchProvider products={getAllProducts()}>{children}</GlobalSearchProvider><CartDrawer /></CartProvider><ComparisonTray /></ComparisonProvider></body>
     </html>
   );
 }
