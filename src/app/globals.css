@@ -408,17 +408,6 @@ footer a:hover {
   .hero-float-card--three { right: 0; }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .hero-phone { animation: hero-arrive var(--duration-slow) var(--ease-standard) both; }
-  .hero-tablet { animation: hero-arrive var(--duration-slow) 80ms var(--ease-standard) both; }
-  .hero-float-card { animation: hero-arrive var(--duration-slow) 140ms var(--ease-standard) both; }
-}
-
-@keyframes hero-arrive {
-  from { opacity: 0; translate: 0 1rem; }
-  to { opacity: 1; translate: 0 0; }
-}
-
 /* Checkpoint 3B storefront refinements */
 .storefront-container {
   max-width: 84rem;
@@ -719,4 +708,75 @@ footer a:hover {
   .delivery-card {
     min-height: auto;
   }
+}
+
+/* Hero motion layers keep entrance, ambient, pointer, and scroll transforms isolated. */
+.hero-motion-layer {
+  height: 100%;
+  transform-origin: center;
+  width: 100%;
+}
+
+.hero-ring-layer {
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+}
+
+.hero-tablet-layer,
+.hero-phone-layer {
+  position: absolute;
+  transform-origin: center;
+}
+
+.hero-tablet-layer {
+  height: 60%;
+  right: 9%;
+  top: 18%;
+  width: 68%;
+}
+
+.hero-phone-layer {
+  height: 71%;
+  left: 35%;
+  top: 10%;
+  width: 33%;
+}
+
+.hero-tablet-layer .hero-tablet,
+.hero-phone-layer .hero-phone {
+  height: 100%;
+  inset: 0;
+  position: absolute;
+  width: 100%;
+}
+
+.hero-card-layer {
+  min-width: clamp(6rem, 9vw, 8rem);
+  position: absolute;
+  transform-origin: center;
+}
+
+.hero-card-layer--one { left: 3%; top: 18%; }
+.hero-card-layer--two { bottom: 14%; left: 6%; }
+.hero-card-layer--three { bottom: 9%; right: 1%; }
+
+.hero-card-layer .hero-float-card {
+  min-width: 100%;
+  position: relative;
+}
+
+@media (min-width: 768px) and (max-width: 1199px) {
+  .hero-card-layer--one { left: -2%; top: 13%; }
+  .hero-card-layer--two { bottom: 9%; left: -2%; }
+  .hero-card-layer--three { bottom: 4%; right: -1%; }
+}
+
+@media (max-width: 767px) {
+  .hero-card-layer {
+    min-width: 5.5rem;
+  }
+
+  .hero-card-layer--one { left: 0; }
+  .hero-card-layer--three { right: 0; }
 }
