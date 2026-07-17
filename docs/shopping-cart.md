@@ -12,7 +12,7 @@ Decreasing a quantity from one removes that line. The upper limit is a technical
 
 ## Product, drawer, and page behavior
 
-Product-detail actions add the confirmed variant, merge repeat additions, show the current cart quantity, and open the drawer. The header badge represents total quantity. The accessible drawer supports Escape, backdrop, close, and Continue Shopping actions, locks body scrolling, and restores focus and scrolling on close. `/cart` provides editable lines, an empty state, and a separated responsive summary.
+Product-detail actions add the confirmed variant, merge repeat additions, show the current cart quantity, and open the drawer. The header badge represents total quantity. The accessible drawer supports Escape, backdrop, close, and Continue Shopping actions, locks body scrolling, and restores focus and scrolling on close. `/cart` provides editable lines, an empty state, a separated responsive summary, and an active link to the review-only `/checkout` preview when items exist.
 
 ## Totals and limitations
 
