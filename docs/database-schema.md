@@ -8,6 +8,10 @@ Migration 1, `20260717145303_catalog_foundation.sql`, was deployed successfully.
 
 Inventory Migration 2, `20260717160808_inventory_foundation.sql`, was deployed successfully. Local and remote migration histories match, and the empty `inventory_levels` and `inventory_movements` tables now exist remotely. RLS is enabled on both tables; no policies or public grants exist, and Data API access remains disabled. `inventory_movements` remains append-oriented, with no automatic stock mutation or reservation function. Exact stock quantities remain staff/server only, while reservation expiry and preorder behavior remain unresolved.
 
+## Commerce Migration 3 planning status
+
+Planning is documented in `docs/commerce-migration-plan.md`. No migration file exists and no SQL has been executed. Seven commerce tables and one inventory staff-reference change are planned, with immediate RLS and privilege hardening. Staff policies, server functions, order submission, and payment integrations remain deferred.
+
 ## Scope and design principles
 
 This document is the production data-model plan only. It does not create SQL, migrations, policies, functions, seed data, or a remote Supabase connection. The plan contains 18 application tables.

@@ -29,6 +29,9 @@
 - Transactional stock mutation, reservations, expiry, and preorder behavior remain deferred.
 - The Docker-related catalog-cache warning was non-blocking.
 - All future schema changes must use new timestamped migration files.
+- Commerce Migration 3 is currently in documentation planning.
+- No new local migration exists, and no remote schema or migration-history change occurred.
+- The two deployed migrations remain unchanged.
 - Project references and credentials remain excluded.
 - The project reference, project URL, database password, access tokens, API keys, and connection strings are intentionally excluded.
 - API keys and database passwords must never be committed.
