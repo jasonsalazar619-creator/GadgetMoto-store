@@ -2,7 +2,7 @@
 
 ## Migration status
 
-Migration 1 has been drafted locally and covers the reviewed enums and catalog foundation. It explicitly enables RLS on all five catalog tables and revokes table privileges from `anon` and `authenticated`. It has not been executed locally or remotely and contains no seed data. Inventory, commerce, content, detailed access policies, and product seeding remain deferred. The SQL must receive a dedicated review before deployment.
+Migration 1, `20260717145303_catalog_foundation.sql`, was deployed successfully. Local and remote migration histories match. The remote schema now contains the five empty catalog tables: `brands`, `products`, `product_variants`, `product_images`, and `store_locations`. RLS is enabled on every catalog table; no policies or public grants were added, and Data API access remains unavailable. Inventory, commerce, staff, content, policy, API-access, and seed migrations remain deferred.
 
 ## Scope and design principles
 
@@ -281,7 +281,7 @@ No legal retention period is assumed.
 5. RLS enablement, grants, initial policies, and secure views/functions.
 6. Seed the 12 verified prototype products only after schema approval.
 
-These phases remain the roadmap. Migration 1 is drafted but unexecuted; no later migration has been created.
+These phases remain the roadmap. Migration 1 is deployed; no later migration has been created.
 
 ## Entity relationships
 

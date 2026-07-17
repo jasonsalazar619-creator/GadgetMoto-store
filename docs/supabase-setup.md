@@ -11,13 +11,15 @@
 - CLI login succeeded through the manual browser flow.
 - The repository is linked to the healthy hosted `gadgetmoto-store` project in Southeast Asia (Singapore).
 - CLI authentication and credentials remain outside the repository.
-- One local, unexecuted migration now exists.
-- Local migration `20260717145303` has no remote migration-history match.
-- The catalog migration dry run passed; only `20260717145303_catalog_foundation.sql` would be applied.
-- The migration has not been deployed.
-- Before deployment, the first migration was amended with explicit RLS and privilege hardening.
-- The amended migration remains unapplied and passed a new remote dry run.
-- No remote schema or migration-history change occurred.
+- Catalog Migration 1 was successfully deployed to the healthy hosted GadgetMoTo project in Southeast Asia (Singapore).
+- Migration version `20260717145303` now matches in local and remote migration history.
+- The migration created `brands`, `products`, `product_variants`, `product_images`, and `store_locations`.
+- The migration also created the reviewed enums and the `updated_at` trigger helper.
+- All five catalog tables have RLS enabled and zero RLS policies.
+- The catalog tables remain disabled from Data API access.
+- No seed data or public storefront database access exists yet.
+- A Docker-related catalog-cache warning was non-blocking and did not prevent deployment.
+- Schema changes must continue through version-controlled migration files.
 - The project reference, project URL, database password, access tokens, API keys, and connection strings are intentionally excluded.
 - API keys and database passwords must never be committed.
 - Local Supabase services are not running, and Docker is not required for this checkpoint.
