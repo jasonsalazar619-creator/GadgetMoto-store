@@ -14,6 +14,10 @@ Commerce Migration 3, `20260717164359_commerce_foundation.sql`, was deployed suc
 
 RLS is enabled on all seven commerce tables with zero policies, Data API access is disabled, and no public commerce access exists. No trusted order-creation function, inventory reservation automation, or payment-provider integration exists yet. Staff account creation and role assignment remain deferred.
 
+## Migration 4 planning status
+
+Planning is documented in `docs/content-alerts-audit-migration-plan.md`. Four tables are planned: `price_alert_subscriptions`, `homepage_sections`, `homepage_section_products`, and `audit_logs`. No Migration 4 SQL file exists, no SQL was executed, and no remote schema or migration-history change occurred. RLS enablement and public-facing privilege revocation will be included immediately. Public storefront access, alert functions, email integration, homepage seeding, and audit automation remain deferred.
+
 ## Scope and design principles
 
 This document is the production data-model plan only. It does not create SQL, migrations, policies, functions, seed data, or a remote Supabase connection. The plan contains 18 application tables.

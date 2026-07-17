@@ -38,6 +38,9 @@
 - No staff accounts, orders, payments, payment events, or seed records were created.
 - The Docker-related catalog-cache warning was non-blocking and did not prevent deployment.
 - All three deployed migrations remain unchanged; future schema changes must use new timestamped migrations.
+- Migration 4 is currently in documentation planning.
+- No new local Migration 4 file exists, and the three deployed migrations remain unchanged.
+- The hosted project remains unchanged by this checkpoint.
 - Project references and credentials remain excluded.
 - The project reference, project URL, database password, access tokens, API keys, and connection strings are intentionally excluded.
 - API keys and database passwords must never be committed.
