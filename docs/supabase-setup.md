@@ -20,11 +20,15 @@
 - No seed data or public storefront database access exists yet.
 - A Docker-related catalog-cache warning was non-blocking and did not prevent deployment.
 - Schema changes must continue through version-controlled migration files.
-- A second local migration now exists for the inventory foundation.
-- Inventory Migration 2 passed a linked remote dry run that identified only `20260717160808_inventory_foundation.sql`.
-- Inventory Migration 2 remains unapplied, and remote migration history remains unchanged.
-- No inventory tables or records were created remotely.
-- Deployed Catalog Migration 1 was not edited.
+- Inventory Migration 2 was successfully deployed to the healthy hosted GadgetMoTo project in Southeast Asia (Singapore).
+- Migration version `20260717160808` now matches in local and remote migration history.
+- The migration created `inventory_levels` and `inventory_movements`.
+- Both inventory tables have RLS enabled and zero RLS policies.
+- Both inventory tables remain disabled from Data API access.
+- No inventory data exists, and exact inventory quantities remain unavailable to public users.
+- Transactional stock mutation, reservations, expiry, and preorder behavior remain deferred.
+- The Docker-related catalog-cache warning was non-blocking.
+- All future schema changes must use new timestamped migration files.
 - Project references and credentials remain excluded.
 - The project reference, project URL, database password, access tokens, API keys, and connection strings are intentionally excluded.
 - API keys and database passwords must never be committed.

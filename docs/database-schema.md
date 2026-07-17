@@ -6,7 +6,7 @@ Migration 1, `20260717145303_catalog_foundation.sql`, was deployed successfully.
 
 ## Migration 2 status
 
-Inventory Migration 2 has been drafted and committed, and its linked remote dry run passed. It is not yet deployed and is expected to create `inventory_levels` and `inventory_movements`. RLS and privilege hardening remain included, and no inventory data will be seeded during deployment. Exact quantities remain staff/server only, transactional inventory mutation functions remain deferred, and reservation expiry and preorder behavior remain unresolved.
+Inventory Migration 2, `20260717160808_inventory_foundation.sql`, was deployed successfully. Local and remote migration histories match, and the empty `inventory_levels` and `inventory_movements` tables now exist remotely. RLS is enabled on both tables; no policies or public grants exist, and Data API access remains disabled. `inventory_movements` remains append-oriented, with no automatic stock mutation or reservation function. Exact stock quantities remain staff/server only, while reservation expiry and preorder behavior remain unresolved.
 
 ## Scope and design principles
 
@@ -285,7 +285,7 @@ No legal retention period is assumed.
 5. RLS enablement, grants, initial policies, and secure views/functions.
 6. Seed the 12 verified prototype products only after schema approval.
 
-These phases remain the roadmap. Migration 1 is deployed; Migration 2 is committed but not deployed, and no later migration has been created.
+These phases remain the roadmap. Migrations 1 and 2 are deployed, and no later migration has been created.
 
 ## Entity relationships
 
