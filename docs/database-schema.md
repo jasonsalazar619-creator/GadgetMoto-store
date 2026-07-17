@@ -34,6 +34,8 @@ Product statuses, featured flags, publication timestamps, variant activation, SK
 
 The database contains the approved catalog records, while application integration is under architectural review in `docs/catalog-database-integration-plan.md`. `public.products` has no stable global catalog-order field, so a new reviewed ordering migration may still be required. No public read policy, storefront view, dedicated exposed schema, or server-only application database access has been introduced.
 
+A `public.products.sort_order` migration is proposed in `docs/catalog-integration-decisions.md` but has not been created. A narrow storefront read model is also proposed but has not been created. The current schema and access configuration remain unchanged.
+
 - PostgreSQL is the source of truth. Products and prices must not be permanently duplicated across application systems.
 - Cart contents remain client-side until a real order is submitted. A trusted server workflow will create orders.
 - Order items preserve purchase-time names, variants, SKUs, and prices even when catalog records later change.

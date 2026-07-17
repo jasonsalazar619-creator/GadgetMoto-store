@@ -62,6 +62,9 @@
 - No RLS policy or grant was added.
 - No environment credential or application dependency was added.
 - The hosted database was unchanged by this planning checkpoint.
+- Catalog ordering and secure read-access decisions are awaiting user approval.
+- No Data API setting, policy, grant, view, schema, dependency, or environment configuration changed.
+- The hosted project remains unchanged by the catalog integration decision proposal.
 - Project references and credentials remain excluded.
 - The project reference, project URL, database password, access tokens, API keys, and connection strings are intentionally excluded.
 - API keys and database passwords must never be committed.

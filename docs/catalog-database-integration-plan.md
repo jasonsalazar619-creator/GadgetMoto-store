@@ -4,6 +4,8 @@
 
 This document is architecture planning, not implementation. No dependency, environment file, policy, migration, SQL object, or application source change has been made for database-backed catalog loading.
 
+Final proposed implementation decisions are documented in `docs/catalog-integration-decisions.md`. No decision has been implemented, and user approval remains required before implementation begins.
+
 Static application data in `src/data/prototype-products.ts` remains authoritative for the live storefront. PostgreSQL contains a manually verified parity copy: 6 brands, 12 products, and 12 product variants. Database integration must be gradual, must preserve existing routes and browser state, and must retain a safe static fallback until all parity checks pass.
 
 Current security constraints remain unchanged:
