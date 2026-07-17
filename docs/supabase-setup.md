@@ -47,9 +47,13 @@
 - The Docker-related catalog-cache warning was non-blocking and did not prevent deployment.
 - All four deployed migrations remain unchanged; future schema changes must use new timestamped migrations.
 - Initial production catalog-data planning has started.
-- No new data migration or seed file exists, and no remote database command ran.
+- No seed file exists, and no remote database command ran for the catalog bootstrap checkpoint.
 - All four deployed migrations remain unchanged.
-- The hosted database remains at eighteen empty application tables.
+- Before the local catalog bootstrap was drafted, the hosted database remained at eighteen empty application tables.
+- Local catalog bootstrap migration `20260717205111_catalog_bootstrap_data.sql` now exists.
+- The catalog bootstrap migration has not received a linked remote dry run and has not been deployed.
+- The hosted database still contains eighteen empty application tables.
+- All four deployed schema migrations remain unchanged.
 - Project references and credentials remain excluded.
 - The project reference, project URL, database password, access tokens, API keys, and connection strings are intentionally excluded.
 - API keys and database passwords must never be committed.

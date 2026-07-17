@@ -2,7 +2,7 @@
 
 ## Status and scope
 
-This is a data-import plan, not executable SQL. No database record has been created. No seed file or migration has been created. The storefront still uses static application data, and the initial catalog import must preserve the existing visible storefront until database integration is validated.
+This document records the reviewed data-import plan. No database record has been created and no seed file exists. The approved local migration `20260717205111_catalog_bootstrap_data.sql` is drafted but remains unexecuted and undeployed. The storefront still uses static application data, and the initial catalog import must preserve the existing visible storefront until database integration is validated.
 
 This checkpoint changes no frontend behavior, runs no database command, and creates no inventory, homepage, commerce, alert, or audit data.
 
@@ -50,7 +50,7 @@ All entries explicitly use `condition: "Brand New"`, `financingAvailable: true`,
 
 ### During validation
 
-- Database records will be created only through a separate, new timestamped data migration after all blocking data is approved.
+- The approved timestamped bootstrap migration remains local and unexecuted until a separate validation and deployment checkpoint.
 - The application will continue rendering static data.
 - Database records will be compared field by field against the static source.
 - No public Data API access will be enabled.
@@ -69,14 +69,14 @@ The source contains six unique brands with consistent capitalization:
 
 | Name | Safely derived slug | Products | Source lines | Remaining fields |
 | --- | --- | ---: | --- | --- |
-| Xiaomi | `xiaomi` | 2 | 22, 31 | Description missing; active status and sort order require approval |
-| Apple | `apple` | 1 | 23 | Description missing; active status and sort order require approval |
-| POCO | `poco` | 3 | 24, 29, 30 | Description missing; active status and sort order require approval |
-| Redmi | `redmi` | 3 | 25, 26, 32 | Description missing; active status and sort order require approval |
-| Infinix | `infinix` | 1 | 27 | Description missing; active status and sort order require approval |
-| TECNO | `tecno` | 2 | 28, 33 | Description missing; active status and sort order require approval |
+| Xiaomi | `xiaomi` | 2 | 22, 31 | Description remains null; active; sort order 0 |
+| Apple | `apple` | 1 | 23 | Description remains null; active; sort order 1 |
+| POCO | `poco` | 3 | 24, 29, 30 | Description remains null; active; sort order 2 |
+| Redmi | `redmi` | 3 | 25, 26, 32 | Description remains null; active; sort order 3 |
+| Infinix | `infinix` | 1 | 27 | Description remains null; active; sort order 4 |
+| TECNO | `tecno` | 2 | 28, 33 | Description remains null; active; sort order 5 |
 
-Brand slugs are safe lowercase derivations of confirmed names. No real brand descriptions exist in source. The array’s first-appearance order can be observed, but it is not an approved brand sort order and must not silently become one. One record per unique brand is required.
+Brand slugs are safe lowercase derivations of confirmed names. No real brand descriptions exist in source. The approved brand sort order follows first appearance in the canonical array. One record per unique brand is required.
 
 ### `public.products`
 
@@ -93,7 +93,7 @@ The source `id` is an application identifier and has no direct database column. 
 ### `public.product_variants`
 
 - `product_id`: link to the product identified by its confirmed slug.
-- `sku`: missing for all twelve variants and required by the schema. This blocks the bootstrap migration until twelve official unique SKUs are approved.
+- `sku`: absent from the original application source; the twelve approved unique GadgetMoTo internal SKUs are recorded in `docs/catalog-bootstrap-decisions.md` and the local migration.
 - `variant_name`: confirmed from source `variant`.
 - `ram_gb`: confirmed for eleven entries; Apple iPhone 17 remains `null` because RAM is absent.
 - `storage_gb`: confirmed for all entries.
@@ -102,8 +102,8 @@ The source `id` is an application identifier and has no direct database column. 
 - `srp_centavos`: confirmed where the source explicitly contains `srp`; `null` for Apple iPhone 17 and POCO F8 Ultra.
 - `badge`: confirmed source values `new` or `sale`.
 - `financing_available`: confirmed `true` for all twelve.
-- `is_active`: missing as a database field. Presence in the static array is not a substitute for approval.
-- `sort_order`: missing. Because there is only one current variant per product, zero is a possible later reviewed default, not an approved source value. The source-array product display order is also not an approved operational sort order, and `public.products` currently has no product sort-order column.
+- `is_active`: approved as `true` for all twelve launch-visible variants.
+- `sort_order`: approved as `0` because there is one imported variant per product. `public.products` has no product sort-order column, so none is invented.
 
 The expected initial variant count is twelve, one per product.
 
@@ -143,7 +143,7 @@ The classifications below apply to every row without silently resolving business
 | Redmi Pad 2 Pro 5G | ID, slug, name, brand, Tablet, 8GB/256GB, prices/SRP, sale, financing, brand-new condition | Enum casing; centavos | SKU, description, status, featured, publication, active/sort; placeholder art |
 | TECNO Mega Pad Pro | ID, slug, name, brand, Tablet, 8GB/256GB, prices/SRP, sale, financing, brand-new condition | Enum casing; centavos | SKU, description, status, featured, publication, active/sort; placeholder art |
 
-No duplicate product, inconsistent brand capitalization, inconsistent source price formatting, unsupported category, or ambiguous storage value was found. The source categories map to existing supported enum values. Product status, featured status, publication state, variant active state, and sort order remain unapproved even though the static storefront currently renders the entries.
+No duplicate product, inconsistent brand capitalization, inconsistent source price formatting, unsupported category, or ambiguous storage value was found. The source categories map to existing supported enum values. Product status, featured status, shared publication timestamp, variant active state, and sort order are approved in `docs/catalog-bootstrap-decisions.md`.
 
 ## Data exclusions
 
@@ -193,7 +193,7 @@ A trusted server-side or staff-only importer is better for ongoing catalog opera
 
 ### Recommendation
 
-Use one reviewed versioned bootstrap data migration for the initial confirmed catalog, followed by protected staff/admin workflows for operational updates. Do not create the bootstrap migration until blocking SKUs and product publication/activation decisions are approved. No data migration is created in this checkpoint.
+Use the reviewed versioned bootstrap data migration for the initial confirmed catalog, followed by protected staff/admin workflows for operational updates. The blocking SKUs and product publication/activation decisions are approved; the local migration is drafted but must remain unexecuted and undeployed in this checkpoint.
 
 ## Deterministic reference strategy
 
@@ -203,7 +203,7 @@ Options considered:
 2. Brand/product inserts linked through unique slugs using SQL CTEs and returned IDs.
 3. Explicit product UUIDs combined with slug lookups.
 
-Recommendation: use explicit, pre-reviewed UUIDs for brands, products, and variants in the one-time bootstrap, with the human-readable slugs and SKUs adjacent in the reviewed data. This makes every relationship explicit, avoids a missing lookup silently producing no child insert, and lets foreign keys fail clearly. Do not generate final UUIDs yet.
+The migration uses explicit, pre-reviewed UUIDs for brands, products, and variants, with human-readable slugs and SKUs adjacent in the reviewed data. This makes every relationship explicit, avoids a missing lookup silently producing no child insert, and lets foreign keys fail clearly. The final mapping is recorded in `docs/catalog-bootstrap-decisions.md`.
 
 The eventual import must reject duplicate brand names/slugs, product slugs, and case-insensitive SKUs; preserve every product-to-brand and variant-to-product relationship; and fail rather than attach a child to an incorrect record.
 
@@ -223,17 +223,11 @@ The eventual import must reject duplicate brand names/slugs, product slugs, and 
 - The existing storefront renders unchanged from static data during validation.
 - Lint and production build pass.
 
-## Decisions required before the bootstrap migration
+## Decisions deferred beyond the bootstrap
 
-- Twelve official unique SKUs.
-- Product database status and publication timestamps.
-- Product featured flags.
-- Brand and variant active flags, brand sort order, static product display order, and variant sort order.
-- Whether missing short descriptions remain null or receive approved copy.
-- Confirmation that the ten source-labeled SRPs are approved production values.
 - Official store-location name, province, address, instructions, and schedule if a location will be included later.
 - Stable product media and alt text if images will be imported later.
 
 ## Decision-matrix status
 
-Proposed bootstrap values are documented in `docs/catalog-bootstrap-decisions.md`. No proposed value has been approved or inserted, no bootstrap migration exists, and final review remains required.
+Bootstrap decisions are approved and documented in `docs/catalog-bootstrap-decisions.md`. Local migration `20260717205111_catalog_bootstrap_data.sql` now exists and remains unexecuted and undeployed. It is expected to insert only 6 brands, 12 products, and 12 variants. Static application data remains the storefront source during database validation.
