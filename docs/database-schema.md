@@ -4,6 +4,10 @@
 
 Migration 1, `20260717145303_catalog_foundation.sql`, was deployed successfully. Local and remote migration histories match. The remote schema now contains the five empty catalog tables: `brands`, `products`, `product_variants`, `product_images`, and `store_locations`. RLS is enabled on every catalog table; no policies or public grants were added, and Data API access remains unavailable. Inventory, commerce, staff, content, policy, API-access, and seed migrations remain deferred.
 
+## Migration 2 status
+
+Inventory Migration 2 has been drafted locally. It creates `inventory_levels` and `inventory_movements` but remains unexecuted. Exact quantities remain staff/server only, with RLS enabled and no policies. Transactional inventory mutation functions remain deferred, while reservation expiry and preorder behavior remain unresolved.
+
 ## Scope and design principles
 
 This document is the production data-model plan only. It does not create SQL, migrations, policies, functions, seed data, or a remote Supabase connection. The plan contains 18 application tables.

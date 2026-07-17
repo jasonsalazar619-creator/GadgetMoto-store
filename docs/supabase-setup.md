@@ -20,6 +20,9 @@
 - No seed data or public storefront database access exists yet.
 - A Docker-related catalog-cache warning was non-blocking and did not prevent deployment.
 - Schema changes must continue through version-controlled migration files.
+- A second local migration now exists for the inventory foundation.
+- The inventory migration has not been dry-run or deployed, and this checkpoint did not change the hosted project.
+- Deployed Catalog Migration 1 was not edited.
 - The project reference, project URL, database password, access tokens, API keys, and connection strings are intentionally excluded.
 - API keys and database passwords must never be committed.
 - Local Supabase services are not running, and Docker is not required for this checkpoint.
