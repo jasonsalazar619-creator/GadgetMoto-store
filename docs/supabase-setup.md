@@ -30,8 +30,8 @@
 - The Docker-related catalog-cache warning was non-blocking.
 - All future schema changes must use new timestamped migration files.
 - Commerce Migration 3 exists locally as `20260717164359_commerce_foundation.sql` and remains unexecuted.
-- Commerce Migration 3 has not received a linked remote dry run and has not been deployed.
-- No remote schema or migration-history change occurred from drafting Commerce Migration 3.
+- Commerce Migration 3 passed a linked remote dry run, which identified only `20260717164359_commerce_foundation.sql` as pending.
+- Commerce Migration 3 remains unapplied; the remote schema and migration history remain unchanged.
 - The two deployed migrations remain unchanged.
 - Project references and credentials remain excluded.
 - The project reference, project URL, database password, access tokens, API keys, and connection strings are intentionally excluded.

@@ -292,4 +292,6 @@ These decisions do not block documentation planning.
 
 ## Migration status
 
-Commerce Migration 3 is drafted locally as `20260717164359_commerce_foundation.sql` and remains unexecuted. It creates the seven planned commerce tables, adds the reviewed `inventory_movements.created_by` staff-profile foreign key, enables RLS, and revokes public-facing table privileges. It creates no policies, functions, staff accounts, orders, payments, or seed records. A complete static review and linked remote dry run are required before any deployment decision.
+Commerce Migration 3 is drafted and committed locally as `20260717164359_commerce_foundation.sql` and remains unexecuted. It creates the seven planned commerce tables, adds the reviewed `inventory_movements.created_by` staff-profile foreign key, enables RLS, and revokes public-facing table privileges. It creates no policies, functions, staff accounts, orders, payments, or seed records.
+
+The linked remote dry run passed and identified only `20260717164359_commerce_foundation.sql`. The migration remains unapplied, so no commerce tables, staff profiles, orders, payments, or records were created remotely. A static deployment review remains required before deployment.

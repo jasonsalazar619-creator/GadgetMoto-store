@@ -8,9 +8,9 @@ Migration 1, `20260717145303_catalog_foundation.sql`, was deployed successfully.
 
 Inventory Migration 2, `20260717160808_inventory_foundation.sql`, was deployed successfully. Local and remote migration histories match, and the empty `inventory_levels` and `inventory_movements` tables now exist remotely. RLS is enabled on both tables; no policies or public grants exist, and Data API access remains disabled. `inventory_movements` remains append-oriented, with no automatic stock mutation or reservation function. Exact stock quantities remain staff/server only, while reservation expiry and preorder behavior remain unresolved.
 
-## Commerce Migration 3 planning status
+## Commerce Migration 3 status
 
-Planning is documented in `docs/commerce-migration-plan.md`. No migration file exists and no SQL has been executed. Seven commerce tables and one inventory staff-reference change are planned, with immediate RLS and privilege hardening. Staff policies, server functions, order submission, and payment integrations remain deferred.
+Commerce Migration 3 is drafted and committed as `20260717164359_commerce_foundation.sql`. Its linked remote dry run passed, but it is not deployed. It is expected to create seven commerce tables and add the `inventory_movements.created_by` staff foreign key, with immediate RLS and privilege hardening. No staff accounts, orders, payments, policies, functions, or seed data will be created during deployment. Trusted order creation, inventory reservation, staff-access policies, and payment-provider integration remain deferred.
 
 ## Scope and design principles
 
@@ -289,7 +289,7 @@ No legal retention period is assumed.
 5. RLS enablement, grants, initial policies, and secure views/functions.
 6. Seed the 12 verified prototype products only after schema approval.
 
-These phases remain the roadmap. Migrations 1 and 2 are deployed and unchanged. Commerce Migration 3 is drafted locally as `20260717164359_commerce_foundation.sql` and is not deployed. The draft contains the seven commerce tables, the staff reference from `inventory_movements`, reviewed constraints, indexes, `updated_at` triggers, RLS enablement, and public-facing privilege revocation. Trusted order creation, inventory reservation behavior, staff-access policies, public API access, and payment-provider integration remain deferred.
+These phases remain the roadmap. Migrations 1 and 2 are deployed and unchanged. Commerce Migration 3 is drafted and committed locally as `20260717164359_commerce_foundation.sql`; its linked remote dry run passed, and it is not deployed. The draft contains the seven commerce tables, the staff reference from `inventory_movements`, reviewed constraints, indexes, `updated_at` triggers, RLS enablement, and public-facing privilege revocation. Trusted order creation, inventory reservation behavior, staff-access policies, public API access, and payment-provider integration remain deferred.
 
 ## Entity relationships
 
