@@ -62,9 +62,14 @@
 - No RLS policy or grant was added.
 - No environment credential or application dependency was added.
 - The hosted database was unchanged by this planning checkpoint.
-- Catalog ordering and secure read-access decisions are awaiting user approval.
-- No Data API setting, policy, grant, view, schema, dependency, or environment configuration changed.
+- Catalog ordering and secure read-access decisions are approved.
+- No hosted Data API setting, policy, grant, view, schema, dependency, or environment configuration changed.
 - The hosted project remains unchanged by the catalog integration decision proposal.
+- Local migration `20260717234135_catalog_ordering_storefront_read_model.sql` now contains the approved catalog ordering and secure read model.
+- The local migration has not been dry-run or deployed.
+- No login credential, password, project identifier, or environment value was created.
+- Data API settings remain unchanged, and the hosted project remains unchanged by this checkpoint.
+- All five deployed migrations remain unchanged.
 - Project references and credentials remain excluded.
 - The project reference, project URL, database password, access tokens, API keys, and connection strings are intentionally excluded.
 - API keys and database passwords must never be committed.

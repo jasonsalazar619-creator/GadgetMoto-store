@@ -1,16 +1,18 @@
-# GadgetMoTo Catalog Integration Decision Proposal
+# GadgetMoTo Catalog Integration Decisions
 
-## Status and approval boundary
+## Status and approval record
 
-This document proposes the final implementation decisions for moving the GadgetMoTo storefront catalog from the canonical static TypeScript source to the reviewed PostgreSQL catalog records. It is a decision proposal only. It is not executable SQL or application code.
+This document records the final approved implementation decisions for moving the GadgetMoTo storefront catalog from the canonical static TypeScript source to the reviewed PostgreSQL catalog records. It is not executable SQL or application code.
 
-No database access, Data API exposure, policy, grant, schema, view, role, environment configuration, dependency, migration, or application behavior has been enabled or changed. User approval is required before any implementation checkpoint begins.
+The user approved all 13 catalog-integration decisions without changes. The exact sort order 0 through 11, dedicated `storefront` schema and catalog view, non-login `gadgetmoto_storefront_reader` role, server-only direct PostgreSQL access, `database-with-static-fallback` launch mode, whole-result validation and fallback, static route and metadata fallback, and one shared normalized catalog provider are approved.
+
+Local migration `20260717234135_catalog_ordering_storefront_read_model.sql` is drafted but remains unexecuted and undeployed. It creates no login credential or password in Git. No database access, Data API exposure, environment configuration, application dependency, or application behavior has been enabled or changed. Postgres.js remains the proposed future application dependency pending compatibility verification.
 
 The five deployed migrations remain immutable. The database currently contains the manually verified parity copy of 6 brands, 12 products, and 12 product variants. Static data in `src/data/prototype-products.ts` remains the live storefront source.
 
 ## Decisions inherited from the approved architecture
 
-The proposal preserves the recommendations in `docs/catalog-database-integration-plan.md`:
+The approved decisions preserve the recommendations in `docs/catalog-database-integration-plan.md`:
 
 - Product ordering needs an explicit global field; brand order, variant order, UUID order, insertion order, and unspecified PostgreSQL row order are not substitutes.
 - Primary database access is server-only direct PostgreSQL through a dedicated least-privilege read model and pooled connection.
@@ -29,13 +31,13 @@ No concrete security or Next.js compatibility defect was found in those recommen
 
 ### Proposed column and integrity rule
 
-A future timestamped migration should add:
+The approved local timestamped migration adds:
 
 - `public.products.sort_order integer not null`
 - A named check constraint requiring `sort_order >= 0`
 - No implicit default; every future product must receive a deliberate storefront position
 
-The migration should add the column in a safe backfill sequence, assign every existing product, validate the values, and only then enforce `not null`. It must not edit the deployed catalog migration.
+The migration adds the column in a safe backfill sequence, assigns every existing product, validates the values, and only then enforces `not null`. It does not edit the deployed catalog migration.
 
 The initial proposal does not require `sort_order` to be unique. Distinct values are expected for the parity catalog, while `ORDER BY sort_order, slug` provides deterministic behavior if a later merchandising update temporarily creates a tie. Unique product slugs remain the stable route, comparison, cart, and browser-state identifiers.
 
@@ -238,9 +240,9 @@ Reasons for this choice:
 
 `@supabase/supabase-js` is not preferred for the first phase because it would require Data API exposure and the fallback access configuration. The `pg` package would also provide direct PostgreSQL access but is not needed in addition to `postgres`; only one reviewed driver should be installed. The exact compatible version, pooler mode, connection limit, timeout behavior, and deployment-host support must be verified in the dependency checkpoint before installation.
 
-## Future access-and-ordering migration scope
+## Approved access-and-ordering migration scope
 
-Create one new timestamped migration only after every relevant approval item below is checked. Its proposed scope is limited to:
+Local migration `20260717234135_catalog_ordering_storefront_read_model.sql` is limited to:
 
 - Add `public.products.sort_order` without editing any deployed migration.
 - Backfill exact values 0 through 11 by the approved product slugs.
@@ -277,7 +279,7 @@ Implementation cannot proceed unless it guarantees:
 
 ### Checkpoint A — Ordering and read-model migration
 
-- Create the migration locally.
+- Local migration creation is complete.
 - Perform full static SQL and privilege review.
 - Commit the unexecuted migration.
 - Run a linked non-destructive dry run in a separate approved checkpoint.
@@ -317,16 +319,16 @@ No implementation checkpoint begins through this document.
 
 ## Approval checklist
 
-- [ ] Add `public.products.sort_order` as a nonnegative, required integer without an implicit default.
-- [ ] Backfill the exact approved product order values 0 through 11.
-- [ ] Create a dedicated narrow storefront read model in a non-Data-API schema for the primary architecture.
-- [ ] Use server-only direct PostgreSQL database access through a least-privilege read role.
-- [ ] Keep every service-role credential out of browser code and ordinary catalog reads.
-- [ ] Launch with `database-with-static-fallback` mode.
-- [ ] Validate the complete database result and fall back atomically to the complete static catalog.
-- [ ] Retain static `generateStaticParams()` slugs during the parity phase.
-- [ ] Initialize one shared normalized catalog provider from a Server Component.
-- [ ] Add only the `postgres` runtime dependency in the future adapter checkpoint, subject to host compatibility verification.
-- [ ] Limit the future migration to approved ordering and read-access changes.
-- [ ] Preserve no-write public-read security boundaries.
-- [ ] Keep private commerce, staff, inventory, subscriber, payment, and audit tables inaccessible.
+- [x] Add `public.products.sort_order` as a nonnegative, required integer without an implicit default.
+- [x] Backfill the exact approved product order values 0 through 11.
+- [x] Create a dedicated narrow storefront read model in a non-Data-API schema for the primary architecture.
+- [x] Use server-only direct PostgreSQL database access through a least-privilege read role.
+- [x] Keep every service-role credential out of browser code and ordinary catalog reads.
+- [x] Launch with `database-with-static-fallback` mode.
+- [x] Validate the complete database result and fall back atomically to the complete static catalog.
+- [x] Retain static `generateStaticParams()` slugs during the parity phase.
+- [x] Initialize one shared normalized catalog provider from a Server Component.
+- [x] Add only the `postgres` runtime dependency in the future adapter checkpoint, subject to host compatibility verification.
+- [x] Limit the future migration to approved ordering and read-access changes.
+- [x] Preserve no-write public-read security boundaries.
+- [x] Keep private commerce, staff, inventory, subscriber, payment, and audit tables inaccessible.

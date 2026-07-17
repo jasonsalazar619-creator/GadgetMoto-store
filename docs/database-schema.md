@@ -32,9 +32,9 @@ Catalog bootstrap decisions are approved in `docs/catalog-bootstrap-decisions.md
 
 Product statuses, featured flags, publication timestamps, variant activation, SKUs, prices, and confirmed SRPs were manually verified. Product images, locations, inventory, homepage, commerce, alerts, and audit records remain absent. Application integration with PostgreSQL remains deferred.
 
-The database contains the approved catalog records, while application integration is under architectural review in `docs/catalog-database-integration-plan.md`. `public.products` has no stable global catalog-order field, so a new reviewed ordering migration may still be required. No public read policy, storefront view, dedicated exposed schema, or server-only application database access has been introduced.
+The database contains the approved catalog records, while application integration is documented in `docs/catalog-database-integration-plan.md`. The deployed `public.products` table still has no stable global catalog-order field because the approved local migration remains unexecuted. No public read policy, deployed storefront view, exposed schema, or server-only application database access has been introduced remotely.
 
-A `public.products.sort_order` migration is proposed in `docs/catalog-integration-decisions.md` but has not been created. A narrow storefront read model is also proposed but has not been created. The current schema and access configuration remain unchanged.
+Local migration `20260717234135_catalog_ordering_storefront_read_model.sql` now implements the approved `public.products.sort_order` proposal with global values 0 through 11. It also drafts the dedicated `storefront` schema, `storefront.catalog_products` view, and `gadgetmoto_storefront_reader` `NOLOGIN` role. No Data API exposure or browser access is introduced, and the migration remains unexecuted and undeployed.
 
 - PostgreSQL is the source of truth. Products and prices must not be permanently duplicated across application systems.
 - Cart contents remain client-side until a real order is submitted. A trusted server workflow will create orders.
