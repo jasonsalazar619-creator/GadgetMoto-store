@@ -1,5 +1,9 @@
 # GadgetMoTo Database Schema Plan
 
+## Migration status
+
+Migration 1 has been drafted locally and covers the reviewed enums and catalog foundation. It has not been executed locally or remotely and contains no seed data. Inventory, commerce, content, RLS, and product seeding remain deferred. The SQL must receive a dedicated review before deployment.
+
 ## Scope and design principles
 
 This document is the production data-model plan only. It does not create SQL, migrations, policies, functions, seed data, or a remote Supabase connection. The plan contains 18 application tables.
@@ -275,7 +279,7 @@ No legal retention period is assumed.
 5. RLS enablement, grants, initial policies, and secure views/functions.
 6. Seed the 12 verified prototype products only after schema approval.
 
-These phases are proposals; no migration has been created.
+These phases remain the roadmap. Migration 1 is drafted but unexecuted; no later migration has been created.
 
 ## Entity relationships
 
