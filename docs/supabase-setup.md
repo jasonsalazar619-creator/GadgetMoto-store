@@ -66,7 +66,9 @@
 - No hosted Data API setting, policy, grant, view, schema, dependency, or environment configuration changed.
 - The hosted project remains unchanged by the catalog integration decision proposal.
 - Local migration `20260717234135_catalog_ordering_storefront_read_model.sql` now contains the approved catalog ordering and secure read model.
-- The local migration has not been dry-run or deployed.
+- The ordering and secure read-model migration passed a linked remote dry run.
+- Only `20260717234135_catalog_ordering_storefront_read_model.sql` remains pending, and it has not been deployed.
+- Remote migration history and the hosted schema remain unchanged.
 - No login credential, password, project identifier, or environment value was created.
 - Data API settings remain unchanged, and the hosted project remains unchanged by this checkpoint.
 - All five deployed migrations remain unchanged.

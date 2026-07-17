@@ -8,6 +8,8 @@ The user approved all 13 catalog-integration decisions without changes. The exac
 
 Local migration `20260717234135_catalog_ordering_storefront_read_model.sql` is drafted but remains unexecuted and undeployed. It creates no login credential or password in Git. No database access, Data API exposure, environment configuration, application dependency, or application behavior has been enabled or changed. Postgres.js remains the proposed future application dependency pending compatibility verification.
 
+The linked remote dry run passed and listed only `20260717234135_catalog_ordering_storefront_read_model.sql`. The migration remains unapplied: no sort-order value, schema, role, view, privilege, migration-history row, or record changed remotely. No login credential or password exists. Deployment and post-deployment security verification remain pending.
+
 The five deployed migrations remain immutable. The database currently contains the manually verified parity copy of 6 brands, 12 products, and 12 product variants. Static data in `src/data/prototype-products.ts` remains the live storefront source.
 
 ## Decisions inherited from the approved architecture

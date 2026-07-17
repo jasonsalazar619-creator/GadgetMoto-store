@@ -34,7 +34,7 @@ Product statuses, featured flags, publication timestamps, variant activation, SK
 
 The database contains the approved catalog records, while application integration is documented in `docs/catalog-database-integration-plan.md`. The deployed `public.products` table still has no stable global catalog-order field because the approved local migration remains unexecuted. No public read policy, deployed storefront view, exposed schema, or server-only application database access has been introduced remotely.
 
-Local migration `20260717234135_catalog_ordering_storefront_read_model.sql` now implements the approved `public.products.sort_order` proposal with global values 0 through 11. It also drafts the dedicated `storefront` schema, `storefront.catalog_products` view, and `gadgetmoto_storefront_reader` `NOLOGIN` role. No Data API exposure or browser access is introduced, and the migration remains unexecuted and undeployed.
+Local migration `20260717234135_catalog_ordering_storefront_read_model.sql` is drafted and committed, and its linked remote dry run passed. It is not yet deployed. The migration is expected to add `public.products.sort_order` with approved global values 0 through 11, create the dedicated `storefront` schema and `storefront.catalog_products` view, and create the `gadgetmoto_storefront_reader` `NOLOGIN` privilege role. No Data API exposure or browser access is introduced.
 
 - PostgreSQL is the source of truth. Products and prices must not be permanently duplicated across application systems.
 - Cart contents remain client-side until a real order is submitted. A trusted server workflow will create orders.
