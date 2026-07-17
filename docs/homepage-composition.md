@@ -21,13 +21,12 @@ Checkpoint 3A replaces the temporary confirmation page with a polished, static s
 
 - Section-anchor navigation and hero calls to action.
 - Safe new-tab Facebook Messenger links.
-- Visual-only cart, wishlist, brand, and budget controls; catalog search and product comparison are now functional.
+- Visual-only cart, wishlist, brand, and budget controls; catalog search, global search, and product comparison are now functional.
 - Restrained CSS hover and entrance transitions with a reduced-motion fallback.
 - Functional product comparison alongside disabled price-alert actions with explicit coming-soon messaging.
 
 ## Functionality intentionally deferred
 
-- Live search suggestions and search results.
 - Cart, wishlist, and comparison state.
 - Product detail and catalog routes.
 - Brand and budget filtering.

@@ -29,7 +29,7 @@ No colors, hardware specifications, ratings, reviews, stock quantities, warranti
 
 ## Intentionally deferred
 
-Catalog search, filtering, sorting, and local result states are documented in `docs/catalog-interactions.md`; local product comparison is documented in `docs/product-comparison.md`. URL synchronization, global search, cart, checkout, accounts, authentication, inventory, reviews, payment integrations, database storage, and admin tools remain deferred.
+Catalog interactions are documented in `docs/catalog-interactions.md`, local product comparison in `docs/product-comparison.md`, and global product search in `docs/global-search.md`. URL synchronization, cart, checkout, accounts, authentication, inventory, reviews, payment integrations, database storage, and admin tools remain deferred.
 
 ## Future database migration
 
