@@ -57,6 +57,11 @@
 - No Dashboard record edits were made.
 - Static application data remains the live storefront source.
 - Future corrections must use a new timestamped migration or a protected administrative workflow.
+- Database-backed catalog integration is in planning.
+- Data API access remains disabled.
+- No RLS policy or grant was added.
+- No environment credential or application dependency was added.
+- The hosted database was unchanged by this planning checkpoint.
 - Project references and credentials remain excluded.
 - The project reference, project URL, database password, access tokens, API keys, and connection strings are intentionally excluded.
 - API keys and database passwords must never be committed.

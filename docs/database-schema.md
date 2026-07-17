@@ -32,6 +32,8 @@ Catalog bootstrap decisions are approved in `docs/catalog-bootstrap-decisions.md
 
 Product statuses, featured flags, publication timestamps, variant activation, SKUs, prices, and confirmed SRPs were manually verified. Product images, locations, inventory, homepage, commerce, alerts, and audit records remain absent. Application integration with PostgreSQL remains deferred.
 
+The database contains the approved catalog records, while application integration is under architectural review in `docs/catalog-database-integration-plan.md`. `public.products` has no stable global catalog-order field, so a new reviewed ordering migration may still be required. No public read policy, storefront view, dedicated exposed schema, or server-only application database access has been introduced.
+
 - PostgreSQL is the source of truth. Products and prices must not be permanently duplicated across application systems.
 - Cart contents remain client-side until a real order is submitted. A trusted server workflow will create orders.
 - Order items preserve purchase-time names, variants, SKUs, and prices even when catalog records later change.

@@ -6,6 +6,8 @@ This document records the reviewed data-import plan and deployment result. The a
 
 No product images, store locations, inventory, homepage, staff, commerce, alert, or audit data was inserted. The application still renders from static source data. Database-backed application integration remains a separate future phase, and the static catalog must not be removed until database query integration and storefront parity tests pass.
 
+Catalog deployment and manual parity verification are complete. Application integration planning is documented in `docs/catalog-database-integration-plan.md`. Static data remains the active storefront source; database access, global product ordering, fallback behavior, and shared client-provider integration remain unimplemented.
+
 This checkpoint changes no frontend behavior, runs no database command, and creates no inventory, homepage, commerce, alert, or audit data.
 
 ## Canonical application source
