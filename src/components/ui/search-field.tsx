@@ -1,10 +1,12 @@
 type SearchFieldProps = {
   label?: string;
+  name?: string;
   placeholder?: string;
 };
 
 export function SearchField({
   label = "Search products",
+  name = "product-search",
   placeholder = "Search phones and tablets",
 }: SearchFieldProps) {
   return (
@@ -22,7 +24,7 @@ export function SearchField({
         </svg>
         <input
           className="w-full bg-transparent text-[var(--color-ink)] outline-none placeholder:text-[var(--color-muted)]"
-          name="design-system-search"
+          name={name}
           placeholder={placeholder}
           type="search"
         />

@@ -1,4 +1,5 @@
 type PriceDisplayProps = {
+  className?: string;
   currentPrice: number;
   originalPrice?: number;
   vatExclusive?: boolean;
@@ -12,13 +13,14 @@ const pesoFormatter = new Intl.NumberFormat("en-PH", {
 });
 
 export function PriceDisplay({
+  className = "",
   currentPrice,
   originalPrice,
   vatExclusive = false,
   label,
 }: PriceDisplayProps) {
   return (
-    <div>
+    <div className={className}>
       {label ? <p className="mb-1 text-sm text-[var(--color-muted)]">{label}</p> : null}
       <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
         <span className="font-[family-name:var(--font-heading)] text-2xl font-bold tracking-tight text-[var(--color-ink)]">

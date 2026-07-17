@@ -1,17 +1,85 @@
+import { BrandGrid } from "@/components/storefront/brand-grid";
+import { BudgetGrid } from "@/components/storefront/budget-grid";
+import { ComparePromo } from "@/components/storefront/compare-promo";
+import { DeliveryOptions } from "@/components/storefront/delivery-options";
+import { HeroSection } from "@/components/storefront/hero-section";
+import { PaymentOptions } from "@/components/storefront/payment-options";
+import { PriceAlertPreview } from "@/components/storefront/price-alert-preview";
+import { ProductCard } from "@/components/storefront/product-card";
+import { SectionHeading } from "@/components/storefront/section-heading";
+import { StorefrontFooter } from "@/components/storefront/storefront-footer";
+import { StorefrontHeader } from "@/components/storefront/storefront-header";
+import { Container } from "@/components/ui/container";
+import { featuredTablets, newArrivalProducts } from "@/data/prototype-products";
+
+const trustPoints = [
+  ["Brand-new gadgets", "All launch products are treated as brand new."],
+  ["Flexible ways to pay", "Explore available payment and financing options."],
+  ["Secure payment process", "Payment confirmation will follow a secure server-verified process."],
+  ["Helpful sales support", "Connect with the GadgetMoTo sales team through Messenger."],
+] as const;
+
 export default function Home() {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[linear-gradient(145deg,#ffffff_0%,#f3f9fe_55%,#dceeff_100%)] px-6 py-16">
-      <section className="w-full max-w-2xl rounded-3xl border border-[#4c91c8]/20 bg-white/90 px-6 py-14 text-center shadow-[0_24px_80px_rgba(76,145,200,0.14)] sm:px-12 sm:py-20">
-        <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[#247fe5]">
-          Project foundation ready.
-        </p>
-        <h1 className="mt-5 text-5xl font-bold tracking-tight text-[#171a20] sm:text-7xl">
-          GadgetMoTo
-        </h1>
-        <p className="mt-5 text-lg text-[#37363b] sm:text-2xl">
-          Your Next Upgrade, Mo ’To.
-        </p>
-      </section>
-    </main>
+    <>
+      <StorefrontHeader />
+      <main className="storefront-main">
+        <HeroSection />
+
+        <section className="py-[var(--space-section)]" id="new-arrivals">
+          <Container className="storefront-container">
+            <SectionHeading eyebrow="New arrivals" title="Fresh upgrades just landed." description="Explore the latest verified phones in the GadgetMoTo prototype catalog." />
+            <div className="product-grid mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {newArrivalProducts.map((product) => <ProductCard key={product.id} product={product} />)}
+            </div>
+          </Container>
+        </section>
+
+        <section className="bg-[var(--color-ice)] py-[var(--space-section)]">
+          <Container className="storefront-container">
+            <SectionHeading align="center" eyebrow="Browse by brand" title="Find your familiar favorites." />
+            <div className="mt-12"><BrandGrid /></div>
+          </Container>
+        </section>
+
+        <section className="py-[var(--space-section)]">
+          <Container className="storefront-container">
+            <SectionHeading eyebrow="Shop by budget" title="Start with what feels right." description="A simple way to explore the range. Filtering will be added in a later checkpoint." />
+            <div className="mt-12"><BudgetGrid /></div>
+          </Container>
+        </section>
+
+        <section className="overflow-hidden bg-[var(--color-sky)] py-[var(--space-section)]" id="tablets">
+          <Container className="storefront-container">
+            <SectionHeading eyebrow="Featured tablets" title="More room to work, watch, and explore." description="Verified tablet picks from the GadgetMoTo prototype catalog." />
+            <div className="product-grid mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {featuredTablets.map((product) => <ProductCard key={product.id} layout="tablet" product={product} />)}
+            </div>
+          </Container>
+        </section>
+
+        <ComparePromo />
+        <PaymentOptions />
+        <DeliveryOptions />
+
+        <section className="bg-white py-[var(--space-section)]">
+          <Container className="storefront-container">
+            <SectionHeading align="center" eyebrow="Why GadgetMoTo" title="Support at every step of the upgrade." />
+            <div className="mt-12 grid gap-px overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-border)] sm:grid-cols-2 lg:grid-cols-4">
+              {trustPoints.map(([title, copy], index) => (
+                <article className="trust-card bg-[var(--color-ice)] p-[var(--space-component)]" key={title}>
+                  <p className="type-eyebrow text-[var(--color-action)]">0{index + 1}</p>
+                  <h3 className="type-h3 mt-5">{title}</h3>
+                  <p className="mt-4 text-[0.95rem] leading-relaxed text-[var(--color-muted)]">{copy}</p>
+                </article>
+              ))}
+            </div>
+          </Container>
+        </section>
+
+        <PriceAlertPreview />
+      </main>
+      <StorefrontFooter />
+    </>
   );
 }
