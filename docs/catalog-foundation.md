@@ -17,7 +17,7 @@ The product route uses `generateStaticParams` to prebuild all 12 confirmed slugs
 
 ## Product-card navigation
 
-Product names are meaningful links to `/products/[slug]`. Wishlist and comparison controls remain disabled previews, avoiding nested active controls while preserving clear focus treatment and equal-height cards.
+Product names are meaningful links to `/products/[slug]`. Comparison controls are independent functional buttons while wishlist remains disabled, avoiding nested active controls and preserving clear focus treatment and equal-height cards.
 
 ## Product detail structure
 
@@ -29,7 +29,7 @@ No colors, hardware specifications, ratings, reviews, stock quantities, warranti
 
 ## Intentionally deferred
 
-Catalog search, filtering, sorting, and local result states are implemented in Checkpoint 6A and documented in `docs/catalog-interactions.md`. URL synchronization, global search, cart and comparison state, checkout, accounts, authentication, inventory, reviews, payment integrations, database storage, and admin tools remain deferred.
+Catalog search, filtering, sorting, and local result states are documented in `docs/catalog-interactions.md`; local product comparison is documented in `docs/product-comparison.md`. URL synchronization, global search, cart, checkout, accounts, authentication, inventory, reviews, payment integrations, database storage, and admin tools remain deferred.
 
 ## Future database migration
 

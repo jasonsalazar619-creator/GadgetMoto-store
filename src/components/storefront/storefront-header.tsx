@@ -1,6 +1,7 @@
 import { BrandLockup } from "@/components/brand/brand-lockup";
 import { Container } from "@/components/ui/container";
 import Link from "next/link";
+import { ComparisonCountLink } from "@/components/comparison/comparison-count-link";
 
 const messengerUrl = "https://www.facebook.com/profile.php?id=100063905416187";
 
@@ -24,7 +25,7 @@ export function StorefrontHeader() {
           <Link className="nav-link" href="/shop">Shop</Link>
           <Link className="nav-link" href="/phones">Phones</Link>
           <Link className="nav-link" href="/tablets">Tablets</Link>
-          <Link className="nav-link" href="/#compare">Compare</Link>
+          <ComparisonCountLink />
           <Link className="nav-link" href="/#payments">Financing</Link>
         </nav>
         <div className="flex items-center gap-2">
@@ -38,7 +39,7 @@ export function StorefrontHeader() {
           <Link className="whitespace-nowrap" href="/shop">Shop</Link>
           <Link className="whitespace-nowrap" href="/phones">Phones</Link>
           <Link className="whitespace-nowrap" href="/tablets">Tablets</Link>
-          <Link className="whitespace-nowrap" href="/#compare">Compare</Link>
+          <ComparisonCountLink mobile />
           <Link className="whitespace-nowrap" href="/#payments">Ways to pay</Link>
           <a className="whitespace-nowrap text-[var(--color-action)]" href={messengerUrl} rel="noopener noreferrer" target="_blank">Message Us</a>
         </Container>

@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { ComparisonProvider } from "@/components/comparison/comparison-provider";
+import { ComparisonTray } from "@/components/comparison/comparison-tray";
 
 export const metadata: Metadata = {
   title: "GadgetMoTo",
@@ -13,7 +15,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-full antialiased" data-scroll-behavior="smooth">
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col"><ComparisonProvider>{children}<ComparisonTray /></ComparisonProvider></body>
     </html>
   );
 }

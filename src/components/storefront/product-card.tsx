@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { PriceDisplay } from "@/components/ui/price-display";
 import { DevicePlaceholder } from "./device-placeholder";
 import Link from "next/link";
+import { ComparisonButton } from "@/components/comparison/comparison-button";
 
 type ProductCardProps = {
   product: PrototypeProduct;
@@ -17,22 +18,14 @@ function HeartIcon() {
   );
 }
 
-function CompareIcon() {
-  return (
-    <svg aria-hidden="true" className="size-5" fill="none" viewBox="0 0 24 24">
-      <path d="M8 4 4 8l4 4M4 8h13M16 20l4-4-4-4m4 4H7" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
-    </svg>
-  );
-}
-
 export function ProductCard({ product, layout = "standard" }: ProductCardProps) {
   return (
     <article className="product-card group flex h-full flex-col overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white shadow-[var(--shadow-sm)] transition-[border-color,box-shadow,transform] duration-[var(--duration-base)] ease-[var(--ease-standard)] hover:-translate-y-1 hover:border-[var(--color-brand)] hover:shadow-[var(--shadow-md)] focus-within:border-[var(--color-action)] focus-within:shadow-[var(--focus-ring)]">
       <div className={`product-card__art relative flex items-center justify-center overflow-hidden bg-[linear-gradient(145deg,var(--color-ice),var(--color-sky))] p-8 ${layout === "tablet" ? "min-h-60" : "min-h-72"}`}>
         {product.badge ? <Badge className="absolute left-4 top-4" variant={product.badge}>{product.badge === "sale" ? "Sale" : "New"}</Badge> : null}
-        <div className="absolute right-3 top-3 flex gap-2">
+        <div className="product-card__actions absolute right-3 top-3 flex gap-2">
           <button aria-label={`Save ${product.name} to wishlist (preview)`} className="icon-control" disabled type="button"><HeartIcon /></button>
-          <button aria-label={`Compare ${product.name} (preview)`} className="icon-control" disabled type="button"><CompareIcon /></button>
+          <ComparisonButton className="icon-control" compact name={product.name} slug={product.slug} />
         </div>
         <DevicePlaceholder category={product.category} />
       </div>

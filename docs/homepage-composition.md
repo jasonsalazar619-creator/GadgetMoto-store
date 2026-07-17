@@ -10,7 +10,7 @@ Checkpoint 3A replaces the temporary confirmation page with a polished, static s
 4. **Browse by brand** — exposes twelve text-only brand tiles without reproducing trademark logos.
 5. **Shop by budget** — presents four static budget entry points.
 6. **Featured tablets** — presents four verified tablet records with supplied SRPs.
-7. **Compare promo** — previews three comparison slots and clearly marks the tool as coming later.
+7. **Compare promo** — links to the functional three-product comparison experience.
 8. **Payment and financing** — separates payment choices from provider-dependent financing options.
 9. **Delivery** — communicates nationwide delivery, conditional same-day delivery, and Cavite City pickup without invented rates or timing.
 10. **Why GadgetMoTo** — summarizes four supported trust points.
@@ -21,9 +21,9 @@ Checkpoint 3A replaces the temporary confirmation page with a polished, static s
 
 - Section-anchor navigation and hero calls to action.
 - Safe new-tab Facebook Messenger links.
-- Visual-only search, cart, wishlist, compare, brand, and budget controls.
+- Visual-only cart, wishlist, brand, and budget controls; catalog search and product comparison are now functional.
 - Restrained CSS hover and entrance transitions with a reduced-motion fallback.
-- Disabled comparison and price-alert actions with explicit coming-soon messaging.
+- Functional product comparison alongside disabled price-alert actions with explicit coming-soon messaging.
 
 ## Functionality intentionally deferred
 

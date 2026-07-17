@@ -7,6 +7,7 @@ import { DevicePlaceholder } from "@/components/storefront/device-placeholder";
 import { ProductCard } from "@/components/storefront/product-card";
 import { StorefrontPageShell } from "@/components/storefront/storefront-page-shell";
 import { formatProductTitle, getAllProducts, getProductBySlug } from "@/data/prototype-products";
+import { ComparisonButton } from "@/components/comparison/comparison-button";
 
 const messengerUrl = "https://www.facebook.com/profile.php?id=100063905416187";
 type ProductPageProps = { params: Promise<{ slug: string }> };
@@ -49,7 +50,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
             <div className="product-actions mt-8">
               <button className="button-link button-link--primary" disabled type="button">Add to Cart — coming soon</button>
               <a className="button-link product-message-link" href={messengerUrl} rel="noopener noreferrer" target="_blank">Message Us</a>
-              <button className="button-link button-link--secondary" disabled type="button">Compare — preview</button>
+              <ComparisonButton className="button-link button-link--secondary" name={product.name} slug={product.slug} />
             </div>
           </div>
         </Container>
