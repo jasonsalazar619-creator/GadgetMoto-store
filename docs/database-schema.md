@@ -289,7 +289,7 @@ No legal retention period is assumed.
 5. RLS enablement, grants, initial policies, and secure views/functions.
 6. Seed the 12 verified prototype products only after schema approval.
 
-These phases remain the roadmap. Migrations 1 and 2 are deployed, and no later migration has been created.
+These phases remain the roadmap. Migrations 1 and 2 are deployed and unchanged. Commerce Migration 3 is drafted locally as `20260717164359_commerce_foundation.sql` and is not deployed. The draft contains the seven commerce tables, the staff reference from `inventory_movements`, reviewed constraints, indexes, `updated_at` triggers, RLS enablement, and public-facing privilege revocation. Trusted order creation, inventory reservation behavior, staff-access policies, public API access, and payment-provider integration remain deferred.
 
 ## Entity relationships
 

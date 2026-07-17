@@ -29,8 +29,9 @@
 - Transactional stock mutation, reservations, expiry, and preorder behavior remain deferred.
 - The Docker-related catalog-cache warning was non-blocking.
 - All future schema changes must use new timestamped migration files.
-- Commerce Migration 3 is currently in documentation planning.
-- No new local migration exists, and no remote schema or migration-history change occurred.
+- Commerce Migration 3 exists locally as `20260717164359_commerce_foundation.sql` and remains unexecuted.
+- Commerce Migration 3 has not received a linked remote dry run and has not been deployed.
+- No remote schema or migration-history change occurred from drafting Commerce Migration 3.
 - The two deployed migrations remain unchanged.
 - Project references and credentials remain excluded.
 - The project reference, project URL, database password, access tokens, API keys, and connection strings are intentionally excluded.

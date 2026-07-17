@@ -2,7 +2,7 @@
 
 ## Status and scope
 
-This document is an implementation plan, not executable SQL. Commerce Migration 3 has not been created, and no database command has been run. The plan covers seven commerce tables plus one foreign-key addition to the existing inventory movement table. It does not implement order submission, inventory reservation, payment integration, staff policies, or customer accounts.
+This document records the reviewed plan and local draft for Commerce Migration 3. The migration remains unexecuted. It covers seven commerce tables plus one foreign-key addition to the existing inventory movement table. It does not implement order submission, inventory reservation, payment integration, staff policies, or customer accounts.
 
 Exact public order-number generation and VAT handling remain unresolved. Guest orders will eventually be created only through trusted server-side workflows, never unrestricted browser writes.
 
@@ -289,3 +289,7 @@ No speculative index is planned without an expected query.
 - Customer-data retention and deletion rules
 
 These decisions do not block documentation planning.
+
+## Migration status
+
+Commerce Migration 3 is drafted locally as `20260717164359_commerce_foundation.sql` and remains unexecuted. It creates the seven planned commerce tables, adds the reviewed `inventory_movements.created_by` staff-profile foreign key, enables RLS, and revokes public-facing table privileges. It creates no policies, functions, staff accounts, orders, payments, or seed records. A complete static review and linked remote dry run are required before any deployment decision.
