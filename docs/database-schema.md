@@ -28,6 +28,8 @@ This document is the production data-model plan only. It does not create SQL, mi
 
 All eighteen application tables are deployed and remain empty. Initial catalog-data mapping is documented in `docs/catalog-data-import-plan.md`. No data migration or seed file exists yet. The first production import will cover only reviewed brands, products, and variants. Product media and store locations may be deferred where required details are unconfirmed. Inventory, homepage, commerce, alerts, and audit data will not be seeded.
 
+Catalog bootstrap decisions are under review in `docs/catalog-bootstrap-decisions.md`. Expected first-import counts are 6 brands, 12 products, and 12 product variants; all other tables will remain empty.
+
 - PostgreSQL is the source of truth. Products and prices must not be permanently duplicated across application systems.
 - Cart contents remain client-side until a real order is submitted. A trusted server workflow will create orders.
 - Order items preserve purchase-time names, variants, SKUs, and prices even when catalog records later change.

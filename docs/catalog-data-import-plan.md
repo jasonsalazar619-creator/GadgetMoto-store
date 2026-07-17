@@ -233,3 +233,7 @@ The eventual import must reject duplicate brand names/slugs, product slugs, and 
 - Confirmation that the ten source-labeled SRPs are approved production values.
 - Official store-location name, province, address, instructions, and schedule if a location will be included later.
 - Stable product media and alt text if images will be imported later.
+
+## Decision-matrix status
+
+Proposed bootstrap values are documented in `docs/catalog-bootstrap-decisions.md`. No proposed value has been approved or inserted, no bootstrap migration exists, and final review remains required.
