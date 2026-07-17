@@ -15,6 +15,8 @@
 - Local migration `20260717145303` has no remote migration-history match.
 - The catalog migration dry run passed; only `20260717145303_catalog_foundation.sql` would be applied.
 - The migration has not been deployed.
+- Before deployment, the first migration was amended with explicit RLS and privilege hardening.
+- The amended migration remains unapplied and passed a new remote dry run.
 - No remote schema or migration-history change occurred.
 - The project reference, project URL, database password, access tokens, API keys, and connection strings are intentionally excluded.
 - API keys and database passwords must never be committed.

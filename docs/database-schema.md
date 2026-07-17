@@ -2,7 +2,7 @@
 
 ## Migration status
 
-Migration 1 has been drafted locally and covers the reviewed enums and catalog foundation. It has not been executed locally or remotely and contains no seed data. Inventory, commerce, content, RLS, and product seeding remain deferred. The SQL must receive a dedicated review before deployment.
+Migration 1 has been drafted locally and covers the reviewed enums and catalog foundation. It explicitly enables RLS on all five catalog tables and revokes table privileges from `anon` and `authenticated`. It has not been executed locally or remotely and contains no seed data. Inventory, commerce, content, detailed access policies, and product seeding remain deferred. The SQL must receive a dedicated review before deployment.
 
 ## Scope and design principles
 
@@ -253,6 +253,8 @@ Reservation expiry is not designed yet. The migration/database-function phase mu
 | audit_logs | None | None | Owner/admin read; services append; other staff only if justified | Append/read |
 
 There are no unrestricted anonymous table inserts. Future guest orders and alerts use validated server routes, narrowly privileged security-definer functions if justified, or Supabase Edge Functions. Owner/administrator has full administrative responsibility; sales handles orders, fulfillment, customer communication, and payment review; inventory handles catalog variants, inventory levels, and movements; content handles published catalog content and homepage sections. Exact grants, views, role boundaries, and RLS policies require separate migration-phase review.
+
+Migration 1 defaults the five catalog tables to inaccessible through explicit RLS enablement and revocation of `anon` and `authenticated` privileges. A later access migration will add only narrowly scoped public-read policies and the minimum required `SELECT` grants. Sensitive or unpublished records remain inaccessible by default.
 
 ## Search and index plan
 

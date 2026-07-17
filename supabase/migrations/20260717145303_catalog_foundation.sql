@@ -303,5 +303,21 @@ create trigger store_locations_set_updated_at
 before update on public.store_locations
 for each row execute function public.set_updated_at();
 
--- RLS policies and Data API grants are intentionally deferred to a dedicated migration.
--- This migration introduces no public write path.
+alter table public.brands enable row level security;
+alter table public.products enable row level security;
+alter table public.product_variants enable row level security;
+alter table public.product_images enable row level security;
+alter table public.store_locations enable row level security;
+
+revoke all privileges on table public.brands from anon, authenticated;
+revoke all privileges on table public.products from anon, authenticated;
+revoke all privileges on table public.product_variants from anon, authenticated;
+revoke all privileges on table public.product_images from anon, authenticated;
+revoke all privileges on table public.store_locations from anon, authenticated;
+
+revoke execute on function public.set_updated_at() from public, anon, authenticated;
+
+-- RLS is enabled immediately on every exposed application table, with no policies yet.
+-- Direct table privileges for anon and authenticated are revoked as defense in depth.
+-- Public storefront reads remain unavailable until a later reviewed migration adds
+-- narrowly scoped policies and minimum grants. No public write path is introduced.
