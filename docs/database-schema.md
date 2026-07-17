@@ -16,7 +16,7 @@ RLS is enabled on all seven commerce tables with zero policies, Data API access 
 
 ## Migration 4 planning status
 
-Planning is documented in `docs/content-alerts-audit-migration-plan.md`. Four tables are planned: `price_alert_subscriptions`, `homepage_sections`, `homepage_section_products`, and `audit_logs`. No Migration 4 SQL file exists, no SQL was executed, and no remote schema or migration-history change occurred. RLS enablement and public-facing privilege revocation will be included immediately. Public storefront access, alert functions, email integration, homepage seeding, and audit automation remain deferred.
+Planning is documented in `docs/content-alerts-audit-migration-plan.md`. Migration 4 is drafted locally as `20260717184621_content_alerts_audit_foundation.sql` and is not deployed. Its four tables—`price_alert_subscriptions`, `homepage_sections`, `homepage_section_products`, and `audit_logs`—complete the planned 18-table application schema. Price-alert privacy, homepage-content separation, append-only audit intent, reviewed constraints, two `updated_at` triggers, RLS enablement, and public-facing privilege revocation are included. No SQL was executed and no remote schema or migration-history change occurred. Public storefront access, alert workflows, email integration, homepage seeding, and audit automation remain deferred.
 
 ## Scope and design principles
 

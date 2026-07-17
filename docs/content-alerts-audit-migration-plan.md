@@ -271,3 +271,7 @@ No new enum is required because `public.price_alert_status` already exists.
 - Final customer-data privacy and retention requirements
 
 These unresolved decisions do not block documentation planning and are not decided in this checkpoint.
+
+## Migration status
+
+Migration 4 is drafted locally as `20260717184621_content_alerts_audit_foundation.sql` and remains unexecuted. It creates the four planned tables and includes immediate RLS enablement and revocation of public-facing table privileges. It creates no policies, public access, records, functions, jobs, email integrations, views, or audit automation. A complete static review and linked remote dry run remain required before any deployment decision.
