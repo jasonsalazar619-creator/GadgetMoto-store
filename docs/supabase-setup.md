@@ -51,7 +51,9 @@
 - All four deployed migrations remain unchanged.
 - Before the local catalog bootstrap was drafted, the hosted database remained at eighteen empty application tables.
 - Local catalog bootstrap migration `20260717205111_catalog_bootstrap_data.sql` now exists.
-- The catalog bootstrap migration has not received a linked remote dry run and has not been deployed.
+- The catalog bootstrap migration passed a linked remote dry run and has not been deployed.
+- Only `20260717205111_catalog_bootstrap_data.sql` is pending.
+- Remote migration history and database records remain unchanged.
 - The hosted database still contains eighteen empty application tables.
 - All four deployed schema migrations remain unchanged.
 - Project references and credentials remain excluded.

@@ -28,7 +28,7 @@ This document is the production data-model plan only. It does not create SQL, mi
 
 All eighteen application tables are deployed and remain empty. Initial catalog-data mapping is documented in `docs/catalog-data-import-plan.md`. No seed file exists. The drafted local bootstrap data migration will cover only the approved brands, products, and variants and remains unexecuted. Product media and store locations are deferred because required details are unconfirmed. Inventory, homepage, commerce, alerts, and audit data will not be seeded.
 
-Catalog bootstrap decisions are approved in `docs/catalog-bootstrap-decisions.md`. Initial catalog bootstrap migration `20260717205111_catalog_bootstrap_data.sql` is drafted locally and remains unexecuted. Expected post-deployment row counts are 6 brands, 12 products, and 12 product variants; all other tables remain at zero rows.
+Catalog bootstrap decisions are approved in `docs/catalog-bootstrap-decisions.md`. Initial catalog bootstrap migration `20260717205111_catalog_bootstrap_data.sql` is drafted and committed, passed its linked remote dry run, and is not yet deployed. It is expected to insert 30 total catalog rows: 6 brands, 12 products, and 12 product variants. It contains no schema changes or excluded-table inserts, and all other tables remain at zero rows.
 
 - PostgreSQL is the source of truth. Products and prices must not be permanently duplicated across application systems.
 - Cart contents remain client-side until a real order is submitted. A trusted server workflow will create orders.

@@ -142,6 +142,19 @@ Every other application table must remain at zero rows. The import specifically 
 
 The bootstrap uses the explicit approved UUID mapping above; no random UUID or insertion-order dependency is used. Routine catalog editing must later move to protected staff/admin workflows rather than permanent migration dependence.
 
+## Linked dry-run status
+
+The approved bootstrap migration passed a linked remote dry run. The dry run listed only `20260717205111_catalog_bootstrap_data.sql`; the migration remains unapplied, and no catalog record was inserted remotely.
+
+Final static review confirmed exactly three data-only `INSERT` statements targeting only `public.brands`, `public.products`, and `public.product_variants`. All 30 explicit deterministic UUIDs and all 12 approved SKUs are unique. Apple iPhone 17 keeps `ram_gb` and `srp_centavos` null, POCO F8 Ultra keeps `srp_centavos` null, and every product uses the fixed shared publication timestamp `2026-07-17 20:51:11+00`. No excluded-table record is created.
+
+Expected deployment row counts remain:
+
+- `brands`: 6
+- `products`: 12
+- `product_variants`: 12
+- Every other application table: 0
+
 ## Approval record
 
 - [x] SKU convention

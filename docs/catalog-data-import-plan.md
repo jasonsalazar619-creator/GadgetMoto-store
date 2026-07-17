@@ -2,7 +2,7 @@
 
 ## Status and scope
 
-This document records the reviewed data-import plan. No database record has been created and no seed file exists. The approved local migration `20260717205111_catalog_bootstrap_data.sql` is drafted but remains unexecuted and undeployed. The storefront still uses static application data, and the initial catalog import must preserve the existing visible storefront until database integration is validated.
+This document records the reviewed data-import plan. No database record has been created and no seed file exists. The approved local migration `20260717205111_catalog_bootstrap_data.sql` passed its linked remote dry run but remains unexecuted and undeployed. No database data changed. Static application data remains the live storefront source, and deployment plus post-insert parity verification remain pending.
 
 This checkpoint changes no frontend behavior, runs no database command, and creates no inventory, homepage, commerce, alert, or audit data.
 
@@ -230,4 +230,4 @@ The eventual import must reject duplicate brand names/slugs, product slugs, and 
 
 ## Decision-matrix status
 
-Bootstrap decisions are approved and documented in `docs/catalog-bootstrap-decisions.md`. Local migration `20260717205111_catalog_bootstrap_data.sql` now exists and remains unexecuted and undeployed. It is expected to insert only 6 brands, 12 products, and 12 variants. Static application data remains the storefront source during database validation.
+Bootstrap decisions are approved and documented in `docs/catalog-bootstrap-decisions.md`. Local migration `20260717205111_catalog_bootstrap_data.sql` passed its linked remote dry run and remains unexecuted and undeployed. It is expected to insert only 6 brands, 12 products, and 12 variants. No database data changed, static application data remains the live storefront source, and deployment plus post-insert parity verification remain pending.
