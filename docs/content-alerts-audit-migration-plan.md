@@ -274,4 +274,6 @@ These unresolved decisions do not block documentation planning and are not decid
 
 ## Migration status
 
-Migration 4 is drafted locally as `20260717184621_content_alerts_audit_foundation.sql` and remains unexecuted. It creates the four planned tables and includes immediate RLS enablement and revocation of public-facing table privileges. It creates no policies, public access, records, functions, jobs, email integrations, views, or audit automation. A complete static review and linked remote dry run remain required before any deployment decision.
+Migration 4 is drafted and committed locally as `20260717184621_content_alerts_audit_foundation.sql` and remains unexecuted. It creates the four planned tables and includes immediate RLS enablement and revocation of public-facing table privileges. It creates no policies, public access, records, functions, jobs, email integrations, views, or audit automation.
+
+The linked remote dry run passed and identified only `20260717184621_content_alerts_audit_foundation.sql`. Migration 4 remains unapplied, so no subscribers, homepage sections, placements, audit logs, policies, functions, views, jobs, or records were created remotely. A static deployment review remains required before deployment.

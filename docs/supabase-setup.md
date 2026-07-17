@@ -39,8 +39,9 @@
 - The Docker-related catalog-cache warning was non-blocking and did not prevent deployment.
 - All three deployed migrations remain unchanged; future schema changes must use new timestamped migrations.
 - Migration 4 now exists locally as `20260717184621_content_alerts_audit_foundation.sql`.
-- The fourth local migration has not received a linked remote dry run and has not been deployed.
-- The three deployed migrations remain unchanged, and the hosted project remains unchanged by this checkpoint.
+- Migration 4 passed a linked remote dry run, which identified only `20260717184621_content_alerts_audit_foundation.sql` as pending.
+- Migration 4 remains unapplied; the remote schema and migration history remain unchanged.
+- The three previously deployed migrations remain unchanged.
 - Project references and credentials remain excluded.
 - The project reference, project URL, database password, access tokens, API keys, and connection strings are intentionally excluded.
 - API keys and database passwords must never be committed.
