@@ -2,11 +2,11 @@
 
 ## Status and boundaries
 
-This document remains the architecture plan for database-backed catalog loading. The ordering and secure storefront read model are deployed, and the minimum server-only database dependency and client scaffold are implemented. No environment file, policy, query, or application-consumer integration has been added.
+This document remains the architecture plan for database-backed catalog loading. The ordering and secure storefront read model are deployed, and the minimum server-only database dependency, client, query, validation, normalization, and fallback code are implemented. No environment file, policy, connectivity test, or application-consumer integration has been added.
 
-Final implementation decisions are approved and documented in `docs/catalog-integration-decisions.md`. Migration `20260717234135_catalog_ordering_storefront_read_model.sql` is deployed. Post-deployment checks confirmed the approved product order, view structure, 12 view rows, catalog parity, and restricted reader-role properties. Postgres.js `3.4.9` is installed and the lazy server-only client is scaffolded, but no environment configuration or application integration exists, and static catalog data remains the active storefront source and fallback.
+Final implementation decisions are approved and documented in `docs/catalog-integration-decisions.md`. Migration `20260717234135_catalog_ordering_storefront_read_model.sql` is deployed. Post-deployment checks confirmed the approved product order, view structure, 12 view rows, catalog parity, and restricted reader-role properties. Postgres.js `3.4.9` and the isolated server adapter are implemented, but neither has been called; no environment configuration or application integration exists, and static catalog data remains the active storefront source and fallback.
 
-The server-only `gadgetmoto_storefront_app` login role is ready for future application configuration. It inherits only the dedicated `gadgetmoto_storefront_reader` permission bundle, and manual verification confirmed its effective schema `USAGE` and storefront-view `SELECT` access while direct access to the tested base and private tables remains unavailable. Database querying, normalization, validation, fallback, page integration, and provider integration remain unimplemented; no environment configuration exists, and the static catalog remains the active source and fallback.
+The server-only `gadgetmoto_storefront_app` login role is ready for future application configuration. It inherits only the dedicated `gadgetmoto_storefront_reader` permission bundle, and manual verification confirmed its effective schema `USAGE` and storefront-view `SELECT` access while direct access to the tested base and private tables remains unavailable. Querying, complete-result validation, normalization, sanitized errors, and atomic fallback code now exist. Connectivity, environment setup, controlled adapter verification, page integration, and provider integration remain pending, and the static catalog remains the active source and fallback.
 
 Static application data in `src/data/prototype-products.ts` remains authoritative for the live storefront. PostgreSQL contains a manually verified parity copy: 6 brands, 12 products, and 12 product variants. Database integration must be gradual, must preserve existing routes and browser state, and must retain a safe static fallback until all parity checks pass.
 
@@ -177,7 +177,7 @@ The operational fallback for either architecture is the verified static catalog.
 
 ## Catalog loading boundary and fallback
 
-Plan a server-only boundary named `getCatalogProducts()` plus `getCatalogProductBySlug(slug)`. The exact module path is deferred. Both should share one normalized result and request-level memoization so metadata and page rendering do not issue inconsistent duplicate queries.
+The server-only boundary is implemented at `src/lib/catalog/server/catalog.ts` with `getCatalogProducts()` and `getCatalogProductBySlug(slug)`. Product lookup resolves from the complete catalog and never issues a slug-specific query. Request-level memoization is deferred until consumer integration, when metadata and page rendering behavior can be reviewed together. This prevents a fallback from persisting across unrelated requests or deployments, stale source-mode behavior, cached raw errors, and unexpected build-time database execution; no cross-request cache is introduced.
 
 Defined source modes:
 

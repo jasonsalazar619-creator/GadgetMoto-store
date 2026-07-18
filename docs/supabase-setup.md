@@ -82,7 +82,10 @@
 - The repository expects `CATALOG_SOURCE` and `STOREFRONT_DATABASE_URL`, but contains no values.
 - No environment file or connection string was created.
 - No connection attempt or query occurred.
-- Hosted database configuration and records remain unchanged.
+- The server adapter now targets only `storefront.catalog_products`.
+- No environment value was created, and no database connection or query occurred while implementing the adapter.
+- `static` remains the default catalog source.
+- Hosted database configuration and records remain unchanged by the adapter checkpoint.
 - Project references and credentials remain excluded.
 - The project reference, project URL, database password, access tokens, API keys, and connection strings are intentionally excluded.
 - API keys and database passwords must never be committed.

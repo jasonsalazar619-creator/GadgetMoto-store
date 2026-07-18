@@ -12,9 +12,11 @@ The `gadgetmoto_storefront_reader` role exists as a non-login role with zero act
 
 The separate server login role `gadgetmoto_storefront_app` was created manually with `LOGIN` and `INHERIT` enabled. Role creation, database creation, RLS bypass, superuser, and replication capabilities are disabled, and the role has zero active connections. Its password exists only in the managed database configuration and the user's secure password storage; no password or connection string exists in Git.
 
-The app role inherits `gadgetmoto_storefront_reader`, and the membership was verified successfully. Effective `USAGE` on the `storefront` schema and `SELECT` on `storefront.catalog_products` were verified. Direct `SELECT` on `public.products` and `public.orders` remains unavailable. No browser-facing or Data API access was introduced, and server-adapter implementation remains pending.
+The app role inherits `gadgetmoto_storefront_reader`, and the membership was verified successfully. Effective `USAGE` on the `storefront` schema and `SELECT` on `storefront.catalog_products` were verified. Direct `SELECT` on `public.products` and `public.orders` remains unavailable. No browser-facing or Data API access was introduced, and storefront-consumer integration remains pending.
 
-All six deployed migrations remain immutable. The database contains the manually verified parity copy of 6 brands, 12 products, and 12 product variants. Postgres.js `3.4.9` is installed as the selected server-only database dependency, but application integration remains unimplemented and static data in `src/data/prototype-products.ts` remains the live storefront source.
+All six deployed migrations remain immutable. The database contains the manually verified parity copy of 6 brands, 12 products, and 12 product variants. Postgres.js `3.4.9` is installed, and the server-only catalog boundary now implements `getCatalogProducts()` and `getCatalogProductBySlug()`. Application-consumer integration remains unimplemented, so static data in `src/data/prototype-products.ts` remains the live storefront source.
+
+The adapter selects only the 17 approved columns from `storefront.catalog_products`, validates and normalizes the complete parity result, and rejects the entire result on any mismatch. `database-with-static-fallback` returns either the complete validated database catalog or the complete canonical static catalog; partial merging is prohibited. Static enrichment supplies only compatibility and presentation fields absent from the read model, including the legacy application `id`, fixed financing label, and placeholder `artSeed`.
 
 ## Decisions inherited from the approved architecture
 
@@ -154,7 +156,7 @@ Use one server-only boundary:
 - `getCatalogProducts()` returns the complete normalized catalog.
 - `getCatalogProductBySlug(slug)` resolves from the same normalized result rather than issuing an independent query shape.
 
-The implementation should use request-level memoization so page rendering and metadata generation cannot observe different catalog snapshots in one request. Cache lifetime and cross-request invalidation require a separate implementation decision; no implicit indefinite cache is proposed.
+Request-level memoization remains approved for the future consumer-integration checkpoint so page rendering and metadata generation cannot observe different catalog snapshots in one request. It is intentionally deferred while the adapter has no caller. This avoids persisting a static fallback across unrelated requests or deployments, retaining a stale source-mode decision, caching raw errors, or triggering unexpected database work during a production build. Cache lifetime and cross-request invalidation require a separate implementation decision; no implicit indefinite cache is implemented.
 
 ### Source modes
 
@@ -245,7 +247,7 @@ Reasons for this choice:
 
 `@supabase/supabase-js` is not preferred for the first phase because it would require Data API exposure and the fallback access configuration. The `pg` package would also provide direct PostgreSQL access but is not needed in addition to `postgres`; only one reviewed driver is installed. Pooler mode, connection limits, timeout behavior, and deployment-host support remain deferred until application connectivity is configured.
 
-The lazy PostgreSQL client scaffold has not been called, no connectivity test has occurred, and no application consumer, page, or provider is integrated yet.
+The lazy PostgreSQL client and catalog adapter have not been called, no connectivity test has occurred, and no application consumer, page, or provider is integrated yet.
 
 ## Approved access-and-ordering migration scope
 
@@ -293,9 +295,9 @@ Implementation cannot proceed unless it guarantees:
 
 ### Checkpoint B — Server catalog adapter
 
-- The approved PostgreSQL dependency and server-only client scaffold are complete.
+- The approved PostgreSQL dependency, server-only client, query, normalization, whole-result validation, sanitized errors, and atomic static fallback are complete.
 - Configuration validation is implemented without secret values; hosting and pooler compatibility remain to be verified.
-- Implement the database query, normalization, whole-result validation, sanitized warning, memoization, and atomic static fallback.
+- Request-level memoization remains deferred until the adapter is connected to server consumers.
 - Keep application pages on the static source initially.
 
 ### Checkpoint C — Page integration
