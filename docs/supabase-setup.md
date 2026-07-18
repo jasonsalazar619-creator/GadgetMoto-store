@@ -78,6 +78,11 @@
 - The credential was not committed or documented.
 - Environment configuration and application connectivity remain pending.
 - Data API and browser access remain unchanged.
+- Postgres.js `3.4.9` is installed for future server-only database access.
+- The repository expects `CATALOG_SOURCE` and `STOREFRONT_DATABASE_URL`, but contains no values.
+- No environment file or connection string was created.
+- No connection attempt or query occurred.
+- Hosted database configuration and records remain unchanged.
 - Project references and credentials remain excluded.
 - The project reference, project URL, database password, access tokens, API keys, and connection strings are intentionally excluded.
 - API keys and database passwords must never be committed.

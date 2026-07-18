@@ -14,7 +14,7 @@ The separate server login role `gadgetmoto_storefront_app` was created manually 
 
 The app role inherits `gadgetmoto_storefront_reader`, and the membership was verified successfully. Effective `USAGE` on the `storefront` schema and `SELECT` on `storefront.catalog_products` were verified. Direct `SELECT` on `public.products` and `public.orders` remains unavailable. No browser-facing or Data API access was introduced, and server-adapter implementation remains pending.
 
-All six deployed migrations remain immutable. The database contains the manually verified parity copy of 6 brands, 12 products, and 12 product variants. Application integration remains unimplemented, Postgres.js remains uninstalled, and static data in `src/data/prototype-products.ts` remains the live storefront source.
+All six deployed migrations remain immutable. The database contains the manually verified parity copy of 6 brands, 12 products, and 12 product variants. Postgres.js `3.4.9` is installed as the selected server-only database dependency, but application integration remains unimplemented and static data in `src/data/prototype-products.ts` remains the live storefront source.
 
 ## Decisions inherited from the approved architecture
 
@@ -129,15 +129,14 @@ All catalog database reads occur in server-only Next.js modules.
 - Search, comparison, cart, checkout, related products, filters, and product cards consume the same normalized payload.
 - No database write path is introduced.
 
-### Proposed configuration names
+### Approved configuration names
 
 Primary direct-PostgreSQL configuration, without values:
 
-- `GADGETMOTO_CATALOG_SOURCE_MODE`
-- `GADGETMOTO_CATALOG_DATABASE_URL`
-- `GADGETMOTO_CATALOG_QUERY_TIMEOUT_MS`
+- `CATALOG_SOURCE`
+- `STOREFRONT_DATABASE_URL`
 
-The database URL is a privileged server-only secret. It must be supplied by the deployment environment, never committed, logged, serialized, or returned to a client.
+`CATALOG_SOURCE` supports `static`, `database`, and `database-with-static-fallback`, and defaults to `static` when absent. `STOREFRONT_DATABASE_URL` is read only when database access is requested. The database URL is a privileged server-only secret that must be supplied by the deployment environment and never committed, logged, serialized, or returned to a client. No environment value or environment file was created.
 
 If the Data API fallback is separately approved, proposed server-only names are:
 
@@ -235,7 +234,7 @@ Static imports should be removed consumer by consumer only after each conversion
 
 ## Dependency decision
 
-The primary architecture requires one runtime PostgreSQL driver because the repository currently has no application dependency capable of issuing direct PostgreSQL queries. The minimum proposed dependency is `postgres` (Postgres.js), added only in the future server-adapter checkpoint after architecture approval.
+The selected runtime PostgreSQL driver is `postgres` (Postgres.js) `3.4.9`, installed as the only application database dependency. Its import and configuration access are isolated in server-only modules.
 
 Reasons for this choice:
 
@@ -244,7 +243,9 @@ Reasons for this choice:
 - It avoids enabling the Data API for the primary architecture.
 - It is separate from the existing `supabase` development dependency, which is CLI tooling and must not be treated as an application query client.
 
-`@supabase/supabase-js` is not preferred for the first phase because it would require Data API exposure and the fallback access configuration. The `pg` package would also provide direct PostgreSQL access but is not needed in addition to `postgres`; only one reviewed driver should be installed. The exact compatible version, pooler mode, connection limit, timeout behavior, and deployment-host support must be verified in the dependency checkpoint before installation.
+`@supabase/supabase-js` is not preferred for the first phase because it would require Data API exposure and the fallback access configuration. The `pg` package would also provide direct PostgreSQL access but is not needed in addition to `postgres`; only one reviewed driver is installed. Pooler mode, connection limits, timeout behavior, and deployment-host support remain deferred until application connectivity is configured.
+
+The lazy PostgreSQL client scaffold has not been called, no connectivity test has occurred, and no application consumer, page, or provider is integrated yet.
 
 ## Approved access-and-ordering migration scope
 
@@ -292,9 +293,8 @@ Implementation cannot proceed unless it guarantees:
 
 ### Checkpoint B — Server catalog adapter
 
-- Verify hosting and pooler compatibility.
-- Add only the approved PostgreSQL dependency.
-- Add configuration validation without secret values.
+- The approved PostgreSQL dependency and server-only client scaffold are complete.
+- Configuration validation is implemented without secret values; hosting and pooler compatibility remain to be verified.
 - Implement the database query, normalization, whole-result validation, sanitized warning, memoization, and atomic static fallback.
 - Keep application pages on the static source initially.
 

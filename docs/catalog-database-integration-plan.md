@@ -2,11 +2,11 @@
 
 ## Status and boundaries
 
-This document remains the architecture plan for database-backed catalog loading. The ordering and secure storefront read model are deployed, but no application dependency, environment file, policy, or application source change has been made for catalog loading.
+This document remains the architecture plan for database-backed catalog loading. The ordering and secure storefront read model are deployed, and the minimum server-only database dependency and client scaffold are implemented. No environment file, policy, query, or application-consumer integration has been added.
 
-Final implementation decisions are approved and documented in `docs/catalog-integration-decisions.md`. Migration `20260717234135_catalog_ordering_storefront_read_model.sql` is deployed. Post-deployment checks confirmed the approved product order, view structure, 12 view rows, catalog parity, and restricted reader-role properties. The next phase is the server catalog adapter; Postgres.js remains uninstalled, no environment configuration or application integration exists, and static catalog data remains the active storefront source and fallback.
+Final implementation decisions are approved and documented in `docs/catalog-integration-decisions.md`. Migration `20260717234135_catalog_ordering_storefront_read_model.sql` is deployed. Post-deployment checks confirmed the approved product order, view structure, 12 view rows, catalog parity, and restricted reader-role properties. Postgres.js `3.4.9` is installed and the lazy server-only client is scaffolded, but no environment configuration or application integration exists, and static catalog data remains the active storefront source and fallback.
 
-The server-only `gadgetmoto_storefront_app` login role is ready for future application configuration. It inherits only the dedicated `gadgetmoto_storefront_reader` permission bundle, and manual verification confirmed its effective schema `USAGE` and storefront-view `SELECT` access while direct access to the tested base and private tables remains unavailable. The application adapter and Postgres.js dependency remain unimplemented, no environment configuration exists, and the static catalog remains the active source and fallback.
+The server-only `gadgetmoto_storefront_app` login role is ready for future application configuration. It inherits only the dedicated `gadgetmoto_storefront_reader` permission bundle, and manual verification confirmed its effective schema `USAGE` and storefront-view `SELECT` access while direct access to the tested base and private tables remains unavailable. Database querying, normalization, validation, fallback, page integration, and provider integration remain unimplemented; no environment configuration exists, and the static catalog remains the active source and fallback.
 
 Static application data in `src/data/prototype-products.ts` remains authoritative for the live storefront. PostgreSQL contains a manually verified parity copy: 6 brands, 12 products, and 12 product variants. Database integration must be gradual, must preserve existing routes and browser state, and must retain a safe static fallback until all parity checks pass.
 
@@ -179,7 +179,7 @@ The operational fallback for either architecture is the verified static catalog.
 
 Plan a server-only boundary named `getCatalogProducts()` plus `getCatalogProductBySlug(slug)`. The exact module path is deferred. Both should share one normalized result and request-level memoization so metadata and page rendering do not issue inconsistent duplicate queries.
 
-Proposed source modes:
+Defined source modes:
 
 - `static`: always return the current static catalog.
 - `database`: require valid database configuration and valid database results; fail visibly in controlled development/operations contexts.
@@ -195,14 +195,12 @@ Expected `database-with-static-fallback` behavior:
 6. Never expose raw errors or fallback diagnostics to users.
 7. Preserve the exact current storefront behavior, ordering, routes, and placeholder art during fallback.
 
-Proposed environment-variable names, without values:
+Approved environment-variable names, without values:
 
-- `GADGETMOTO_CATALOG_SOURCE_MODE`
-- `GADGETMOTO_CATALOG_DATABASE_URL`
-- `GADGETMOTO_CATALOG_QUERY_TIMEOUT_MS`
-- For the Option B fallback only: `GADGETMOTO_CATALOG_API_URL` and `GADGETMOTO_CATALOG_API_KEY`
+- `CATALOG_SOURCE`
+- `STOREFRONT_DATABASE_URL`
 
-These are server-only names. Secrets must not use a `NEXT_PUBLIC_` prefix. No environment file is created now.
+These are server-only names. `CATALOG_SOURCE` defaults to `static`, and database configuration is not required in that mode. `STOREFRONT_DATABASE_URL` is required only when database access is requested. Secrets must not use a `NEXT_PUBLIC_` prefix. No environment value or environment file exists.
 
 Next.js 16 considerations from the installed documentation:
 
