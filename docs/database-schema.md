@@ -36,6 +36,8 @@ The database contains the approved catalog records, while application integratio
 
 The dedicated `storefront.catalog_products` view exists with 17 approved fields and currently returns 12 manually verified catalog rows. The `gadgetmoto_storefront_reader` role exists as a `NOLOGIN`, non-superuser role with no password. Its migration grants are limited to `USAGE` on the `storefront` schema and `SELECT` on the view. No browser-facing access, Data API exposure, public write path, or application database integration exists. The 18 application tables and their existing row counts remain otherwise unchanged.
 
+The manually configured `gadgetmoto_storefront_app` role exists as a `LOGIN` role. It is not a superuser and cannot create roles or databases, bypass RLS, or replicate. It inherits `gadgetmoto_storefront_reader`, can use the `storefront` schema, and can select `storefront.catalog_products`. It cannot directly select `public.products` or `public.orders`; no base-table write or private-table read privilege was introduced. Membership verification changed no application data or schema object, and no credential is documented here.
+
 - PostgreSQL is the source of truth. Products and prices must not be permanently duplicated across application systems.
 - Cart contents remain client-side until a real order is submitted. A trusted server workflow will create orders.
 - Order items preserve purchase-time names, variants, SKUs, and prices even when catalog records later change.

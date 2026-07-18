@@ -10,6 +10,10 @@ Migration `20260717234135_catalog_ordering_storefront_read_model.sql` deployed s
 
 The `gadgetmoto_storefront_reader` role exists as a non-login role with zero active connections. Login, superuser, role creation, database creation, RLS bypass, and replication are all disabled. No login credential or password exists, and no browser-facing or Data API access was introduced.
 
+The separate server login role `gadgetmoto_storefront_app` was created manually with `LOGIN` and `INHERIT` enabled. Role creation, database creation, RLS bypass, superuser, and replication capabilities are disabled, and the role has zero active connections. Its password exists only in the managed database configuration and the user's secure password storage; no password or connection string exists in Git.
+
+The app role inherits `gadgetmoto_storefront_reader`, and the membership was verified successfully. Effective `USAGE` on the `storefront` schema and `SELECT` on `storefront.catalog_products` were verified. Direct `SELECT` on `public.products` and `public.orders` remains unavailable. No browser-facing or Data API access was introduced, and server-adapter implementation remains pending.
+
 All six deployed migrations remain immutable. The database contains the manually verified parity copy of 6 brands, 12 products, and 12 product variants. Application integration remains unimplemented, Postgres.js remains uninstalled, and static data in `src/data/prototype-products.ts` remains the live storefront source.
 
 ## Decisions inherited from the approved architecture

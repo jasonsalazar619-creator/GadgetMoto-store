@@ -71,6 +71,13 @@
 - No login credential, password, project identifier, environment value, Data API exposure, or browser access was created.
 - The Docker-related catalog-cache warning was non-blocking.
 - All six deployed migrations remain unchanged; future migration corrections must use a new timestamped migration.
+- The server login role `gadgetmoto_storefront_app` was created manually with `LOGIN` enabled and all five elevated capability toggles disabled.
+- The server login role has zero active connections and inherits `gadgetmoto_storefront_reader`.
+- Effective `USAGE` on the `storefront` schema and `SELECT` on `storefront.catalog_products` were verified.
+- Direct `SELECT` on `public.products` and `public.orders` remains unavailable.
+- The credential was not committed or documented.
+- Environment configuration and application connectivity remain pending.
+- Data API and browser access remain unchanged.
 - Project references and credentials remain excluded.
 - The project reference, project URL, database password, access tokens, API keys, and connection strings are intentionally excluded.
 - API keys and database passwords must never be committed.

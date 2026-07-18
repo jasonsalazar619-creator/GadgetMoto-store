@@ -6,6 +6,8 @@ This document remains the architecture plan for database-backed catalog loading.
 
 Final implementation decisions are approved and documented in `docs/catalog-integration-decisions.md`. Migration `20260717234135_catalog_ordering_storefront_read_model.sql` is deployed. Post-deployment checks confirmed the approved product order, view structure, 12 view rows, catalog parity, and restricted reader-role properties. The next phase is the server catalog adapter; Postgres.js remains uninstalled, no environment configuration or application integration exists, and static catalog data remains the active storefront source and fallback.
 
+The server-only `gadgetmoto_storefront_app` login role is ready for future application configuration. It inherits only the dedicated `gadgetmoto_storefront_reader` permission bundle, and manual verification confirmed its effective schema `USAGE` and storefront-view `SELECT` access while direct access to the tested base and private tables remains unavailable. The application adapter and Postgres.js dependency remain unimplemented, no environment configuration exists, and the static catalog remains the active source and fallback.
+
 Static application data in `src/data/prototype-products.ts` remains authoritative for the live storefront. PostgreSQL contains a manually verified parity copy: 6 brands, 12 products, and 12 product variants. Database integration must be gradual, must preserve existing routes and browser state, and must retain a safe static fallback until all parity checks pass.
 
 Current security constraints remain unchanged:
