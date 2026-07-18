@@ -6,11 +6,11 @@ This document records the final approved implementation decisions for moving the
 
 The user approved all 13 catalog-integration decisions without changes. The exact sort order 0 through 11, dedicated `storefront` schema and catalog view, non-login `gadgetmoto_storefront_reader` role, server-only direct PostgreSQL access, `database-with-static-fallback` launch mode, whole-result validation and fallback, static route and metadata fallback, and one shared normalized catalog provider are approved.
 
-Local migration `20260717234135_catalog_ordering_storefront_read_model.sql` is drafted but remains unexecuted and undeployed. It creates no login credential or password in Git. No database access, Data API exposure, environment configuration, application dependency, or application behavior has been enabled or changed. Postgres.js remains the proposed future application dependency pending compatibility verification.
+Migration `20260717234135_catalog_ordering_storefront_read_model.sql` deployed successfully, and all six migration versions now match locally and remotely. The deployed `public.products.sort_order` values were manually verified as the exact approved sequence from 0 through 11. The `storefront.catalog_products` view was verified with all 17 approved columns and exactly 12 rows, and its product, variant, and pricing values passed manual parity verification.
 
-The linked remote dry run passed and listed only `20260717234135_catalog_ordering_storefront_read_model.sql`. The migration remains unapplied: no sort-order value, schema, role, view, privilege, migration-history row, or record changed remotely. No login credential or password exists. Deployment and post-deployment security verification remain pending.
+The `gadgetmoto_storefront_reader` role exists as a non-login role with zero active connections. Login, superuser, role creation, database creation, RLS bypass, and replication are all disabled. No login credential or password exists, and no browser-facing or Data API access was introduced.
 
-The five deployed migrations remain immutable. The database currently contains the manually verified parity copy of 6 brands, 12 products, and 12 product variants. Static data in `src/data/prototype-products.ts` remains the live storefront source.
+All six deployed migrations remain immutable. The database contains the manually verified parity copy of 6 brands, 12 products, and 12 product variants. Application integration remains unimplemented, Postgres.js remains uninstalled, and static data in `src/data/prototype-products.ts` remains the live storefront source.
 
 ## Decisions inherited from the approved architecture
 
@@ -244,7 +244,7 @@ Reasons for this choice:
 
 ## Approved access-and-ordering migration scope
 
-Local migration `20260717234135_catalog_ordering_storefront_read_model.sql` is limited to:
+Deployed migration `20260717234135_catalog_ordering_storefront_read_model.sql` is limited to:
 
 - Add `public.products.sort_order` without editing any deployed migration.
 - Backfill exact values 0 through 11 by the approved product slugs.
@@ -281,12 +281,10 @@ Implementation cannot proceed unless it guarantees:
 
 ### Checkpoint A — Ordering and read-model migration
 
-- Local migration creation is complete.
-- Perform full static SQL and privilege review.
-- Commit the unexecuted migration.
-- Run a linked non-destructive dry run in a separate approved checkpoint.
-- Deploy manually in a separate approved checkpoint.
-- Verify ordering, read-model output, RLS, grants, private-table isolation, and zero write access.
+- Local migration creation and static SQL and privilege review are complete.
+- The migration was committed before execution and passed a linked non-destructive dry run.
+- Manual deployment is complete.
+- Post-deployment ordering, read-model output, role properties, grants, and zero-write-access checks passed.
 
 ### Checkpoint B — Server catalog adapter
 

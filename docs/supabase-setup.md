@@ -45,7 +45,7 @@
 - The Migration 4 tables remain disabled from Data API access.
 - No subscribers, homepage content, placements, audit records, integrations, or seed data were created.
 - The Docker-related catalog-cache warning was non-blocking and did not prevent deployment.
-- All five deployed migrations remain unchanged; future schema or data corrections must use new timestamped migrations.
+- All six deployed migrations remain unchanged; future schema or data corrections must use new timestamped migrations.
 - Initial production catalog data is deployed and manually verified.
 - No seed file exists.
 - Catalog bootstrap migration `20260717205111_catalog_bootstrap_data.sql` is deployed and immutable.
@@ -63,15 +63,14 @@
 - No environment credential or application dependency was added.
 - The hosted database was unchanged by this planning checkpoint.
 - Catalog ordering and secure read-access decisions are approved.
-- No hosted Data API setting, policy, grant, view, schema, dependency, or environment configuration changed.
-- The hosted project remains unchanged by the catalog integration decision proposal.
-- Local migration `20260717234135_catalog_ordering_storefront_read_model.sql` now contains the approved catalog ordering and secure read model.
-- The ordering and secure read-model migration passed a linked remote dry run.
-- Only `20260717234135_catalog_ordering_storefront_read_model.sql` remains pending, and it has not been deployed.
-- Remote migration history and the hosted schema remain unchanged.
-- No login credential, password, project identifier, or environment value was created.
-- Data API settings remain unchanged, and the hosted project remains unchanged by this checkpoint.
-- All five deployed migrations remain unchanged.
+- Ordering and secure read-model migration `20260717234135_catalog_ordering_storefront_read_model.sql` deployed successfully.
+- Migration version `20260717234135` now matches locally and remotely.
+- Product ordering from 0 through 11 was manually verified against the approved sequence.
+- `storefront.catalog_products` was manually verified with 17 approved columns and 12 catalog rows.
+- The `gadgetmoto_storefront_reader` role has login, superuser, role creation, database creation, RLS bypass, and replication disabled, and it has zero active connections.
+- No login credential, password, project identifier, environment value, Data API exposure, or browser access was created.
+- The Docker-related catalog-cache warning was non-blocking.
+- All six deployed migrations remain unchanged; future migration corrections must use a new timestamped migration.
 - Project references and credentials remain excluded.
 - The project reference, project URL, database password, access tokens, API keys, and connection strings are intentionally excluded.
 - API keys and database passwords must never be committed.

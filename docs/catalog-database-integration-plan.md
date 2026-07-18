@@ -2,9 +2,9 @@
 
 ## Status and boundaries
 
-This document is architecture planning, not implementation. No dependency, environment file, policy, migration, SQL object, or application source change has been made for database-backed catalog loading.
+This document remains the architecture plan for database-backed catalog loading. The ordering and secure storefront read model are deployed, but no application dependency, environment file, policy, or application source change has been made for catalog loading.
 
-Final implementation decisions are approved and documented in `docs/catalog-integration-decisions.md`. Local migration `20260717234135_catalog_ordering_storefront_read_model.sql` contains the approved ordering and secure read-model changes and passed its linked remote dry run, but remains unexecuted and undeployed. The application adapter remains unimplemented, Postgres.js remains uninstalled, static catalog data remains the live storefront source, and deployment remains pending.
+Final implementation decisions are approved and documented in `docs/catalog-integration-decisions.md`. Migration `20260717234135_catalog_ordering_storefront_read_model.sql` is deployed. Post-deployment checks confirmed the approved product order, view structure, 12 view rows, catalog parity, and restricted reader-role properties. The next phase is the server catalog adapter; Postgres.js remains uninstalled, no environment configuration or application integration exists, and static catalog data remains the active storefront source and fallback.
 
 Static application data in `src/data/prototype-products.ts` remains authoritative for the live storefront. PostgreSQL contains a manually verified parity copy: 6 brands, 12 products, and 12 product variants. Database integration must be gradual, must preserve existing routes and browser state, and must retain a safe static fallback until all parity checks pass.
 
