@@ -2,11 +2,11 @@
 
 ## Status and boundaries
 
-This document remains the architecture plan for database-backed catalog loading. The ordering and secure storefront read model are deployed, and the minimum server-only database dependency, client, query, validation, normalization, and fallback code are implemented. Controlled local connectivity and adapter verification are complete, and controlled storefront integration now covers the homepage catalog sections, `/shop`, `/phones`, and `/tablets`. No environment file, policy, production configuration, or deployment configuration has been added.
+This document remains the architecture plan for database-backed catalog loading. The ordering and secure storefront read model are deployed, and the minimum server-only database dependency, client, query, validation, normalization, and fallback code are implemented. Controlled local connectivity and adapter verification are complete, and storefront integration covers the homepage catalog sections, `/shop`, `/phones`, `/tablets`, all 12 product-detail routes, global search, comparison, and cart. No environment file, policy, production configuration, or deployment configuration has been added.
 
-Final implementation decisions are approved and documented in `docs/catalog-integration-decisions.md`. Migration `20260717234135_catalog_ordering_storefront_read_model.sql` is deployed. Post-deployment checks confirmed the approved product order, view structure, 12 view rows, catalog parity, and restricted reader-role properties. Postgres.js `3.4.9` and the isolated server adapter are implemented. Controlled static and database source-mode tests passed, including hosted-view querying, complete validation, normalization, and ordering parity. The homepage, `/shop`, `/phones`, and `/tablets` Server Components each call the catalog boundary once and pass normalized results through typed props; category-based selections are derived on the server without changing ordering. Static catalog data remains the active source and full fallback.
+Final implementation decisions are approved and documented in `docs/catalog-integration-decisions.md`. Migration `20260717234135_catalog_ordering_storefront_read_model.sql` is deployed. Post-deployment checks confirmed the approved product order, view structure, 12 view rows, catalog parity, and restricted reader-role properties. Postgres.js `3.4.9` and the isolated server adapter are implemented. Controlled static and database source-mode tests passed, including hosted-view querying, complete validation, normalization, and ordering parity. Server routes resolve the normalized catalog through the request-memoized boundary, while one root server payload initializes the read-only client catalog provider used by search, comparison, and cart. Static catalog data remains the active source and full fallback.
 
-The server-only `gadgetmoto_storefront_app` login role authenticated successfully during controlled local verification. It inherits only the dedicated `gadgetmoto_storefront_reader` permission bundle, and manual verification confirmed its effective schema `USAGE` and storefront-view `SELECT` access while direct access to the tested base and private tables remains unavailable. Querying, complete-result validation, normalization, sanitized errors, and atomic fallback behavior are verified. Product routes, global search, comparison, cart, and checkout remain pending. Homepage and category parity are preserved. No global catalog provider has been introduced. Production configuration and deployment remain pending.
+The server-only `gadgetmoto_storefront_app` login role authenticated successfully during controlled local verification. It inherits only the dedicated `gadgetmoto_storefront_reader` permission bundle, and manual verification confirmed its effective schema `USAGE` and storefront-view `SELECT` access while direct access to the tested base and private tables remains unavailable. Querying, complete-result validation, normalization, sanitized errors, and atomic fallback behavior are verified. Product routes, global search, comparison, and cart are integrated; checkout remains review-only and consumes resolved cart state. Production configuration and deployment remain pending.
 
 Static application data in `src/data/prototype-products.ts` remains authoritative for the live storefront. PostgreSQL contains a manually verified parity copy: 6 brands, 12 products, and 12 product variants. Database integration must be gradual, must preserve existing routes and browser state, and must retain a safe static fallback until all parity checks pass.
 
@@ -56,20 +56,20 @@ The database model is normalized and may later support multiple variants. The ap
 
 | Consumer | Classification | Current use and integration risk |
 | --- | --- | --- |
-| `src/app/layout.tsx` | Server, runtime/build render boundary | Calls `getAllProducts()` twice and serializes the array into `CartProvider` and `GlobalSearchProvider`. A database call here would affect every route and could block navigation or builds unless cached and protected by fallback. |
-| `src/app/page.tsx` | Server, build/runtime render | Uses `newArrivalProducts` and `featuredTablets`. Current homepage grouping means all phones followed by all tablets; it is not driven by `products.is_featured`. |
+| `src/app/layout.tsx` | Server, runtime/build render boundary | Calls request-memoized `getCatalogProducts()` once and serializes the normalized array into the shared `CatalogProvider`. Static default mode and atomic fallback protect builds and routes. |
+| `src/app/page.tsx` | Server, build/runtime render | Calls `getCatalogProducts()` once and preserves the existing all-phones New Arrivals and all-tablets Featured Tablets grouping; it is not driven by `products.is_featured`. |
 | `src/app/shop/page.tsx` | Server feeding a client feature | Passes all products to `CatalogPage`/`CatalogExplorer`. |
 | `src/app/phones/page.tsx` | Server feeding a client feature | Assumes and describes exactly eight phones. |
 | `src/app/tablets/page.tsx` | Server feeding a client feature | Assumes and describes exactly four tablets. |
-| `src/app/products/[slug]/page.tsx` | Build-time and server runtime | Uses static slugs in `generateStaticParams`, static lookup in metadata and page rendering, `notFound()` for misses, and source order for up to four related products. A live-database dependency here could break builds or existing routes. |
+| `src/app/products/[slug]/page.tsx` | Build-time and server runtime | Retains static slugs in `generateStaticParams`, resolves metadata and page products through the exact-slug server boundary, preserves `notFound()` for misses, and uses the complete request-memoized catalog for up to four ordered related products. |
 | `src/components/storefront/catalog-page.tsx` | Shared server-to-client boundary | Accepts a serializable product array and passes it into the client explorer. |
 | `src/components/storefront/catalog-explorer.tsx` | Client-only runtime | Searches, filters, counts, and sorts the supplied array. “Featured” sort means original array order via `products.indexOf()`. |
 | `src/components/storefront/product-card.tsx` | Shared | Used by Server Components and imported into the client explorer. Reads most display fields and passes slugs to comparison controls. |
-| `src/components/search/global-search.tsx` | Client-only runtime | Receives the full array from the root layout, scores name/brand/variant/category, preserves input order for equal scores, and limits visible suggestions to six. |
+| `src/components/search/global-search.tsx` | Client-only runtime | Consumes the shared catalog provider, scores name/brand/variant/category, preserves input order for equal scores, and limits visible suggestions to six. |
 | `src/components/search/search-result-item.tsx` | Client-only runtime | Renders product name, variant, badge, route, placeholder, and current price. |
-| `src/components/comparison/comparison-provider.tsx` | Client-only and persistent browser state | Imports the static source directly, builds a module-level valid-slug set, resolves selected products, and stores only up to three slugs under `gadgetmoto:compare:v1`. This independent source is the highest split-brain risk. |
+| `src/components/comparison/comparison-provider.tsx` | Client-only and persistent browser state | Resolves valid and selected slugs through the shared catalog provider and stores only up to three slugs under `gadgetmoto:compare:v1`. |
 | Comparison page, tray, buttons, and header count | Client-only runtime | Consume resolved comparison products. The header badge counts selections, not catalog products. |
-| `src/components/cart/cart-provider.tsx` | Client-only and persistent browser state | Receives products from the root layout. It stores only product slug, exact variant label, and quantity under `gadgetmoto:cart:v1`; names and prices are resolved from the current product map. |
+| `src/components/cart/cart-provider.tsx` | Client-only and persistent browser state | Resolves products through the shared catalog provider. It stores only product slug, exact variant label, and quantity under `gadgetmoto:cart:v1`; names and prices come from the current normalized payload. |
 | Cart drawer, cart page, and cart line | Client-only runtime | Render current normalized product names/prices and derive line totals and subtotal. They do not persist copied names or prices. |
 | `src/components/checkout/checkout-form.tsx` | Client-only runtime | Uses resolved cart items and current subtotal. Checkout review copies values only into rendered session state; it does not persist or submit an order. |
 | `src/components/storefront/device-placeholder.tsx` | Shared | Uses only category and CSS; database media is not required. |
@@ -301,9 +301,9 @@ Product media should be a later independent import and application checkpoint wi
 
 ### Phase 4 — Shared client features
 
-- Initialize one catalog payload for search, comparison, and cart.
-- Remove comparison's independent static import.
-- Verify checkout summaries, persisted-state hydration, filters, sorting, and totals.
+- The root Server Component initializes one read-only catalog payload for search, comparison, and cart.
+- Comparison's independent static product source is removed.
+- Existing persisted-state hydration, search ranking, selection limits, quantities, current-price resolution, and totals are preserved.
 
 ### Phase 5 — Static-source retirement
 

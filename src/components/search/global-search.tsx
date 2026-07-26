@@ -3,6 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import type { PrototypeProduct } from "@/data/prototype-products";
+import { useCatalog } from "@/components/catalog/catalog-provider";
 import { SearchResultItem } from "./search-result-item";
 import { modalEvent } from "@/components/cart/cart-provider";
 
@@ -25,7 +26,8 @@ function scoreProduct(product: PrototypeProduct, query: string) {
   return null;
 }
 
-export function GlobalSearchProvider({ children, products }: { children: ReactNode; products: readonly PrototypeProduct[] }) {
+export function GlobalSearchProvider({ children }: { children: ReactNode }) {
+  const { products } = useCatalog();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");

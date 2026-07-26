@@ -1,7 +1,8 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import type { PrototypeProduct } from "@/data/prototype-products";
+import { useCatalog } from "@/components/catalog/catalog-provider";
 
 const storageKey = "gadgetmoto:cart:v1";
 const maxQuantity = 99;
@@ -30,7 +31,8 @@ type CartContextValue = {
 };
 const CartContext = createContext<CartContextValue | null>(null);
 
-export function CartProvider({ children, products }: { children: ReactNode; products: readonly PrototypeProduct[] }) {
+export function CartProvider({ children }: { children: ReactNode }) {
+  const { productBySlug } = useCatalog();
   const [lines, setLines] = useState<CartLine[]>([]);
   const [hydrated, setHydrated] = useState(false);
   const [isCartOpen, setCartOpen] = useState(false);
@@ -38,7 +40,6 @@ export function CartProvider({ children, products }: { children: ReactNode; prod
   const hydratedRef = useRef(false);
   const pendingRef = useRef<CartAction[]>([]);
   const returnFocusRef = useRef<HTMLElement | null>(null);
-  const productMap = useMemo(() => new Map(products.map((product) => [product.slug, product])), [products]);
 
   const dispatch = (action: CartAction) => { if (!hydratedRef.current) pendingRef.current.push(action); setLines((current) => applyCartAction(current, action)); };
   const closeCart = useCallback(() => { setCartOpen(false); window.setTimeout(() => returnFocusRef.current?.focus(), 0); }, []);
@@ -54,7 +55,7 @@ export function CartProvider({ children, products }: { children: ReactNode; prod
           for (const value of stored) {
             if (!value || typeof value !== "object") continue;
             const line = value as Partial<CartLine>;
-            const product = typeof line.productSlug === "string" ? productMap.get(line.productSlug) : undefined;
+            const product = typeof line.productSlug === "string" ? productBySlug(line.productSlug) : undefined;
             if (!product || line.variant !== product.variant || typeof line.quantity !== "number" || !Number.isFinite(line.quantity)) continue;
             const lineId = makeLineId(product.slug, product.variant);
             const quantity = Math.min(maxQuantity, Math.max(1, Math.floor(line.quantity)));
@@ -66,16 +67,16 @@ export function CartProvider({ children, products }: { children: ReactNode; prod
       setLines(pendingRef.current.reduce(applyCartAction, restored)); pendingRef.current = []; hydratedRef.current = true; setHydrated(true);
     }, 0);
     return () => window.clearTimeout(restore);
-  }, [productMap]);
+  }, [productBySlug]);
 
   useEffect(() => { if (!hydrated) return; try { localStorage.setItem(storageKey, JSON.stringify(lines)); } catch { /* Session state still works. */ } }, [hydrated, lines]);
   useEffect(() => { const closeForSearch = (event: Event) => { if ((event as CustomEvent).detail === "search") setCartOpen(false); }; window.addEventListener(modalEvent, closeForSearch); return () => window.removeEventListener(modalEvent, closeForSearch); }, []);
 
-  const items = lines.flatMap((line) => { const product = productMap.get(line.productSlug); return product && product.variant === line.variant ? [{ ...line, product, lineTotal: product.currentPrice * line.quantity }] : []; });
+  const items = lines.flatMap((line) => { const product = productBySlug(line.productSlug); return product && product.variant === line.variant ? [{ ...line, product, lineTotal: product.currentPrice * line.quantity }] : []; });
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
   const value: CartContextValue = { items, itemCount, uniqueItemCount: items.length, subtotal: items.reduce((sum, item) => sum + item.lineTotal, 0), isCartOpen, announcement,
     openCart, closeCart, toggleCart: (trigger) => isCartOpen ? closeCart() : openCart(trigger),
-    addItem: (productSlug, variant) => { const product = productMap.get(productSlug); if (!product || product.variant !== variant) return; dispatch({ type: "add", productSlug, variant }); setAnnouncement(`${product.name} added to cart.`); openCart(); },
+    addItem: (productSlug, variant) => { const product = productBySlug(productSlug); if (!product || product.variant !== variant) return; dispatch({ type: "add", productSlug, variant }); setAnnouncement(`${product.name} added to cart.`); openCart(); },
     removeItem: (lineId) => { const item = items.find((line) => line.lineId === lineId); dispatch({ type: "remove", lineId }); setAnnouncement(item ? `${item.product.name} removed from cart.` : "Item removed from cart."); },
     setQuantity: (lineId, quantity) => dispatch({ type: "set", lineId, quantity }), incrementItem: (lineId) => { const item = items.find((line) => line.lineId === lineId); if (item) dispatch({ type: "set", lineId, quantity: item.quantity + 1 }); },
     decrementItem: (lineId) => { const item = items.find((line) => line.lineId === lineId); if (item) dispatch({ type: "set", lineId, quantity: item.quantity - 1 }); }, clearCart: () => { dispatch({ type: "clear" }); setAnnouncement("Cart cleared."); },
