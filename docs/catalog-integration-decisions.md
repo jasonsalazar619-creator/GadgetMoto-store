@@ -6,7 +6,7 @@ This document records the final approved implementation decisions for moving the
 
 The user approved all 13 catalog-integration decisions without changes. The exact sort order 0 through 11, dedicated `storefront` schema and catalog view, non-login `gadgetmoto_storefront_reader` role, server-only direct PostgreSQL access, `database-with-static-fallback` launch mode, whole-result validation and fallback, static route and metadata fallback, and one shared normalized catalog provider are approved.
 
-Migration `20260717234135_catalog_ordering_storefront_read_model.sql` deployed successfully, and all six migration versions now match locally and remotely. The deployed `public.products.sort_order` values were manually verified as the exact approved sequence from 0 through 11. The `storefront.catalog_products` view was verified with all 17 approved columns and exactly 12 rows, and its product, variant, and pricing values passed manual parity verification.
+Migration `20260717234135_catalog_ordering_storefront_read_model.sql` deployed successfully, and all seven deployed migration versions now match locally and remotely. The deployed `public.products.sort_order` values were manually verified as the exact approved sequence from 0 through 11. The `storefront.catalog_products` view was verified with all 17 approved columns and exactly 12 rows, and its product, variant, and pricing values passed manual parity verification.
 
 The `gadgetmoto_storefront_reader` role exists as a non-login role with zero active connections. Login, superuser, role creation, database creation, RLS bypass, and replication are all disabled. No login credential or password exists, and no browser-facing or Data API access was introduced.
 
@@ -14,9 +14,9 @@ The separate server login role `gadgetmoto_storefront_app` was created manually 
 
 The app role inherits `gadgetmoto_storefront_reader`, and the membership was verified successfully. Effective `USAGE` on the `storefront` schema and `SELECT` on `storefront.catalog_products` were verified. Direct `SELECT` on `public.products` and `public.orders` remains unavailable. No browser-facing or Data API access was introduced.
 
-All six deployed migrations remain immutable. The database contains the manually verified parity copy of 6 brands, 12 products, and 12 product variants. Postgres.js `3.4.9` is installed, and the server-only catalog boundary now implements request-memoized `getCatalogProducts()` and `getCatalogProductBySlug()`. Controlled application-consumer integration covers the homepage catalog sections, `/shop`, `/phones`, `/tablets`, and all 12 product-detail routes; static data in `src/data/prototype-products.ts` remains the active source under the default configuration.
+All seven deployed migrations remain immutable. The database contains the manually verified parity copy of 6 brands, 12 products, and 12 product variants. Postgres.js `3.4.9` is installed, and the server-only catalog boundary now implements request-memoized `getCatalogProducts()` and `getCatalogProductBySlug()`. Controlled application-consumer integration covers the homepage catalog sections, `/shop`, `/phones`, `/tablets`, and all 12 product-detail routes; static data in `src/data/prototype-products.ts` remains the active source under the default configuration.
 
-The adapter selects only the 17 approved columns from `storefront.catalog_products`, validates and normalizes the complete parity result, and rejects the entire result on any mismatch. `database-with-static-fallback` returns either the complete validated database catalog or the complete canonical static catalog; partial merging is prohibited. Static enrichment supplies only compatibility and presentation fields absent from the read model, including the legacy application `id`, fixed financing label, and placeholder `artSeed`.
+The adapter selects only the 17 approved columns from `storefront.catalog_products`, validates and normalizes the complete parity result, and rejects the entire result on any mismatch. `database-with-static-fallback` returns either the complete validated database catalog or the complete canonical static catalog; partial merging is prohibited. Static enrichment supplies only compatibility and presentation fields absent from the read model, including the legacy application `id`, fixed financing label, placeholder `artSeed`, and verified product specifications.
 
 Controlled local verification passed in both static and database modes. Session pooler authentication using `gadgetmoto_storefront_app` succeeded, and the adapter returned exactly 12 validated and normalized products from the hosted storefront view. Canonical ordering, approved null-value parity, and complete-result validation passed. No partial fallback or mixed-source result occurred.
 
@@ -32,7 +32,32 @@ The homepage Server Component now calls `getCatalogProducts()` exactly once and 
 
 Product-detail rendering and metadata resolve exact slugs through `getCatalogProductBySlug()`, while related products use the same complete ordered catalog through request-scoped memoization. The canonical 12 static slugs remain the build-safe source for `generateStaticParams()`, and existing not-found behavior, metadata, related-product rules, routes, and presentation remain unchanged.
 
-The async root Server Component now loads one normalized catalog payload and passes it into `src/components/catalog/catalog-provider.tsx`. This client provider exposes read-only products and stable slug lookup helpers without diagnostics, environment values, database identifiers, or server-only code. Global search, comparison, cart, and the checkout summary consume this shared data flow. Their ranking, result limit, localStorage keys, selection limit, quantities, current-price resolution, hydration safeguards, drawer and tray behavior, and empty states remain unchanged. Checkout remains a review-only client experience: it sends no customer, cart, order, or payment data to Supabase and performs no live payment action.
+The async root Server Component now loads one normalized catalog payload and passes it into `src/components/catalog/catalog-provider.tsx`. This client provider exposes read-only products, canonical SKU, and stable slug lookup helpers without diagnostics, environment values, database UUIDs, or server-only code. Global search, comparison, cart, and the checkout summary consume this shared data flow. Their ranking, result limit, localStorage keys, selection limit, quantities, current-price resolution, hydration safeguards, drawer and tray behavior, and empty states remain unchanged. Checkout remains a review-only client experience: it sends no customer, cart, order, or payment data to Supabase and performs no live payment action.
+
+## Canonical SKU and specification enrichment
+
+Canonical SKU is a required field on the shared application-facing
+`PrototypeProduct` contract. The canonical static catalog uses the exact 12
+SKU values already committed in
+`20260717205111_catalog_bootstrap_data.sql`. The database row mapper requires
+the `storefront.catalog_products` SKU to match that static value exactly and
+then maps the database value into the same normalized product shape.
+
+`CatalogProvider` therefore supplies the same SKU in static and database
+modes. Persisted cart lines continue to store the stable product slug, current
+display variant, and quantity rather than a complete product object. Current
+product data, including SKU, is resolved by slug after hydration. Checkout can
+construct future line items containing `productSlug`, canonical `sku`, and
+`quantity`, but it does not send them in this checkpoint. Display variants are
+never used as transactional SKU substitutes.
+
+Product specifications remain static presentation enrichment keyed by stable
+product slug. Only official manufacturer pages are used, and the verification
+status, omitted fields, and regional or memory-configuration conflicts are
+recorded in `docs/product-spec-source-matrix.md`. Database rows retain
+authority over transactional SKU, price, status, and catalog fields; static
+enrichment cannot overwrite those values. Checkout submission remains
+pending.
 
 ## Decisions inherited from the approved architecture
 

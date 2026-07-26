@@ -73,7 +73,7 @@ The uncalled implementation now includes:
 - `src/lib/orders/server/validation.ts` for strict normalization and validation
 - `src/lib/orders/server/create-order.ts` for the single atomic transaction
 
-The request uses product slug plus canonical SKU because variant display names are not authoritative identifiers. The current browser `PrototypeProduct` and cart state do not expose SKU, so checkout cannot be connected until a later reviewed client-catalog contract supplies it.
+The request uses product slug plus canonical SKU because variant display names are not authoritative identifiers. The shared browser `PrototypeProduct` now exposes the exact catalog SKU, while persisted cart state continues to store slug, display variant, and quantity. Checkout resolves the current product and canonical SKU by slug without persisting a complete product object.
 
 The service requires a trusted server-only `reservationExpiresAt` policy value. No duration is inferred because reservation duration remains unapproved. The parameterized order insert derives `GM-` plus 32 uppercase hexadecimal characters from the SHA-256 idempotency-key hash, persists it under the deployed unique index, and returns the complete stored value. A domain-separated high-entropy confirmation token is derived from the UUID-v4 submission key; only the confirmation-token hash is stored.
 
@@ -109,7 +109,7 @@ The persisted cart key is `gadgetmoto:cart:v1`. Each stored line contains only:
 
 Names, brands, prices, SRPs, and totals are not persisted. After hydration, invalid products and variants are removed, duplicate line identifiers are merged, and quantities are clamped to integers from 1 through 99. Pre-hydration actions are replayed over sanitized stored state.
 
-The current client `PrototypeProduct` exposes a slug and variant label but does not expose the database SKU, product UUID, or variant UUID. The database catalog row contains SKU and UUID values, but the normalized client model intentionally omits them.
+The current client `PrototypeProduct` exposes a slug, variant label, and canonical SKU. Database product and variant UUIDs remain server-only and are intentionally omitted from the normalized client model.
 
 ### Current presentation-only calculations
 
@@ -167,7 +167,7 @@ type CreateOrderRequestV1 = {
 };
 ```
 
-The service contract uses `productSlug` plus canonical SKU and resolves that pair to exactly one active database product and variant. The current client model exposes only a variant display label, so a later catalog-model checkpoint must supply the database-backed SKU to checkout without allowing the client to invent it.
+The service contract uses `productSlug` plus canonical SKU and resolves that pair to exactly one active database product and variant. The shared catalog now supplies that database-backed SKU to checkout, resolving the Checkpoint 46A identifier blocker without allowing the browser to invent it. Checkout remains unconnected and no order endpoint exists yet.
 
 `pickupLocationSlug` must not become client-controlled arbitrary location selection. It may be enabled only after the server supplies a reviewed list of active pickup locations. With one approved branch, the server may resolve the single active location instead of accepting a client identifier.
 
@@ -505,12 +505,11 @@ Checkout integration and live order submission remain blocked until these are re
 2. Verified store-location and inventory-level data.
 3. Controlled provisioning of a login that inherits only `gadgetmoto_order_service`, plus `ORDER_DATABASE_URL` outside Git.
 4. Controlled database tests for success, rollback, duplicate submission, and last-unit concurrency.
-5. SKU exposure through the approved client catalog contract; the current browser model exposes only a variant label.
-6. Public review of the implemented high-entropy `GM-` order-number presentation.
-7. Status-transition enforcement and staff/server authority.
-8. Consent policy-version capture if legal review requires proof beyond timestamps.
-9. Checkout route/Server Action integration and rate limiting.
-10. Safe order-confirmation lookup using the hashed confirmation token.
+5. Public review of the implemented high-entropy `GM-` order-number presentation.
+6. Status-transition enforcement and staff/server authority.
+7. Consent policy-version capture if legal review requires proof beyond timestamps.
+8. Checkout route/Server Action integration and rate limiting.
+9. Safe order-confirmation lookup using the hashed confirmation token.
 
 VAT, delivery, final-total, cancellation, refund, warranty, payment, and retention rules are business or legal decisions, not values to infer in code.
 

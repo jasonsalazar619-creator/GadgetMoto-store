@@ -27,7 +27,14 @@ export function CheckoutForm() {
   const [guidance, setGuidance] = useState("");
   const previousCartRef = useRef("");
   const formRef = useRef<HTMLFormElement>(null);
-  const cartSignature = items.map((item) => `${item.lineId}:${item.quantity}`).join("|");
+  const orderLineItems = items.map((item) => ({
+    productSlug: item.product.slug,
+    sku: item.product.sku,
+    quantity: item.quantity,
+  }));
+  const cartSignature = orderLineItems
+    .map((item) => `${item.productSlug}:${item.sku}:${item.quantity}`)
+    .join("|");
   useEffect(() => { if (previousCartRef.current && previousCartRef.current !== cartSignature && reviewed) { setReviewed(false); setGuidance("Your cart changed. Review your checkout details again."); } previousCartRef.current = cartSignature; }, [cartSignature, reviewed]);
   if (!items.length) return <section className="checkout-empty"><p className="type-eyebrow text-[var(--color-action)]">CHECKOUT PREVIEW</p><h1>Your checkout is waiting for a cart.</h1><p>Add a GadgetMoTo phone or tablet before continuing to checkout.</p><div><Link href="/shop">Shop All Products</Link><Link href="/phones">Browse Phones</Link><Link href="/tablets">Browse Tablets</Link></div></section>;
 

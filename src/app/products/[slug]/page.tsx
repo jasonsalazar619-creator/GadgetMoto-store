@@ -62,6 +62,20 @@ export default async function ProductPage({ params }: ProductPageProps) {
       </section>
       <section className="bg-[var(--color-ice)] py-[var(--space-section)]">
         <Container className="storefront-container grid gap-6 lg:grid-cols-2">
+          <article className="detail-summary lg:col-span-2">
+            <p className="type-eyebrow text-[var(--color-action)]">
+              Official product details
+            </p>
+            <h2 className="type-h3 mt-4">Verified specifications</h2>
+            <dl className="product-facts mt-6">
+              {product.specifications.map((specification) => (
+                <div key={specification.label}>
+                  <dt>{specification.label}</dt>
+                  <dd>{specification.value}</dd>
+                </div>
+              ))}
+            </dl>
+          </article>
           <article className="detail-summary"><p className="type-eyebrow text-[var(--color-action)]">Ways to pay</p><h2 className="type-h3 mt-4">Payment options</h2><ul><li>Maya online payment</li><li>Cash on store pickup</li><li>Manual bank or e-wallet transfer</li><li>Financing assistance through the sales team</li></ul><p>Financing availability and approval depend on the selected provider.</p></article>
           <article className="detail-summary"><p className="type-eyebrow text-[var(--color-action)]">Getting your order</p><h2 className="type-h3 mt-4">Delivery and pickup</h2><ul><li>Nationwide delivery</li><li>Same-day delivery where available</li><li>Store pickup in Cavite City</li></ul><p>Availability and delivery details will be confirmed by the sales team.</p></article>
         </Container>

@@ -133,6 +133,7 @@ function validateDatabaseCatalogRows(
       row.brand_name !== staticProduct.brand ||
       row.brand_slug !== getExpectedBrandSlug(staticProduct.brand) ||
       category !== staticProduct.category ||
+      row.sku !== staticProduct.sku ||
       row.variant_name !== staticProduct.variant ||
       row.ram_gb !== expectedRam ||
       row.storage_gb !== staticProduct.storageGb ||
@@ -214,6 +215,7 @@ export function normalizeDatabaseCatalogRows(
       }): PrototypeProduct => ({
         id: staticProduct.id,
         slug: row.product_slug,
+        sku: row.sku,
         brand: row.brand_name,
         name: row.product_name,
         category,
@@ -227,6 +229,7 @@ export function normalizeDatabaseCatalogRows(
         financingMessage: staticProduct.financingMessage,
         financingAvailable: row.financing_available,
         artSeed: staticProduct.artSeed,
+        specifications: staticProduct.specifications,
       }),
     );
 }
