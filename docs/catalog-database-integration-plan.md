@@ -8,7 +8,7 @@ Final implementation decisions are approved and documented in `docs/catalog-inte
 
 The server-only `gadgetmoto_storefront_app` login role authenticated successfully during controlled local verification. It inherits only the dedicated `gadgetmoto_storefront_reader` permission bundle, and manual verification confirmed its effective schema `USAGE` and storefront-view `SELECT` access while direct access to the tested base and private tables remains unavailable. Querying, complete-result validation, normalization, sanitized errors, and atomic fallback behavior are verified. Product routes, global search, comparison, and cart are integrated; checkout remains review-only and consumes resolved cart state. Production configuration and deployment remain pending.
 
-Static application data in `src/data/prototype-products.ts` remains authoritative for the live storefront. PostgreSQL contains a manually verified parity copy: 6 brands, 12 products, and 12 product variants. Database integration must be gradual, must preserve existing routes and browser state, and must retain a safe static fallback until all parity checks pass.
+The server catalog adapter is the application read boundary. Under the current default configuration it returns the canonical static data from `src/data/prototype-products.ts`; PostgreSQL contains a manually verified parity copy of 6 brands, 12 products, and 12 product variants for a later production rollout. The static snapshot remains the complete fallback, build-safe route-slug source, and placeholder-presentation source.
 
 Current security constraints remain unchanged:
 
@@ -311,7 +311,7 @@ Product media should be a later independent import and application checkpoint wi
 - Retain a controlled emergency fallback only if separately approved and operationally maintained.
 - Keep placeholder-presentation data until the independent media phase is complete.
 
-No phase is implemented by this document.
+Phases 1 through 4 are implemented and validated in static default mode. Phase 5 remains deferred until production-like rollout verification and an explicit fallback-retirement decision.
 
 ## Parity acceptance criteria
 
@@ -331,16 +331,18 @@ No phase is implemented by this document.
 - No catalog client access to commerce, staff, subscriber, audit, inventory-quantity, or payment tables.
 - Lint and production build pass.
 
-## Decisions requiring approval
+## Remaining decisions
 
-- Primary Option C versus architectural fallback Option B, based on final hosting and pooling support.
-- Exact least-privilege database role or safe-view design and approved public columns.
-- A new global `products.sort_order` migration, including uniqueness/tie-breaking rules and 0–11 backfill.
 - Cache lifetime, invalidation trigger, timeout, retry, and observability policy.
-- Initial source mode and rollout environment.
+- Production source mode, secure environment configuration, and rollout verification.
 - Whether the future canonical application model keeps centavos internally or initially uses the compatibility peso fields.
-- Whether `CatalogProvider` belongs in the root layout or a narrower storefront provider composition.
 - Timeline for versioning cart persistence from variant label to variant UUID/SKU.
 - Handling of future database-only product slugs and dynamic route generation.
 - Whether the independent hard-coded homepage brand grid remains editorial or later becomes catalog-driven.
 - Criteria and ownership for retiring or maintaining the emergency static fallback.
+
+## Final integration result
+
+The homepage, `/shop`, `/phones`, `/tablets`, all 12 build-safe product routes, metadata, related products, global search, comparison, cart, and the review-only checkout summary now consume the server catalog boundary or its single typed client payload. Existing ordering, filters, search ranking, persistence keys, comparison limits, cart quantities and totals, empty states, placeholder artwork, and checkout validation remain intact.
+
+The direct static-import audit found only approved uses: server fallback and parity validation, canonical `generateStaticParams()` slugs, metadata title formatting, and type-only application-model imports. No Client Component imports a server-only module, no browser code receives database configuration or diagnostics, and no public catalog API route exists.

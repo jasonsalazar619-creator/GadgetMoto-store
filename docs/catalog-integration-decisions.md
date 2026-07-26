@@ -314,14 +314,13 @@ Implementation cannot proceed unless it guarantees:
 - The approved PostgreSQL dependency, server-only client, query, normalization, whole-result validation, sanitized errors, and atomic static fallback are complete.
 - Configuration validation is implemented without secret values; Session pooler compatibility passed controlled local verification, while production-hosting compatibility remains pending.
 - Request-level memoization is implemented with React's request-scoped cache now that the adapter is connected to server consumers.
-- Keep application pages on the static source initially.
+- Static remains the default source until production environment configuration is supplied securely outside Git.
 
 ### Checkpoint C — Page integration
 
-- Convert the homepage.
-- Convert `/shop`, `/phones`, and `/tablets`.
-- Convert product-detail runtime lookups and related products.
-- Convert metadata while retaining static route generation and fallback.
+- The homepage, `/shop`, `/phones`, and `/tablets` use the server catalog boundary.
+- Product-detail runtime lookups and related products use the request-memoized complete catalog.
+- Metadata uses exact-slug catalog lookup while static route generation and fallback remain intact.
 
 ### Checkpoint D — Shared client integration
 
@@ -333,11 +332,32 @@ Implementation cannot proceed unless it guarantees:
 
 ### Checkpoint E — Static-source retirement review
 
-- Remove direct consumer imports only after complete parity passes.
-- Decide whether the maintained static snapshot remains as an emergency fallback.
-- Do not retire placeholder presentation data before the separate media phase.
+- The direct-import audit found no accidental storefront consumer bypass.
+- Canonical static value imports remain only in the approved server fallback/validation boundary and product-route build-safe slug/title helpers.
+- Type-only component imports preserve the shared application model without bundling catalog records.
+- The static snapshot remains the default source, complete emergency fallback, and placeholder-presentation source pending a separately approved production rollout.
 
-No implementation checkpoint begins through this document.
+The catalog consumer-integration checkpoints described above are complete. Production configuration, write-side commerce behavior, payment processing, administration, and deployment verification remain separate future checkpoints.
+
+## Final storefront structure status
+
+### Completed
+
+- Catalog database foundation and secure storefront read model
+- Server-only PostgreSQL client, catalog query, complete validation, normalization, sanitized errors, and atomic fallback
+- Controlled database connectivity verification
+- Homepage, shop, phones, tablets, product-detail, metadata, and related-product integration
+- Shared client catalog provider
+- Global search, comparison, cart, and catalog-driven checkout summary integration
+
+### Still pending
+
+- Production environment configuration and deployment verification
+- Order-creation server transaction and customer checkout submission
+- Inventory reservation and expiry behavior
+- Delivery-fee and confirmed VAT rules
+- Maya payment integration, server verification, webhooks, and proof-of-payment handling where required
+- Staff authentication and admin catalog, inventory, and order-management tools
 
 ## Approval checklist
 

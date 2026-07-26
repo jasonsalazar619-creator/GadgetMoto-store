@@ -1,36 +1,73 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# GadgetMoTo Storefront
 
-## Getting Started
+GadgetMoTo is a production-oriented Next.js storefront for phones and tablets. The current website includes the approved responsive homepage, catalog and category pages, 12 product-detail routes, local product search, comparison, cart, and a review-only guest checkout.
 
-First, run the development server:
+## Current catalog architecture
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- Next.js `16.2.10`, React `19.2.4`, strict TypeScript, Tailwind CSS, and GSAP
+- Server-only catalog boundary with complete-result validation, normalization, sanitized failures, and atomic static fallback
+- Request-scoped catalog memoization for consistent server rendering and metadata
+- One server-initialized client catalog provider for search, comparison, cart, and checkout summaries
+- Canonical static catalog remains the default source, complete fallback, build-safe route-slug source, and placeholder-presentation source
+- A least-privilege PostgreSQL read model is prepared and previously verified, but production environment configuration and deployment verification remain pending
+
+No environment file, database credential, public catalog API, order submission, or live payment flow is included in the repository.
+
+## Local development
+
+PowerShell script execution is disabled on the project computer, so use the Windows command shims:
+
+```powershell
+npm.cmd install
+npm.cmd run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Validation:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```powershell
+npm.cmd run lint
+npm.cmd run build
+git diff --check
+```
 
-## Learn More
+## Storefront routes
 
-To learn more about Next.js, take a look at the following resources:
+- `/`
+- `/shop`
+- `/phones`
+- `/tablets`
+- `/products/[slug]` for all 12 approved products
+- `/compare`
+- `/cart`
+- `/checkout`
+- `/privacy-policy`
+- `/terms-and-conditions`
+- `/design-system`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Completed
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Catalog database foundation and six immutable migrations
+- Secure storefront read model and least-privilege reader architecture
+- Server-only PostgreSQL client, catalog query, validation, normalization, and fallback
+- Controlled static and database connectivity verification
+- Homepage, shop, phones, tablets, product-detail, metadata, and related-product catalog integration
+- Shared client catalog provider
+- Global search, comparison, cart, and catalog-driven checkout summary integration
+- Static-mode lint and production-build validation
 
-## Deploy on Vercel
+## Still pending
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Production environment configuration and deployment verification
+- Order-creation server transaction
+- Inventory reservation and expiry behavior
+- Customer checkout submission
+- Delivery-fee and VAT implementation after business rules are confirmed
+- Maya payment integration, server verification, and webhooks
+- Proof-of-payment handling where required
+- Staff authentication
+- Admin catalog, inventory, and order-management tools
+- Production product imagery
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Checkout is currently a review preview only. It creates no order, processes no payment, and stores no customer information.
