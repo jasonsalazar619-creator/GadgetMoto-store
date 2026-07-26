@@ -11,7 +11,7 @@ GadgetMoTo is a production-oriented Next.js storefront for phones and tablets. T
 - Canonical static catalog remains the default source, complete fallback, build-safe route-slug source, and placeholder-presentation source
 - A least-privilege PostgreSQL read model is prepared and previously verified, but production environment configuration and deployment verification remain pending
 
-No environment file, database credential, public catalog API, order submission, or live payment flow is included in the repository.
+No environment file, database credential, public catalog API, active order-submission consumer, or live payment flow is included in the repository.
 
 ## Local development
 
@@ -48,8 +48,9 @@ git diff --check
 
 ## Completed
 
-- Catalog database foundation and six immutable migrations
+- Catalog and commerce database foundation with seven immutable deployed migrations
 - Secure storefront read model and least-privilege reader architecture
+- Deployed secure order-transaction schema and an uncalled server-only order-creation service
 - Server-only PostgreSQL client, catalog query, validation, normalization, and fallback
 - Controlled static and database connectivity verification
 - Homepage, shop, phones, tablets, product-detail, metadata, and related-product catalog integration
@@ -60,9 +61,10 @@ git diff --check
 ## Still pending
 
 - Production environment configuration and deployment verification
-- Order-creation server transaction
-- Inventory reservation and expiry behavior
-- Customer checkout submission
+- Controlled database testing of the order-creation transaction
+- Approved reservation duration plus release, expiry, and conversion workflows
+- Customer checkout integration with the server-only order service
+- Store-location and inventory readiness for order allocation
 - Delivery-fee and VAT implementation after business rules are confirmed
 - Maya payment integration, server verification, and webhooks
 - Proof-of-payment handling where required
@@ -76,7 +78,7 @@ Checkout is currently a review preview only. It creates no order, processes no p
 
 - Storefront catalog integration: complete
 - Checkout interface and review flow: complete
-- Secure server-side order submission: pending
+- Secure server-side order service: implemented but uncalled and unconnected
 - Maya and other live payment integration: pending
 - Staff and admin tools: pending
 - Production environment configuration and deployment verification: pending

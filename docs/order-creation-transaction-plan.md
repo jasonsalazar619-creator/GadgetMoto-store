@@ -2,9 +2,9 @@
 
 ## Status and scope
 
-This document defines the proposed contract and trusted transaction for a future guest-order submission checkpoint. It is architecture and contract documentation only. No route handler, Server Action, database function, migration, order, reservation, payment attempt, or provider integration is implemented here.
+This document defines the contract and trusted transaction for guest-order submission. The server-only configuration, lazy PostgreSQL client, strict request validator, safe contracts/errors, and atomic transaction implementation now exist, but no route handler or Server Action calls them. No order, reservation, payment attempt, or provider integration was created during implementation.
 
-The storefront and review-only checkout are complete. The seven commerce tables already exist, but they have no public policies or grants, and the current server catalog reader has no commerce-table write capability. Real submission must remain disabled until the schema gaps and business decisions in this document are separately approved and implemented.
+The storefront and review-only checkout are complete. Private commerce tables have no browser policies or grants. The deployed secure-order migration provides a separate non-login order-service role and server-only policies; the storefront catalog reader still has no commerce-table write capability. Real submission remains disabled until controlled database validation, checkout integration, inventory/location readiness, and the unresolved business rules are completed.
 
 ## Approved launch defaults
 
@@ -12,7 +12,7 @@ The following launch rules are approved for the first production order workflow:
 
 - Guest checkout remains available; customer accounts are not required.
 - Customer mobile number is required.
-- Customer email is optional. The current checkout and `orders.customer_email` still require it, so both the schema and interface must be updated in later controlled checkpoints before submission is enabled.
+- Customer email is optional. The deployed `orders.customer_email` column and server contract support null, while the current checkout interface still requires email and must be reconciled before submission is enabled.
 - Fulfillment supports delivery and store pickup.
 - Store pickup uses the existing GadgetMoTo Cavite City branch after its reviewed `store_locations` record and inventory rows are available.
 - Cash on delivery is disabled. Cash on store pickup remains a distinct, pickup-only method.
@@ -44,9 +44,9 @@ Additional technical and operational decisions remain identified in the decision
 
 ## Secure order schema migration status
 
-The forward-only migration `20260726121534_secure_order_transaction_schema.sql` is drafted locally and remains unapplied. It does not alter any of the six deployed migrations and contains no records, login credential, browser policy, tax calculation, delivery-fee calculation, payment-provider behavior, or customer data.
+The forward-only migration `20260726121534_secure_order_transaction_schema.sql` was manually deployed successfully. Version `20260726121534` matches locally and remotely, bringing the immutable deployed-migration count to seven. It did not alter the prior six migrations and contains no records, login credential, browser policy, tax calculation, delivery-fee calculation, payment-provider behavior, or customer data.
 
-The migration is designed to add:
+The deployed migration added:
 
 - Optional order email storage
 - Hashed high-entropy order lookup tokens
@@ -61,6 +61,23 @@ The migration is designed to add:
 - A non-login, non-bypass server order-service privilege role with narrowly scoped RLS policies and grants
 
 The migration deliberately reuses the existing unique public order-number storage and payment-provider event uniqueness. Public order-number format, reservation duration, VAT treatment, delivery-fee rules, and live provider configuration remain outside the migration.
+
+## Server-only order-service implementation status
+
+The uncalled implementation now includes:
+
+- `src/lib/orders/server/config.ts` for lazy `ORDER_DATABASE_URL` access and presence-only diagnostics
+- `src/lib/orders/server/postgres-client.ts` for a separate lazy Postgres.js client
+- `src/lib/orders/server/types.ts` for strict request, response, enum, and trusted policy types
+- `src/lib/orders/server/order-error.ts` for stable sanitized errors
+- `src/lib/orders/server/validation.ts` for strict normalization and validation
+- `src/lib/orders/server/create-order.ts` for the single atomic transaction
+
+The request uses product slug plus canonical SKU because variant display names are not authoritative identifiers. The current browser `PrototypeProduct` and cart state do not expose SKU, so checkout cannot be connected until a later reviewed client-catalog contract supplies it.
+
+The service requires a trusted server-only `reservationExpiresAt` policy value. No duration is inferred because reservation duration remains unapproved. The parameterized order insert derives `GM-` plus 32 uppercase hexadecimal characters from the SHA-256 idempotency-key hash, persists it under the deployed unique index, and returns the complete stored value. A domain-separated high-entropy confirmation token is derived from the UUID-v4 submission key; only the confirmation-token hash is stored.
+
+The implementation has not been imported by a page, Client Component, provider, route handler, or Server Action. Checkout is not connected. It has not been called, `ORDER_DATABASE_URL` remains unset, no database test occurred, no database client was instantiated, and no connection, query, order, reservation, movement, audit row, or payment attempt occurred.
 
 ## Existing checkout and cart findings
 
@@ -112,7 +129,7 @@ type CreateOrderRequestV1 = {
   idempotencyKey: string;
   items: Array<{
     productSlug: string;
-    variantName: string;
+    sku: string;
     quantity: number;
   }>;
   customer: {
@@ -150,7 +167,7 @@ type CreateOrderRequestV1 = {
 };
 ```
 
-`productSlug` plus the exact variant label is the only identifier pair currently supported by the client model. The server must resolve that pair to exactly one active database product and variant. A later catalog-model checkpoint may replace `variantName` with an approved SKU or opaque variant identifier; the client must not invent or infer either value.
+The service contract uses `productSlug` plus canonical SKU and resolves that pair to exactly one active database product and variant. The current client model exposes only a variant display label, so a later catalog-model checkpoint must supply the database-backed SKU to checkout without allowing the client to invent it.
 
 `pickupLocationSlug` must not become client-controlled arbitrary location selection. It may be enabled only after the server supplies a reviewed list of active pickup locations. With one approved branch, the server may resolve the single active location instead of accepting a client identifier.
 
@@ -299,18 +316,9 @@ If an authoritative price differs from the catalog value last shown to the custo
 
 The current database has no store-location or inventory-level records. Real checkout therefore cannot choose a fulfillment location or confirm stock.
 
-The schema has a reserved counter and generic movements but no explicit reservation record with:
+The deployed `inventory_reservations` table now owns each reservation by order item, variant, and location, with quantity, status, expiry, and resolution timestamps. Reservation-linked inventory movements have constrained types and directions. The creation service locks inventory rows in deterministic variant order, increments reserved quantity, creates the reservation, and appends the reservation movement inside the same transaction.
 
-- Order or order-item ownership
-- Reserved quantity
-- Reservation status
-- Creation and expiry timestamps
-- Release, conversion, or cancellation timestamp
-- Idempotent release/conversion guard
-
-Deriving active reservations only from generic movement rows would be fragile. The recommended launch design is a new reviewed `inventory_reservations` table, or an equivalently strong transactional structure, plus controlled functions for reserve, convert-to-sale, expire, and release. A new timestamped migration is required.
-
-The meaning of `inventory_movements.quantity_delta` for reservation versus on-hand movements must also be documented and enforced. The current single delta column does not by itself identify which inventory balance changed.
+Reservation duration remains unapproved, so the uncalled service requires a trusted server-only expiry instant and supplies no default. Automated expiry, conversion to sale, failed-payment release, cancellation release, and their scheduling/authorization boundaries remain future work.
 
 ## Existing statuses and recommended transition model
 
@@ -413,12 +421,7 @@ The trusted server must:
 7. Never create a second order for the same accepted key.
 8. Keep payment-provider event idempotency separate through `payment_events.external_event_id`.
 
-The current schema has no order idempotency column or submission table. `public_order_number` uniqueness and payment-provider indexes do not prevent double order creation. A future migration should add either:
-
-- A unique non-null `orders.idempotency_key_hash` plus a request fingerprint, or
-- A dedicated private order-submission idempotency table with unique key hash, request fingerprint, order reference, status, and bounded retention.
-
-The dedicated-table design is preferred because it can represent an in-progress claim and safely recover the original response. Retention requires privacy and operational approval.
+The deployed private `order_submissions` table stores a unique SHA-256 key hash, normalized request fingerprint, and completed order reference. The service atomically inserts the claim, relies on the database unique constraint for races, locks an existing claim on retry, returns the same safe result for a matching completed request, and rejects mismatched reuse. The UUID-v4 key itself is never persisted. Retention remains a privacy and operational decision.
 
 ## Minimal safe server response
 
@@ -443,23 +446,30 @@ type CreateOrderResponseV1 = {
     | "pending"
     | "instructions_pending"
     | "awaiting_payment"
-    | "processing";
-  totals: {
-    merchandiseSubtotalCentavos: string;
-    deliveryFeeCentavos: string | null;
-    vatAmountCentavos: string | null;
-    finalTotalCentavos: string | null;
-  };
+    | "processing"
+    | "paid"
+    | "failed"
+    | "cancelled"
+    | "refunded"
+    | "partially_refunded";
+  fulfillmentMethod:
+    | "nationwide_delivery"
+    | "same_day_delivery"
+    | "store_pickup";
+  confirmedSubtotalCentavos: string;
+  confirmedDeliveryFeeCentavos: string | null;
+  confirmedVatCentavos: string | null;
+  confirmedFinalTotalCentavos: string | null;
   nextAction:
     | "awaiting_review"
     | "awaiting_payment_instructions"
     | "payment_initialization_pending"
     | "order_confirmed";
-  redirectPath?: string;
+  confirmationToken: string;
 };
 ```
 
-Centavo values are serialized as digit strings to preserve exact `bigint` values. A redirect path must be an application-controlled relative path, never an untrusted provider URL.
+Centavo values are serialized as digit strings to preserve exact `bigint` values. The confirmation token is returned only to the future trusted submission consumer; its SHA-256 hash, never the plaintext value, is stored with the order.
 
 The response must not include internal UUIDs unless separately required and approved, database credentials, raw database/provider errors, private staff data, exact inventory quantities, SQL messages, stack traces, provider secrets, or customer personal data beyond what is strictly required for the current confirmation screen.
 
@@ -469,37 +479,38 @@ Errors return a stable code, a generic customer-safe message, and an appropriate
 
 | Code | Meaning |
 | --- | --- |
+| `ORDER_DATABASE_NOT_CONFIGURED` | The server-only order database configuration is absent |
 | `INVALID_CHECKOUT_REQUEST` | Contract, consent, field, or size validation failed |
 | `EMPTY_CART` | No orderable item was supplied |
+| `INVALID_IDEMPOTENCY_KEY` | The submission key is not a UUID-v4 value |
 | `INVALID_QUANTITY` | A quantity is not a safe integer from 1 through 99 |
+| `DUPLICATE_CART_ITEM` | The same product/SKU pair appears more than once |
 | `PRODUCT_NOT_AVAILABLE` | Product or variant is inactive, unpublished, missing, or unsupported |
 | `PRODUCT_PRICE_CHANGED` | A future trusted quote/revision comparison requires customer re-review |
 | `INSUFFICIENT_INVENTORY` | Locked authoritative inventory cannot satisfy the request |
-| `INVENTORY_CONFIGURATION_MISSING` | Required location or inventory-level rows are absent |
 | `INVALID_FULFILLMENT` | Fulfillment selection is unsupported or incompatible |
 | `INVALID_ADDRESS` | Required delivery-address data is invalid |
-| `PICKUP_LOCATION_UNAVAILABLE` | The approved pickup location cannot be resolved |
+| `INVALID_PICKUP_LOCATION` | The approved pickup location cannot be resolved |
 | `UNSUPPORTED_PAYMENT_METHOD` | Method is not enabled or is incompatible with fulfillment |
-| `DUPLICATE_SUBMISSION` | An equivalent duplicate item/submission must be consolidated or returned |
-| `IDEMPOTENCY_KEY_REUSED` | The same key was used with a different request |
+| `DUPLICATE_SUBMISSION` | The same key was used with a different normalized request |
 | `ORDER_CREATION_FAILED` | A sanitized unexpected transaction failure occurred |
 
 Raw PostgreSQL errors, constraint text, SQL, provider payloads, connection details, stack traces, and internal exception causes must never reach the browser. Logs must use a correlation identifier and stable code while minimizing customer information.
 
-## Schema and capability gaps before implementation
+## Remaining activation gaps
 
-Real order submission is blocked until these are reviewed:
+Checkout integration and live order submission remain blocked until these are reviewed:
 
-1. A unique order-submission idempotency structure and retention rule.
-2. A durable reservation/expiry structure and exact inventory movement semantics.
-3. Verified store-location and inventory-level data.
-4. A single-location allocation rule compatible with one fulfillment per order.
-5. A least-privilege server write boundary for the complete atomic transaction.
-6. Public order-number generation and collision handling.
+1. Reservation duration and expiry/release operations.
+2. Verified store-location and inventory-level data.
+3. Controlled provisioning of a login that inherits only `gadgetmoto_order_service`, plus `ORDER_DATABASE_URL` outside Git.
+4. Controlled database tests for success, rollback, duplicate submission, and last-unit concurrency.
+5. SKU exposure through the approved client catalog contract; the current browser model exposes only a variant label.
+6. Public review of the implemented high-entropy `GM-` order-number presentation.
 7. Status-transition enforcement and staff/server authority.
-8. Defense-in-depth duplicate order-item protection where appropriate.
-9. Consent policy-version capture if legal review requires proof beyond timestamps.
-10. A client-to-server approved variant identifier; the current compatibility contract uses slug plus variant label.
+8. Consent policy-version capture if legal review requires proof beyond timestamps.
+9. Checkout route/Server Action integration and rate limiting.
+10. Safe order-confirmation lookup using the hashed confirmation token.
 
 VAT, delivery, final-total, cancellation, refund, warranty, payment, and retention rules are business or legal decisions, not values to infer in code.
 
@@ -507,15 +518,15 @@ VAT, delivery, final-total, cancellation, refund, warranty, payment, and retenti
 
 | Decision | Current status | Recommended launch default | Schema change required | User approval required | Future checkpoint |
 | --- | --- | --- | --- | --- | --- |
-| Public order-number format | Unique text exists; generation undefined | High-entropy, non-sequential customer-safe code with collision retry | Possibly a generator function; existing unique index may suffice | Yes | Contract/schema-gap decisions |
+| Public order-number format | The parameterized order insert derives `GM-` plus 128 bits of the idempotency-key hash and returns the complete persisted value; the deployed unique index is authoritative | Retain the high-entropy non-sequential value unless presentation review changes it | No current schema change | Presentation approval remains | Controlled database testing |
 | VAT-inclusive or VAT-exclusive prices | Unconfirmed | Do not label a basis or collect payment until approved | No for nullable fields; possibly constraints later | Yes, plus tax review | Contract/schema-gap decisions |
 | VAT calculation and rounding | Rate and calculation unconfirmed | Keep VAT and final total null; no payable order | Future total-integrity migration after approval | Yes, plus tax review | Order-creation migration |
 | Delivery-fee calculation | Unconfirmed | Keep fee and final total null pending review | Possibly rules/configuration tables later | Yes | Contract/schema-gap decisions |
 | Delivery service area | “Nationwide” and conditional same-day are presentation only | Do not promise eligibility; server rejects unsupported addresses after rules exist | Possibly service-area configuration | Yes | Fulfillment rules |
 | Pickup branch details | Existing GadgetMoTo Cavite City branch approved; no location record exists yet | Keep real pickup submission disabled until the reviewed active branch record exists | Data addition through controlled workflow; schema already exists | Approved; exact public details still require confirmation | Location/inventory readiness |
 | Pickup instructions | Unconfirmed | Show pending confirmation only | No; `pickup_instructions` exists | Yes | Location/inventory readiness |
-| Inventory allocation location | Cavite City branch approved; no location or inventory rows exist yet | Require that one branch to fulfill every item; no split allocation | Reservation structure and controlled location/inventory data | Launch default approved | Inventory design migration |
-| Reservation duration | Unresolved | No expiring reservation until a duration is approved | Yes, reservation expiry fields/table | Yes | Inventory design migration |
+| Inventory allocation location | Cavite City branch approved; reservation schema exists but no location or inventory rows exist yet | Require one active location to fulfill every item; no split allocation | Controlled location/inventory data only | Launch default approved | Location/inventory readiness |
+| Reservation duration | Expiry column and guarded lifecycle are deployed; duration remains unresolved | Require a trusted server policy value and provide no inferred default | No additional schema change for duration | Yes | Controlled database testing |
 | Payment deadline | Unresolved | No automated deadline or cancellation | Possibly payment/order deadline timestamp | Yes | Payment workflow plan |
 | Failed-payment behavior | Unresolved | Mark payment failed only; do not cancel/release automatically | Possibly workflow timestamps; transition logic required | Yes | Failed-payment handling |
 | Cancellation rules | Unresolved | No self-service cancellation promise; staff-controlled only after approval | Transition/audit support may be required | Yes, plus legal/business review | Cancellation workflow |
@@ -523,7 +534,7 @@ VAT, delivery, final-total, cancellation, refund, warranty, payment, and retenti
 | Warranty wording | Unresolved | Do not add warranty promises | No immediate commerce schema change | Yes, plus legal/business review | Policy approval |
 | Preorder support | Disabled for launch | Reject preorders at launch | No launch change; future support requires a new design | Launch default approved | Future preorder design |
 | Split fulfillment | Disabled for launch; one fulfillment per order | Require one location to fulfill the complete order | No launch change; future support requires schema changes | Launch default approved | Future fulfillment expansion |
-| Customer email requirement | Optional for launch; current UI and `orders` schema still require it | Accept null when omitted and validate only supplied values | Yes, make `orders.customer_email` nullable | Launch default approved | Order-creation migration |
+| Customer email requirement | Optional in the deployed schema and server contract; current UI still requires it | Accept null when omitted and validate only supplied values | No further schema change | Launch default approved | Checkout submission integration |
 | Mobile-number validation | Required for launch; current UI accepts `09…` and `639…` forms | Revalidate the same rule server-side until a canonical format is approved | Optional database constraint after format approval | Requirement approved; canonical format still requires approval | Contract validation |
 | Proof-of-payment support | Deferred; optional path exists in `payments` | Disabled at launch until secure upload/review is designed | Storage policies and workflow migration likely | Yes | Manual payment workflow |
 | Maya payment methods | Maya approved as online provider; live products and credentials unresolved | No live initialization until official provider behavior and credentials are approved | Provider fields exist; configuration/integration still required | Provider approved; merchant setup still required | Maya initialization |
@@ -539,11 +550,11 @@ Decision rows in this matrix: **26**. Approved launch defaults are marked explic
 ## Future controlled checkpoints
 
 1. **Order contract and schema-gap decisions** — approve identifier, consent, idempotency, order-number, total, location, and status rules. Stop if any legal, tax, inventory, or payment prerequisite remains undefined.
-2. **Order-creation migration** — create only a new timestamped migration for approved idempotency, reservation, constraints, transition support, and least-privilege execution boundary. Do not edit deployed migrations.
-3. **Static SQL review** — review complete SQL, security-definer/search-path behavior if used, grants, rollback characteristics, locks, constraints, and destructive operations. Stop on any public write path or privilege expansion.
-4. **Linked dry run** — compare migration history and run only a non-destructive dry run after explicit authorization. Stop on any unexpected migration or SQL error.
-5. **Migration deployment** — deploy only the reviewed pending migration through a manual checkpoint, then verify history, schema, RLS, privileges, and empty-state behavior.
-6. **Server transaction implementation** — add the minimum server-only write client and transaction boundary with sanitized errors; keep checkout submission disabled.
+2. **Order-creation migration — complete** — the new timestamped idempotency, reservation, constraint, and least-privilege migration was added without editing prior migrations.
+3. **Static SQL review — complete** — SQL, grants, rollback risks, constraints, and public-access boundaries passed review.
+4. **Linked dry run — not rerun here** — deployment is reported successful and local/remote version `20260726121534` matches; no Supabase command ran during service implementation.
+5. **Migration deployment — complete** — migration history, schema, RLS, privileges, and empty-state behavior were manually verified.
+6. **Server transaction implementation — code complete, uncalled** — the minimum server-only client and transaction boundary exist with sanitized errors; checkout submission remains disabled.
 7. **Transaction unit validation** — test contract parsing, normalization, totals, duplicate handling, status mapping, and rollback using isolated fixtures without hosted writes.
 8. **Controlled local database test** — with separately supplied local/test configuration, verify success and every rollback path. Stop if partial writes, excess privileges, or raw errors appear.
 9. **Checkout submission integration** — connect the existing form to the trusted boundary, add idempotency-key lifecycle, pending states, retry behavior, and explicit authoritative-total review.
@@ -559,7 +570,7 @@ Each checkpoint ends with lint/build or SQL validation appropriate to its scope,
 
 ## Safety boundary for this plan
 
-- No order route, Server Action, database function, or payment integration exists.
+- No order route, Server Action, database function, or payment integration exists; the server-only TypeScript service remains uncalled.
 - No customer or order data is submitted or stored.
 - No authoritative tax, fee, refund, warranty, cancellation, or retention policy is chosen.
 - No credential, endpoint, project identifier, connection string, or environment value is included.

@@ -4,9 +4,11 @@
 - Hosted project region: Southeast Asia (Singapore)
 - The hosted project is healthy.
 - The confirmed region is Southeast Asia (Singapore).
-- Secure order migration `20260726121534_secure_order_transaction_schema.sql` is local, committed only after review, and remains unapplied until a separate authorized deployment checkpoint.
-- The secure order migration creates schema and a non-login privilege role only; it contains no login credential, password, environment value, record, browser policy, tax rule, delivery-fee rule, or payment-provider behavior.
-- All six deployed migrations remain immutable and unchanged.
+- Secure order migration `20260726121534_secure_order_transaction_schema.sql` was deployed successfully, and migration version `20260726121534` matches locally and remotely.
+- The secure order migration created schema and a non-login privilege role only; it contains no login credential, password, environment value, record, browser policy, tax rule, delivery-fee rule, or payment-provider behavior.
+- All seven deployed migrations remain immutable and unchanged.
+- The uncalled server-only order-service code targets the deployed secure-order schema.
+- `ORDER_DATABASE_URL` remains unset, no order database client was instantiated, and no order connection or query occurred during order-service implementation.
 - The Supabase CLI is installed as a project development dependency.
 - Supabase commands on this Windows computer must use `npx.cmd`.
 - `supabase/` contains version-controlled database configuration and will contain future migrations.
@@ -48,7 +50,7 @@
 - The Migration 4 tables remain disabled from Data API access.
 - No subscribers, homepage content, placements, audit records, integrations, or seed data were created.
 - The Docker-related catalog-cache warning was non-blocking and did not prevent deployment.
-- All six deployed migrations remain unchanged; future schema or data corrections must use new timestamped migrations.
+- The six migrations deployed by that stage remain unchanged; future schema or data corrections must use new timestamped migrations.
 - Initial production catalog data is deployed and manually verified.
 - No seed file exists.
 - Catalog bootstrap migration `20260717205111_catalog_bootstrap_data.sql` is deployed and immutable.
@@ -73,7 +75,7 @@
 - The `gadgetmoto_storefront_reader` role has login, superuser, role creation, database creation, RLS bypass, and replication disabled, and it has zero active connections.
 - No login credential, password, project identifier, environment value, Data API exposure, or browser access was created.
 - The Docker-related catalog-cache warning was non-blocking.
-- All six deployed migrations remain unchanged; future migration corrections must use a new timestamped migration.
+- The six migrations deployed by that stage remain unchanged; future migration corrections must use a new timestamped migration.
 - The server login role `gadgetmoto_storefront_app` was created manually with `LOGIN` enabled and all five elevated capability toggles disabled.
 - The server login role has zero active connections and inherits `gadgetmoto_storefront_reader`.
 - Effective `USAGE` on the `storefront` schema and `SELECT` on `storefront.catalog_products` were verified.
