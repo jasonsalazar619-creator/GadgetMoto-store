@@ -6,6 +6,42 @@ This document defines the proposed contract and trusted transaction for a future
 
 The storefront and review-only checkout are complete. The seven commerce tables already exist, but they have no public policies or grants, and the current server catalog reader has no commerce-table write capability. Real submission must remain disabled until the schema gaps and business decisions in this document are separately approved and implemented.
 
+## Approved launch defaults
+
+The following launch rules are approved for the first production order workflow:
+
+- Guest checkout remains available; customer accounts are not required.
+- Customer mobile number is required.
+- Customer email is optional. The current checkout and `orders.customer_email` still require it, so both the schema and interface must be updated in later controlled checkpoints before submission is enabled.
+- Fulfillment supports delivery and store pickup.
+- Store pickup uses the existing GadgetMoTo Cavite City branch after its reviewed `store_locations` record and inventory rows are available.
+- Cash on delivery is disabled. Cash on store pickup remains a distinct, pickup-only method.
+- Preorders are disabled.
+- Split fulfillment is disabled; one location must be able to fulfill the complete order.
+- Maya is the approved online payment provider, but live provider setup remains disabled until credentials and the provider workflow are separately completed.
+- Financing messages remain informational only and do not create financing eligibility, quotes, or payment behavior.
+- Client-submitted product data, prices, totals, availability, and payment state are never authoritative.
+- Authoritative money is stored and calculated in integer centavos.
+- When no approved automatic delivery fee exists, delivery fees are manually confirmed before payment.
+- No separate VAT amount is displayed until an approved calculation and display rule exists.
+- Public cancellation, refund, and warranty policies must not be inferred or promised.
+- Product availability is server-authoritative.
+- Order writes and staff operations are server-only. Browser and Data API roles receive no private-table write access.
+
+## Explicitly unresolved launch inputs
+
+These items remain unresolved and must not be invented during implementation:
+
+- Automatic delivery-fee calculation
+- Separate VAT calculation and display
+- Public cancellation policy
+- Public refund policy
+- Public warranty policy
+- Maya merchant credentials
+- Production hosting secrets
+
+Additional technical and operational decisions remain identified in the decision matrix below. Approval of the launch defaults does not silently settle retention, notification, reservation-duration, payment-deadline, or legal-policy details.
+
 ## Existing checkout and cart findings
 
 ### Checkout fields
@@ -14,7 +50,7 @@ The current `CheckoutForm` owns transient React state only and collects:
 
 - Required full name
 - Required Philippine mobile number
-- Required email address
+- Required email address in the current preview UI; the approved launch contract makes email optional and requires a later UI/schema change
 - Fulfillment choice: nationwide delivery, same-day delivery, or Cavite City store pickup
 - For delivery: street address, province, city or municipality, barangay, and four-digit postal code
 - Payment choice: Maya online, Maya manual transfer, GCash, bank transfer, or cash on store pickup
@@ -62,7 +98,7 @@ type CreateOrderRequestV1 = {
   customer: {
     fullName: string;
     mobile: string;
-    email: string;
+    email?: string;
   };
   fulfillment:
     | {
@@ -130,7 +166,7 @@ Before database work, the server boundary must:
 4. Require a nonempty item array.
 5. Require safe integer quantities from 1 through 99.
 6. Trim customer and address fields and reject blank results.
-7. Revalidate the approved mobile and email rules on the server.
+7. Require and normalize the approved mobile field; validate email only when supplied.
 8. Require an address only for delivery and reject address data as authoritative fulfillment proof for pickup.
 9. Require all three acknowledgements.
 10. Accept only payment methods supported by the current checkout.
@@ -145,7 +181,7 @@ The future transaction must populate existing commerce fields as follows:
 
 | Table | Trusted creation data |
 | --- | --- |
-| `orders` | Server-generated public number and status; normalized customer name/mobile/email; mapped delivery and payment enums; authoritative subtotal; nullable approved VAT, delivery fee, and final total; trimmed notes or null; three server timestamps for accepted acknowledgements |
+| `orders` | Server-generated public number and status; normalized customer name/mobile and optional email; mapped delivery and payment enums; authoritative subtotal; nullable approved VAT, delivery fee, and final total; trimmed notes or null; three server timestamps for accepted acknowledgements |
 | `order_addresses` | One normalized address snapshot for nationwide or same-day delivery; no row for store pickup |
 | `order_items` | Authoritative product/variant references plus product, brand, variant, SKU, unit-price, quantity, and line-total snapshots |
 | `order_fulfillments` | Exactly one row with `pending_confirmation`; approved inventory/pickup location when known; no invented courier, tracking, pickup schedule, or confirmation notes |
@@ -456,21 +492,21 @@ VAT, delivery, final-total, cancellation, refund, warranty, payment, and retenti
 | VAT calculation and rounding | Rate and calculation unconfirmed | Keep VAT and final total null; no payable order | Future total-integrity migration after approval | Yes, plus tax review | Order-creation migration |
 | Delivery-fee calculation | Unconfirmed | Keep fee and final total null pending review | Possibly rules/configuration tables later | Yes | Contract/schema-gap decisions |
 | Delivery service area | “Nationwide” and conditional same-day are presentation only | Do not promise eligibility; server rejects unsupported addresses after rules exist | Possibly service-area configuration | Yes | Fulfillment rules |
-| Pickup branch details | Cavite City only; no location record | Keep real pickup submission disabled until a verified active branch exists | Data addition through controlled workflow; schema already exists | Yes | Location/inventory readiness |
+| Pickup branch details | Existing GadgetMoTo Cavite City branch approved; no location record exists yet | Keep real pickup submission disabled until the reviewed active branch record exists | Data addition through controlled workflow; schema already exists | Approved; exact public details still require confirmation | Location/inventory readiness |
 | Pickup instructions | Unconfirmed | Show pending confirmation only | No; `pickup_instructions` exists | Yes | Location/inventory readiness |
-| Inventory allocation location | No location or inventory rows; one fulfillment per order | Require one location able to fulfill every item; no split allocation | Reservation structure and possibly allocation metadata | Yes | Inventory design migration |
+| Inventory allocation location | Cavite City branch approved; no location or inventory rows exist yet | Require that one branch to fulfill every item; no split allocation | Reservation structure and controlled location/inventory data | Launch default approved | Inventory design migration |
 | Reservation duration | Unresolved | No expiring reservation until a duration is approved | Yes, reservation expiry fields/table | Yes | Inventory design migration |
 | Payment deadline | Unresolved | No automated deadline or cancellation | Possibly payment/order deadline timestamp | Yes | Payment workflow plan |
 | Failed-payment behavior | Unresolved | Mark payment failed only; do not cancel/release automatically | Possibly workflow timestamps; transition logic required | Yes | Failed-payment handling |
 | Cancellation rules | Unresolved | No self-service cancellation promise; staff-controlled only after approval | Transition/audit support may be required | Yes, plus legal/business review | Cancellation workflow |
 | Refund rules | Unresolved | Do not promise eligibility or timing | Payment records support statuses; refund workflow may need fields | Yes, plus legal/business review | Refund workflow |
 | Warranty wording | Unresolved | Do not add warranty promises | No immediate commerce schema change | Yes, plus legal/business review | Policy approval |
-| Preorder support | Enum/stock model does not support negative availability | Reject preorders at launch | Yes for explicit preorder allocation/status rules | Yes | Future preorder design |
-| Split fulfillment | One fulfillment per order | Disable at launch | Yes to support multiple fulfillments safely | Yes | Future fulfillment expansion |
-| Customer email requirement | Required by current UI and `orders` schema | Keep required unless explicitly changed | Yes if made nullable | Confirm | Contract/schema-gap decisions |
-| Mobile-number validation | Current UI accepts `09…` and `639…` forms | Revalidate the same rule server-side until a canonical format is approved | Optional database constraint after approval | Yes | Contract validation |
+| Preorder support | Disabled for launch | Reject preorders at launch | No launch change; future support requires a new design | Launch default approved | Future preorder design |
+| Split fulfillment | Disabled for launch; one fulfillment per order | Require one location to fulfill the complete order | No launch change; future support requires schema changes | Launch default approved | Future fulfillment expansion |
+| Customer email requirement | Optional for launch; current UI and `orders` schema still require it | Accept null when omitted and validate only supplied values | Yes, make `orders.customer_email` nullable | Launch default approved | Order-creation migration |
+| Mobile-number validation | Required for launch; current UI accepts `09…` and `639…` forms | Revalidate the same rule server-side until a canonical format is approved | Optional database constraint after format approval | Requirement approved; canonical format still requires approval | Contract validation |
 | Proof-of-payment support | Deferred; optional path exists in `payments` | Disabled at launch until secure upload/review is designed | Storage policies and workflow migration likely | Yes | Manual payment workflow |
-| Maya payment methods | UI shows Maya online; provider scope unknown | No live Maya method until provider products are approved | Provider fields exist; configuration/integration still required | Yes | Maya initialization |
+| Maya payment methods | Maya approved as online provider; live products and credentials unresolved | No live initialization until official provider behavior and credentials are approved | Provider fields exist; configuration/integration still required | Provider approved; merchant setup still required | Maya initialization |
 | Order-notification provider | None | No automated email/SMS promise | Provider/outbox design may require schema | Yes | Notification architecture |
 | Staff roles and assignments | Enum exists; no staff records | No staff access until least-privilege role matrix is approved | RLS/grant migration and staff provisioning | Yes | Staff access |
 | Audit-log scope | Table exists; automation absent | Audit privileged order/payment/inventory transitions without unnecessary PII | Trigger/service workflow may be required | Yes | Audit implementation |
@@ -478,7 +514,7 @@ VAT, delivery, final-total, cancellation, refund, warranty, payment, and retenti
 | Abandoned-order retention | Unresolved | Do not auto-delete or retain indefinitely without a rule | Idempotency/order expiry fields and cleanup job likely | Yes, plus legal review | Privacy/retention plan |
 | Consent policy-version capture | Only consent timestamps exist | Keep submission disabled until legal review decides whether versions are required | Yes if policy/version identifiers are required | Yes, plus legal review | Contract/schema-gap decisions |
 
-Open decisions in this matrix: **26**.
+Decision rows in this matrix: **26**. Approved launch defaults are marked explicitly; every remaining unresolved or partially resolved row retains its approval requirement.
 
 ## Future controlled checkpoints
 
