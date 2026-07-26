@@ -2,7 +2,7 @@
 
 ## Status and boundaries
 
-This document remains the architecture plan for database-backed catalog loading. The ordering and secure storefront read model are deployed, and the minimum server-only database dependency, client, query, validation, normalization, and fallback code are implemented. Controlled local connectivity and adapter verification are complete, and storefront integration covers the homepage catalog sections, `/shop`, `/phones`, `/tablets`, all 12 product-detail routes, global search, comparison, and cart. No environment file, policy, production configuration, or deployment configuration has been added.
+This document remains the architecture plan for database-backed catalog loading. The ordering and secure storefront read model are deployed, and the minimum server-only database dependency, client, query, validation, normalization, and fallback code are implemented. Controlled local connectivity and adapter verification are complete, and storefront integration covers the homepage catalog sections, `/shop`, `/phones`, `/tablets`, all 12 product-detail routes, global search, comparison, cart, and the review-only checkout summary. No environment file, policy, production configuration, or deployment configuration has been added.
 
 Final implementation decisions are approved and documented in `docs/catalog-integration-decisions.md`. Migration `20260717234135_catalog_ordering_storefront_read_model.sql` is deployed. Post-deployment checks confirmed the approved product order, view structure, 12 view rows, catalog parity, and restricted reader-role properties. Postgres.js `3.4.9` and the isolated server adapter are implemented. Controlled static and database source-mode tests passed, including hosted-view querying, complete validation, normalization, and ordering parity. Server routes resolve the normalized catalog through the request-memoized boundary, while one root server payload initializes the read-only client catalog provider used by search, comparison, and cart. Static catalog data remains the active source and full fallback.
 
@@ -71,7 +71,7 @@ The database model is normalized and may later support multiple variants. The ap
 | Comparison page, tray, buttons, and header count | Client-only runtime | Consume resolved comparison products. The header badge counts selections, not catalog products. |
 | `src/components/cart/cart-provider.tsx` | Client-only and persistent browser state | Resolves products through the shared catalog provider. It stores only product slug, exact variant label, and quantity under `gadgetmoto:cart:v1`; names and prices come from the current normalized payload. |
 | Cart drawer, cart page, and cart line | Client-only runtime | Render current normalized product names/prices and derive line totals and subtotal. They do not persist copied names or prices. |
-| `src/components/checkout/checkout-form.tsx` | Client-only runtime | Uses resolved cart items and current subtotal. Checkout review copies values only into rendered session state; it does not persist or submit an order. |
+| `src/components/checkout/checkout-form.tsx` | Client-only runtime | Uses catalog-resolved cart items, current line totals, and current subtotal. Checkout review copies values only into rendered session state; it does not persist or submit customer details, an order, or a payment. |
 | `src/components/storefront/device-placeholder.tsx` | Shared | Uses only category and CSS; database media is not required. |
 
 ### Indirect and adjacent assumptions

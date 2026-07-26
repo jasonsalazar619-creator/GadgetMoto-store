@@ -2,7 +2,7 @@
 
 ## Architecture and guest scope
 
-`/checkout` remains a Server Component route using the shared storefront shell. A focused `CheckoutForm` Client Component consumes live canonical cart context and owns transient guest form, validation, delivery, payment, consent, and review state. No order is submitted, stored, emailed, numbered, or paid.
+`/checkout` remains a Server Component route using the shared storefront shell. A focused `CheckoutForm` Client Component consumes cart items that the cart provider resolves from the shared server-initialized catalog payload, then owns only transient guest form, validation, delivery, payment, consent, and review state. Current product names and prices are never restored from copied browser product objects. No order is submitted, stored, emailed, numbered, or paid.
 
 ## Fields and validation
 
@@ -14,7 +14,11 @@ Nationwide and same-day delivery require address fields. Store pickup preserves 
 
 ## Confirmations and review-only flow
 
-Privacy Policy, Terms and Conditions, and pending availability/VAT/delivery/payment acknowledgements are separate and unchecked by default. A valid review shows customer, delivery, payment, live items and canonical subtotal, while VAT, delivery fee, and final payable amount remain pending. It prominently states that no order or payment exists and provides editing and Messenger actions—never Place Order.
+Privacy Policy, Terms and Conditions, and pending availability/VAT/delivery/payment acknowledgements are separate and unchecked by default. A valid review shows customer, delivery, payment, catalog-resolved live items, line totals, and the current merchandise subtotal, while VAT, delivery fee, and final payable amount remain pending. It prominently states that no order or payment exists and provides editing and Messenger actions—never Place Order.
+
+## Catalog integration status
+
+Checkout is catalog-integrated through the shared `CatalogProvider` and `CartProvider` boundary. Browser persistence continues to contain only stable product slug, exact supported variant label, and quantity; checkout calculations use current resolved catalog prices. Customer details, checkout review data, cart data, and order data are not sent to Supabase. Order creation, inventory reservation, customer submission, and live Maya payment processing remain pending backend phases.
 
 ## Cart changes and coexistence
 

@@ -2,7 +2,7 @@
 
 ## Provider and persistence architecture
 
-One `CartProvider` is mounted inside the root `ComparisonProvider` and around the global-search boundary. The single drawer is its sibling to search content, and all server-rendered routes share the same cart. Persistence uses `gadgetmoto:cart:v1`; localStorage is read only after mount, and pre-hydration actions are replayed over sanitized stored state before writing begins.
+One `CartProvider` is mounted inside the root `CatalogProvider` and `ComparisonProvider` and around the global-search boundary. The single drawer is its sibling to search content, and all server-rendered routes share the same cart. Persistence uses `gadgetmoto:cart:v1`; localStorage is read only after mount, and pre-hydration actions are replayed over sanitized stored state before writing begins.
 
 ## Variant-aware cart lines
 
@@ -16,7 +16,7 @@ Product-detail actions add the confirmed variant, merge repeat additions, show t
 
 ## Totals and limitations
 
-The cart calculates only current merchandise subtotal and line totals from canonical prices. VAT is described as calculated separately after its applicable rate is confirmed, while shipping awaits delivery method and location. No final payable total, inventory promise, delivery estimate, or installment computation is presented.
+The cart resolves every persisted slug and exact variant through the shared server-initialized catalog payload, then calculates only current merchandise subtotal and line totals from the resolved prices. VAT is described as calculated separately after its applicable rate is confirmed, while shipping awaits delivery method and location. No final payable total, inventory promise, delivery estimate, or installment computation is presented.
 
 ## Accessibility and coexistence
 

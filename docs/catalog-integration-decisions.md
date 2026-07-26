@@ -32,7 +32,7 @@ The homepage Server Component now calls `getCatalogProducts()` exactly once and 
 
 Product-detail rendering and metadata resolve exact slugs through `getCatalogProductBySlug()`, while related products use the same complete ordered catalog through request-scoped memoization. The canonical 12 static slugs remain the build-safe source for `generateStaticParams()`, and existing not-found behavior, metadata, related-product rules, routes, and presentation remain unchanged.
 
-The async root Server Component now loads one normalized catalog payload and passes it into `src/components/catalog/catalog-provider.tsx`. This client provider exposes read-only products and stable slug lookup helpers without diagnostics, environment values, database identifiers, or server-only code. Global search, comparison, and cart consume this shared payload. Their ranking, result limit, localStorage keys, selection limit, quantities, current-price resolution, hydration safeguards, drawer and tray behavior, and empty states remain unchanged.
+The async root Server Component now loads one normalized catalog payload and passes it into `src/components/catalog/catalog-provider.tsx`. This client provider exposes read-only products and stable slug lookup helpers without diagnostics, environment values, database identifiers, or server-only code. Global search, comparison, cart, and the checkout summary consume this shared data flow. Their ranking, result limit, localStorage keys, selection limit, quantities, current-price resolution, hydration safeguards, drawer and tray behavior, and empty states remain unchanged. Checkout remains a review-only client experience: it sends no customer, cart, order, or payment data to Supabase and performs no live payment action.
 
 ## Decisions inherited from the approved architecture
 
@@ -329,7 +329,7 @@ Implementation cannot proceed unless it guarantees:
 - Global Search consumes the shared read-only payload.
 - Comparison no longer imports an independent static product source.
 - Cart resolves persisted slug-and-variant lines against the shared current catalog.
-- Checkout continues to consume the resolved cart state; its explicit documentation checkpoint follows.
+- Checkout consumes catalog-resolved cart items and current prices while remaining review-only.
 
 ### Checkpoint E — Static-source retirement review
 
