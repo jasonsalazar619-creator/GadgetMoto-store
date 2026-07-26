@@ -81,9 +81,17 @@
 - Postgres.js `3.4.9` is installed for future server-only database access.
 - The repository expects `CATALOG_SOURCE` and `STOREFRONT_DATABASE_URL`, but contains no values.
 - No environment file or connection string was created.
-- No connection attempt or query occurred.
+- No connection attempt or query occurred during adapter implementation.
 - The server adapter now targets only `storefront.catalog_products`.
 - No environment value was created, and no database connection or query occurred while implementing the adapter.
+- `gadgetmoto_storefront_app` successfully authenticated through the Session pooler during a controlled local test.
+- The storefront catalog view returned 12 validated rows.
+- The server adapter completed its query, complete-result validation, normalization, and ordering checks successfully.
+- Temporary local environment variables were used and removed.
+- No connection string or password was saved in the repository.
+- The temporary verification API route was deleted, and no permanent diagnostic endpoint remains.
+- Hosted database records, roles, privileges, and migrations remain unchanged.
+- Future environments must supply `CATALOG_SOURCE` and `STOREFRONT_DATABASE_URL` securely outside Git.
 - `static` remains the default catalog source.
 - Hosted database configuration and records remain unchanged by the adapter checkpoint.
 - Project references and credentials remain excluded.

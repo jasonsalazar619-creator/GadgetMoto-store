@@ -18,6 +18,10 @@ All six deployed migrations remain immutable. The database contains the manually
 
 The adapter selects only the 17 approved columns from `storefront.catalog_products`, validates and normalizes the complete parity result, and rejects the entire result on any mismatch. `database-with-static-fallback` returns either the complete validated database catalog or the complete canonical static catalog; partial merging is prohibited. Static enrichment supplies only compatibility and presentation fields absent from the read model, including the legacy application `id`, fixed financing label, and placeholder `artSeed`.
 
+Controlled local verification passed in both static and database modes. Session pooler authentication using `gadgetmoto_storefront_app` succeeded, and the adapter returned exactly 12 validated and normalized products from the hosted storefront view. Canonical ordering, approved null-value parity, and complete-result validation passed. No partial fallback or mixed-source result occurred.
+
+The temporary verification route was removed, so no permanent diagnostic endpoint exists. Temporary local environment variables were removed, and no password, URI, endpoint, or environment value was committed. Storefront consumer integration remains pending, and static mode remains the default until the next approved integration phase.
+
 ## Decisions inherited from the approved architecture
 
 The approved decisions preserve the recommendations in `docs/catalog-database-integration-plan.md`:
@@ -296,7 +300,7 @@ Implementation cannot proceed unless it guarantees:
 ### Checkpoint B — Server catalog adapter
 
 - The approved PostgreSQL dependency, server-only client, query, normalization, whole-result validation, sanitized errors, and atomic static fallback are complete.
-- Configuration validation is implemented without secret values; hosting and pooler compatibility remain to be verified.
+- Configuration validation is implemented without secret values; Session pooler compatibility passed controlled local verification, while production-hosting compatibility remains pending.
 - Request-level memoization remains deferred until the adapter is connected to server consumers.
 - Keep application pages on the static source initially.
 
