@@ -10,7 +10,7 @@ import { SectionHeading } from "@/components/storefront/section-heading";
 import { StorefrontFooter } from "@/components/storefront/storefront-footer";
 import { StorefrontHeader } from "@/components/storefront/storefront-header";
 import { Container } from "@/components/ui/container";
-import { featuredTablets, newArrivalProducts } from "@/data/prototype-products";
+import { getCatalogProducts } from "@/lib/catalog/server/catalog";
 
 const trustPoints = [
   ["Brand-new gadgets", "All launch products are treated as brand new."],
@@ -19,7 +19,15 @@ const trustPoints = [
   ["Helpful sales support", "Connect with the GadgetMoTo sales team through Messenger."],
 ] as const;
 
-export default function Home() {
+export default async function Home() {
+  const products = await getCatalogProducts();
+  const newArrivalProducts = products.filter(
+    (product) => product.category === "Phone",
+  );
+  const featuredTablets = products.filter(
+    (product) => product.category === "Tablet",
+  );
+
   return (
     <>
       <StorefrontHeader />
