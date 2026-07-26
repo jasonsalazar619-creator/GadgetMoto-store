@@ -71,3 +71,14 @@ git diff --check
 - Production product imagery
 
 Checkout is currently a review preview only. It creates no order, processes no payment, and stores no customer information.
+
+## Current implementation status
+
+- Storefront catalog integration: complete
+- Checkout interface and review flow: complete
+- Secure server-side order submission: pending
+- Maya and other live payment integration: pending
+- Staff and admin tools: pending
+- Production environment configuration and deployment verification: pending
+
+The proposed order contract, atomic transaction, inventory and idempotency gaps, payment boundary, and unresolved launch decisions are documented in `docs/order-creation-transaction-plan.md`.

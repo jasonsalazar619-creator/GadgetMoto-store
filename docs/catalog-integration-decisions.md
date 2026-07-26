@@ -359,6 +359,8 @@ The catalog consumer-integration checkpoints described above are complete. Produ
 - Maya payment integration, server verification, webhooks, and proof-of-payment handling where required
 - Staff authentication and admin catalog, inventory, and order-management tools
 
+The storefront structure is complete, and secure atomic order creation is the next backend phase. The future server transaction will reload authoritative variants and prices, calculate all confirmed amounts in integer centavos, and will not trust client prices, line totals, subtotals, inventory claims, or payment status. The current checkout performs review only and submits no order.
+
 ## Approval checklist
 
 - [x] Add `public.products.sort_order` as a nonnegative, required integer without an implicit default.
