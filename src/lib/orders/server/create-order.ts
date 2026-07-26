@@ -14,7 +14,6 @@ import {
   paymentStatuses,
   type CreateOrderNextAction,
   type CreateOrderRequest,
-  type CreateOrderServerPolicy,
   type CreateOrderSuccessResponse,
   type FulfillmentMethod,
   type OrderStatus,
@@ -161,23 +160,6 @@ const getRequestFingerprint = (request: CreateOrderRequest): string =>
 const getConfirmationToken = (idempotencyKey: string): string =>
   sha256(`gadgetmoto:order-confirmation:v1:${idempotencyKey}`);
 
-const validateServerPolicy = (
-  policy: CreateOrderServerPolicy,
-): string => {
-  if (!policy || typeof policy !== "object") {
-    throw new OrderServerError("ORDER_CREATION_FAILED");
-  }
-  const expiresAt = policy.reservationExpiresAt;
-  if (
-    !(expiresAt instanceof Date) ||
-    !Number.isFinite(expiresAt.getTime()) ||
-    expiresAt.getTime() <= Date.now()
-  ) {
-    throw new OrderServerError("ORDER_CREATION_FAILED");
-  }
-  return expiresAt.toISOString();
-};
-
 async function loadExistingOrderResponse(
   sql: OrderTransaction,
   orderId: string,
@@ -225,6 +207,7 @@ async function loadExistingOrderResponse(
 
   return {
     success: true,
+    wasReplay: true,
     publicOrderNumber: row.public_order_number,
     orderStatus: row.status,
     paymentStatus,
@@ -435,7 +418,6 @@ async function createNewOrder(
   claimId: string,
   idempotencyKeyHash: string,
   confirmationToken: string,
-  reservationExpiresAt: string,
 ): Promise<CreateOrderSuccessResponse> {
   const items = await loadAuthoritativeProducts(sql, request);
   const location = await resolveFulfillmentLocation(sql, request, items);
@@ -611,7 +593,7 @@ async function createNewOrder(
         ${location.location_id},
         ${item.quantity},
         'active'::public.inventory_reservation_status,
-        ${reservationExpiresAt}
+        current_timestamp + interval '30 minutes'
       )
       returning id
     `;
@@ -672,6 +654,7 @@ async function createNewOrder(
 
   return {
     success: true,
+    wasReplay: false,
     publicOrderNumber,
     orderStatus: "pending_review",
     paymentStatus: "not_created",
@@ -687,11 +670,9 @@ async function createNewOrder(
 
 export async function createOrder(
   input: unknown,
-  policy: CreateOrderServerPolicy,
 ): Promise<CreateOrderSuccessResponse> {
   try {
     const request = validateCreateOrderRequest(input);
-    const reservationExpiresAt = validateServerPolicy(policy);
     const idempotencyKeyHash = sha256(request.idempotencyKey);
     const requestFingerprint = getRequestFingerprint(request);
     const confirmationToken = getConfirmationToken(
@@ -720,7 +701,6 @@ export async function createOrder(
           insertedClaim.id,
           idempotencyKeyHash,
           confirmationToken,
-          reservationExpiresAt,
         );
       }
 

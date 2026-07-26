@@ -92,10 +92,6 @@ export type CreateOrderRequest = Readonly<{
   consents: CheckoutConsentInput;
 }>;
 
-export type CreateOrderServerPolicy = Readonly<{
-  reservationExpiresAt: Date;
-}>;
-
 export type CreateOrderNextAction =
   | "awaiting_review"
   | "awaiting_payment_instructions"
@@ -104,6 +100,7 @@ export type CreateOrderNextAction =
 
 export type CreateOrderSuccessResponse = Readonly<{
   success: true;
+  wasReplay: boolean;
   publicOrderNumber: string;
   orderStatus: OrderStatus;
   paymentStatus: PaymentStatus | "not_created";

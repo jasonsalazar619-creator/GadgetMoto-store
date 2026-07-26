@@ -15,8 +15,10 @@ const idempotencyKeyPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const productSlugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const skuPattern = /^[a-z0-9][a-z0-9-]{0,63}$/i;
-const locationSlugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const sensitivePaymentLabelPattern =
+  /\b(?:card\s*(?:number|no)|cvv|cvc|pin|password|passcode|otp|bank(?:ing)?\s*(?:account|credential)|account\s*(?:number|no))\b/i;
+const longDigitSequencePattern = /(?:\d[\s-]*){13,19}/;
 
 type PlainObject = Record<string, unknown>;
 
@@ -105,22 +107,7 @@ const readFulfillment = (value: unknown): CheckoutFulfillmentInput => {
   }
 
   if (value.method === "store_pickup") {
-    if (
-      !hasOnlyKeys(value, ["method", "pickupLocationSlug"]) ||
-      typeof value.pickupLocationSlug !== "string"
-    ) {
-      throw new OrderServerError("INVALID_FULFILLMENT");
-    }
-
-    const pickupLocationSlug = value.pickupLocationSlug.trim();
-    if (
-      pickupLocationSlug.length > 100 ||
-      !locationSlugPattern.test(pickupLocationSlug)
-    ) {
-      throw new OrderServerError("INVALID_PICKUP_LOCATION");
-    }
-
-    return { method: "store_pickup", pickupLocationSlug };
+    throw new OrderServerError("INVALID_PICKUP_LOCATION");
   }
 
   if (
@@ -300,6 +287,12 @@ export function validateCreateOrderRequest(
       500,
       "INVALID_CHECKOUT_REQUEST",
     );
+    if (
+      sensitivePaymentLabelPattern.test(customerNotes) ||
+      longDigitSequencePattern.test(customerNotes)
+    ) {
+      throw new OrderServerError("INVALID_CHECKOUT_REQUEST");
+    }
   }
 
   return {

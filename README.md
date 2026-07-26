@@ -1,6 +1,6 @@
 # GadgetMoTo Storefront
 
-GadgetMoTo is a production-oriented Next.js storefront for phones and tablets. The current website includes the approved responsive homepage, catalog and category pages, 12 product-detail routes, local product search, comparison, cart, and a review-only guest checkout.
+GadgetMoTo is a production-oriented Next.js storefront for phones and tablets. The current website includes the approved responsive homepage, catalog and category pages, 12 product-detail routes, local product search, comparison, cart, and a delivery-only guest checkout with an uncalled secure order endpoint.
 
 ## Current catalog architecture
 
@@ -11,7 +11,7 @@ GadgetMoTo is a production-oriented Next.js storefront for phones and tablets. T
 - Canonical static catalog remains the default source, complete fallback, build-safe route-slug source, and placeholder-presentation source
 - A least-privilege PostgreSQL read model is prepared and previously verified, but production environment configuration and deployment verification remain pending
 
-No environment file, database credential, public catalog API, active order-submission consumer, or live payment flow is included in the repository.
+No environment file, database credential, configured order-database connection, public catalog API, or live payment flow is included in the repository.
 
 ## Local development
 
@@ -50,7 +50,7 @@ git diff --check
 
 - Catalog and commerce database foundation with seven immutable deployed migrations
 - Secure storefront read model and least-privilege reader architecture
-- Deployed secure order-transaction schema and an uncalled server-only order-creation service
+- Deployed secure order-transaction schema, an uncalled server-only order-creation service, and `POST /api/orders`
 - Server-only PostgreSQL client, catalog query, validation, normalization, and fallback
 - Controlled static and database connectivity verification
 - Homepage, shop, phones, tablets, product-detail, metadata, and related-product catalog integration
@@ -62,8 +62,8 @@ git diff --check
 
 - Production environment configuration and deployment verification
 - Controlled database testing of the order-creation transaction
-- Approved reservation duration plus release, expiry, and conversion workflows
-- Customer checkout integration with the server-only order service
+- Reservation release, expiry-job, and conversion workflows
+- Controlled database and endpoint testing with inventory and location readiness
 - Store-location and inventory readiness for order allocation
 - Delivery-fee and VAT implementation after business rules are confirmed
 - Maya payment integration, server verification, and webhooks
@@ -72,13 +72,13 @@ git diff --check
 - Admin catalog, inventory, and order-management tools
 - Production product imagery
 
-Checkout is currently a review preview only. It creates no order, processes no payment, and stores no customer information.
+Checkout is connected to the secure endpoint in code, but the endpoint has not been called and production order configuration remains absent. No order or payment was created during implementation.
 
 ## Current implementation status
 
 - Storefront catalog integration: complete
-- Checkout interface and review flow: complete
-- Secure server-side order service: implemented but uncalled and unconnected
+- Checkout interface, review flow, submission states, and delivery-only request contract: complete
+- Secure server-side order service and endpoint: implemented but uncalled
 - Maya and other live payment integration: pending
 - Staff and admin tools: pending
 - Production environment configuration and deployment verification: pending
