@@ -42,6 +42,26 @@ These items remain unresolved and must not be invented during implementation:
 
 Additional technical and operational decisions remain identified in the decision matrix below. Approval of the launch defaults does not silently settle retention, notification, reservation-duration, payment-deadline, or legal-policy details.
 
+## Secure order schema migration status
+
+The forward-only migration `20260726121534_secure_order_transaction_schema.sql` is drafted locally and remains unapplied. It does not alter any of the six deployed migrations and contains no records, login credential, browser policy, tax calculation, delivery-fee calculation, payment-provider behavior, or customer data.
+
+The migration is designed to add:
+
+- Optional order email storage
+- Hashed high-entropy order lookup tokens
+- Private order-submission idempotency claims and request fingerprints
+- Duplicate order-variant protection
+- Required single-location fulfillment allocation
+- Durable per-order-item inventory reservations with expiry and guarded terminal states
+- Reservation-linked inventory movement constraints and idempotent movement types
+- Hashed payment-attempt idempotency fields
+- Final-total component integrity
+- Database-enforced append-only behavior for inventory movements, payment events, and audit logs
+- A non-login, non-bypass server order-service privilege role with narrowly scoped RLS policies and grants
+
+The migration deliberately reuses the existing unique public order-number storage and payment-provider event uniqueness. Public order-number format, reservation duration, VAT treatment, delivery-fee rules, and live provider configuration remain outside the migration.
+
 ## Existing checkout and cart findings
 
 ### Checkout fields

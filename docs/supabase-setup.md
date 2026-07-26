@@ -4,6 +4,9 @@
 - Hosted project region: Southeast Asia (Singapore)
 - The hosted project is healthy.
 - The confirmed region is Southeast Asia (Singapore).
+- Secure order migration `20260726121534_secure_order_transaction_schema.sql` is local, committed only after review, and remains unapplied until a separate authorized deployment checkpoint.
+- The secure order migration creates schema and a non-login privilege role only; it contains no login credential, password, environment value, record, browser policy, tax rule, delivery-fee rule, or payment-provider behavior.
+- All six deployed migrations remain immutable and unchanged.
 - The Supabase CLI is installed as a project development dependency.
 - Supabase commands on this Windows computer must use `npx.cmd`.
 - `supabase/` contains version-controlled database configuration and will contain future migrations.

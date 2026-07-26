@@ -20,6 +20,14 @@ Migration 4, `20260717184621_content_alerts_audit_foundation.sql`, was deployed 
 
 RLS is enabled on all four Migration 4 tables with zero policies, Data API access remains disabled, and no public homepage, alert, or audit access exists. No alert workflow, email integration, homepage seed data, safe view, public policy, scheduled job, or audit automation exists yet.
 
+## Secure order transaction migration status
+
+Migration `20260726121534_secure_order_transaction_schema.sql` is drafted locally and remains unapplied. It is a forward-only extension of the deployed commerce and inventory schema; all six deployed migrations remain unchanged.
+
+The migration adds an `order_submissions` idempotency table, an `inventory_reservations` table and reservation-status enum, optional customer email, hashed order lookup tokens, duplicate line protection, required single-location fulfillment allocation, payment-attempt idempotency fields, reservation-linked inventory movement constraints, total-integrity checks, and append-only enforcement for operational history. It also creates a non-login `gadgetmoto_order_service` privilege role with server-only RLS policies and minimum grants for trusted order creation. It creates no login role, password, browser/Data API policy, seed record, tax rule, delivery-fee rule, payment-provider action, or public write path.
+
+Remote deployment, role membership, server credentials, store-location data, inventory data, reservation duration, and application integration remain deferred.
+
 ## Scope and design principles
 
 This document is the production data-model plan only. It does not create SQL, migrations, policies, functions, seed data, or a remote Supabase connection. The plan contains 18 application tables.
