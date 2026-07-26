@@ -1,5 +1,6 @@
 import "server-only";
 
+import { cache } from "react";
 import {
   getAllProducts,
   type PrototypeProduct,
@@ -12,7 +13,7 @@ import { normalizeDatabaseCatalogRows } from "./catalog-validation";
 import { getCatalogSourceMode } from "./config";
 import { loadDatabaseCatalogRows } from "./database-catalog";
 
-export async function getCatalogProducts(): Promise<
+async function loadCatalogProducts(): Promise<
   readonly PrototypeProduct[]
 > {
   let mode;
@@ -39,6 +40,8 @@ export async function getCatalogProducts(): Promise<
     return getAllProducts();
   }
 }
+
+export const getCatalogProducts = cache(loadCatalogProducts);
 
 export async function getCatalogProductBySlug(
   slug: string,

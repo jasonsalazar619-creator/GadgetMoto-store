@@ -177,7 +177,7 @@ The operational fallback for either architecture is the verified static catalog.
 
 ## Catalog loading boundary and fallback
 
-The server-only boundary is implemented at `src/lib/catalog/server/catalog.ts` with `getCatalogProducts()` and `getCatalogProductBySlug(slug)`. Product lookup resolves from the complete catalog and never issues a slug-specific query. Request-level memoization is deferred until consumer integration, when metadata and page rendering behavior can be reviewed together. This prevents a fallback from persisting across unrelated requests or deployments, stale source-mode behavior, cached raw errors, and unexpected build-time database execution; no cross-request cache is introduced.
+The server-only boundary is implemented at `src/lib/catalog/server/catalog.ts` with `getCatalogProducts()` and `getCatalogProductBySlug(slug)`. Product lookup resolves from the complete catalog and never issues a slug-specific query. `getCatalogProducts()` uses React's request-scoped cache so metadata, page rendering, and related-product selection share one normalized catalog snapshot within a request. No result, fallback, source-mode decision, or raw error is persisted across requests or deployments.
 
 Defined source modes:
 
@@ -295,9 +295,9 @@ Product media should be a later independent import and application checkpoint wi
 
 ### Phase 3 — Catalog-page integration
 
-- Integrate homepage, `/shop`, `/phones`, `/tablets`, metadata, and product-detail lookups.
-- Keep static slugs for build safety.
-- Verify data, order, routes, metadata, related products, and visuals.
+- Homepage, `/shop`, `/phones`, `/tablets`, metadata, product-detail lookups, and related products now use the server catalog boundary.
+- The 12 canonical static slugs remain the source of `generateStaticParams()` for build safety.
+- Static-mode builds preserve data, order, routes, metadata, related products, and visuals.
 
 ### Phase 4 — Shared client features
 

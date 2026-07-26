@@ -168,7 +168,7 @@ Use one server-only boundary:
 - `getCatalogProducts()` returns the complete normalized catalog.
 - `getCatalogProductBySlug(slug)` resolves from the same normalized result rather than issuing an independent query shape.
 
-Request-level memoization remains approved for the future consumer-integration checkpoint so page rendering and metadata generation cannot observe different catalog snapshots in one request. It is intentionally deferred while the adapter has no caller. This avoids persisting a static fallback across unrelated requests or deployments, retaining a stale source-mode decision, caching raw errors, or triggering unexpected database work during a production build. Cache lifetime and cross-request invalidation require a separate implementation decision; no implicit indefinite cache is implemented.
+`getCatalogProducts()` now uses React request-level memoization so product metadata, page rendering, and related-product selection observe one normalized catalog snapshot per request. React's request-scoped cache introduces no cross-request or deployment-persistent result, does not retain a static fallback or source-mode decision across requests, and does not cache a raw error beyond the request in which it occurs.
 
 ### Source modes
 
@@ -309,7 +309,7 @@ Implementation cannot proceed unless it guarantees:
 
 - The approved PostgreSQL dependency, server-only client, query, normalization, whole-result validation, sanitized errors, and atomic static fallback are complete.
 - Configuration validation is implemented without secret values; Session pooler compatibility passed controlled local verification, while production-hosting compatibility remains pending.
-- Request-level memoization remains deferred until the adapter is connected to server consumers.
+- Request-level memoization is implemented with React's request-scoped cache now that the adapter is connected to server consumers.
 - Keep application pages on the static source initially.
 
 ### Checkpoint C — Page integration

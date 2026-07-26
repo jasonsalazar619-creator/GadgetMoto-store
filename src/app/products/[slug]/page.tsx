@@ -6,7 +6,11 @@ import { PriceDisplay } from "@/components/ui/price-display";
 import { DevicePlaceholder } from "@/components/storefront/device-placeholder";
 import { ProductCard } from "@/components/storefront/product-card";
 import { StorefrontPageShell } from "@/components/storefront/storefront-page-shell";
-import { formatProductTitle, getAllProducts, getProductBySlug } from "@/data/prototype-products";
+import { formatProductTitle, getAllProducts } from "@/data/prototype-products";
+import {
+  getCatalogProductBySlug,
+  getCatalogProducts,
+} from "@/lib/catalog/server/catalog";
 import { ComparisonButton } from "@/components/comparison/comparison-button";
 import { AddToCartButton } from "@/components/cart/add-to-cart-button";
 
@@ -16,16 +20,16 @@ type ProductPageProps = { params: Promise<{ slug: string }> };
 export function generateStaticParams() { return getAllProducts().map(({ slug }) => ({ slug })); }
 
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
-  const product = getProductBySlug((await params).slug);
+  const product = await getCatalogProductBySlug((await params).slug);
   if (!product) return { title: "Product not found | GadgetMoTo" };
   return { title: formatProductTitle(product), description: `View the ${product.name} in ${product.variant} at GadgetMoTo. Explore available payment and delivery options.` };
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
-  const product = getProductBySlug((await params).slug);
+  const product = await getCatalogProductBySlug((await params).slug);
   if (!product) notFound();
   const categoryPath = product.category === "Phone" ? "/phones" : "/tablets";
-  const related = getAllProducts().filter((item) => item.category === product.category && item.slug !== product.slug).slice(0, 4);
+  const related = (await getCatalogProducts()).filter((item) => item.category === product.category && item.slug !== product.slug).slice(0, 4);
 
   return (
     <StorefrontPageShell>
