@@ -108,11 +108,8 @@ export const productSpecificationsBySlug = {
   ],
   "infinix-note-60-pro-5g": [
     { label: "Processor", value: "Snapdragon 7s Gen 4" },
-    {
-      label: "Official memory options",
-      value:
-        "8GB physical + 8GB extended, or 12GB physical + 12GB extended",
-    },
+    { label: "Physical RAM", value: "8GB" },
+    { label: "Extended RAM", value: "8GB" },
     { label: "Storage", value: "256GB UFS 2.2" },
     { label: "Display", value: "6.78-inch AMOLED, 1208 × 2644" },
     { label: "Refresh rate", value: "Up to 144Hz" },
@@ -134,6 +131,9 @@ export const productSpecificationsBySlug = {
   ],
   "tecno-camon-50": [
     { label: "Processor", value: "MediaTek Helio G200 Ultimate" },
+    { label: "Physical RAM", value: "8GB" },
+    { label: "Extended RAM", value: "8GB" },
+    { label: "Storage", value: "256GB" },
     { label: "Display", value: "1.5K ProXDR display, 1208 × 2644" },
     { label: "Refresh rate", value: "Up to 144Hz" },
     {

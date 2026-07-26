@@ -76,6 +76,12 @@ The implementation now includes:
 
 The request uses product slug plus canonical SKU because variant display names are not authoritative identifiers. The shared browser `PrototypeProduct` now exposes the exact catalog SKU, while persisted cart state continues to store slug, display variant, and quantity. Checkout resolves the current product and canonical SKU by slug without persisting a complete product object.
 
+Canonical SKU values are opaque identifiers. Numeric SKU segments are never
+parsed as physical RAM, extended RAM, storage, price, or another specification.
+The Infinix Note 60 Pro 5G and TECNO Camon 50 keep their complete existing SKUs
+while the catalog separately presents 8GB physical RAM, 8GB extended RAM, and
+256GB storage.
+
 The service creates every new inventory reservation with `current_timestamp + interval '30 minutes'` inside the same trusted transaction as the order and inventory writes. Idempotent replay returns the existing order and does not create or extend a reservation. Automated expiry release, conversion to sale, failed-payment release, and cancellation release remain future lifecycle work. The parameterized order insert derives `GM-` plus 32 uppercase hexadecimal characters from the SHA-256 idempotency-key hash, persists it under the deployed unique index, and returns the complete stored value. A domain-separated high-entropy confirmation token is derived from the UUID-v4 submission key; only the confirmation-token hash is stored.
 
 Only the server Route Handler imports `createOrder()`. No page, Client Component, provider, or Server Action imports server-order code. Checkout posts the approved contract to the Route Handler, but the endpoint has not been called. `ORDER_DATABASE_URL` remains unset, no database test occurred, no database client was instantiated, and no connection, query, order, reservation, movement, audit row, or payment attempt occurred.

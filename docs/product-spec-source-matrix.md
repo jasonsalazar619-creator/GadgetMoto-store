@@ -116,19 +116,19 @@ from manufacturer pages. Verification was performed on 2026-07-26.
 - Official source URL: https://wap.infinixmobility.com/specs/note-60-pro
 - Source region: Philippines
 - Verification date: 2026-07-26
-- Specifications used on the website: Snapdragon 7s Gen 4; official 8GB + 8GB
-  extended or 12GB + 12GB extended memory configurations; 256GB UFS 2.2;
+- Specifications used on the website: Snapdragon 7s Gen 4; approved 8GB
+  physical RAM plus 8GB extended RAM; 256GB UFS 2.2;
   6.78-inch 1208 × 2644 AMOLED; up to 144Hz; 50MP main and 8MP ultra-wide
   rear cameras; 13MP front camera; 6500mAh battery; 90W wired and 30W wireless
   charging; XOS 16 based on Android 16; 5G, Wi-Fi 6, Bluetooth 5.4, and NFC;
   IP64; dimensions and weight.
-- Specifications intentionally omitted: A claim that the catalog’s 16GB value
-  is physical RAM and all box-content claims.
-- Regional or variant ambiguity: The current GadgetMoTo 16GB/256GB variant and
-  `ramGb: 16` do not match an official physical-memory configuration. The
-  official page distinguishes 8GB or 12GB physical RAM from equal-size
-  extended RAM. The transactional variant remains unchanged pending approval.
-- Verification status: conflict requiring approval
+- Specifications intentionally omitted: All box-content claims.
+- Approved memory interpretation: Physical RAM is 8GB, extended RAM is 8GB,
+  and storage is 256GB. Extended RAM is not counted as physical RAM.
+- Customer-facing variant: `8GB RAM + 8GB Extended / 256GB`.
+- SKU identity: `GMT-INF-PH-N60P5G-16-256` remains the unchanged canonical
+  opaque identifier; its numerals are not parsed as memory specifications.
+- Verification status: verified with approved memory interpretation
 
 ## TECNO Camon 50
 
@@ -139,17 +139,19 @@ from manufacturer pages. Verification was performed on 2026-07-26.
 - Official source URL: https://www.tecno-mobile.com/ph/phones/product-detail/product/camon-50/
 - Source region: Philippines
 - Verification date: 2026-07-26
-- Specifications used on the website: MediaTek Helio G200 Ultimate; 1.5K
-  ProXDR display at 1208 × 2644; up to 144Hz; 50MP Sony LYTIA 700C main and
-  8MP ultra-wide rear cameras; 32MP front camera; 6500mAh battery; 45W
-  charging; HiOS 16; IP68, IP69, and IP69K.
-- Specifications intentionally omitted: RAM, storage, dimensions, weight,
-  connectivity details, and box contents.
-- Regional or variant ambiguity: The page’s test disclaimer references
-  pre-production 12GB/256GB and 8GB/256GB configurations, but it does not
-  verify the current GadgetMoTo 16GB/256GB value as physical RAM. The
-  transactional variant remains unchanged pending approval.
-- Verification status: conflict requiring approval
+- Specifications used on the website: MediaTek Helio G200 Ultimate; approved
+  8GB physical RAM plus 8GB extended RAM; 256GB storage; 1.5K ProXDR display
+  at 1208 × 2644; up to 144Hz; 50MP Sony LYTIA 700C main and 8MP ultra-wide
+  rear cameras; 32MP front camera; 6500mAh battery; 45W charging; HiOS 16;
+  IP68, IP69, and IP69K.
+- Specifications intentionally omitted: Dimensions, weight, connectivity
+  details, and box contents.
+- Approved memory interpretation: Physical RAM is 8GB, extended RAM is 8GB,
+  and storage is 256GB. Extended RAM is not counted as physical RAM.
+- Customer-facing variant: `8GB RAM + 8GB Extended / 256GB`.
+- SKU identity: `GMT-TEC-PH-CAMON50-16-256` remains the unchanged canonical
+  opaque identifier; its numerals are not parsed as memory specifications.
+- Verification status: verified with approved memory interpretation
 
 ## POCO C85
 
@@ -244,10 +246,12 @@ from manufacturer pages. Verification was performed on 2026-07-26.
 
 ## Verification summary
 
-- Verified: 8 products
+- Verified: 10 products
 - Partially verified: 2 products
-- Conflict requiring approval: 2 products
+- Conflict requiring approval: 0 products
 - iPhone RAM: intentionally absent because Apple does not publish a RAM value
   on the approved specification page.
-- Transactional changes: none beyond adding the exact already-approved
-  canonical SKUs to the shared application contract.
+- Transactional correction: Infinix Note 60 Pro 5G and TECNO Camon 50 now use
+  8GB physical RAM and the approved extended-memory label. Their canonical
+  SKUs, prices, SRPs, storage, badges, financing, activation, and order remain
+  unchanged. The forward-only correction migration remains undeployed.

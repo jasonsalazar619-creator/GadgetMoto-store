@@ -71,8 +71,8 @@
 3. POCO F8 Ultra — 16GB/512GB — ₱46,990
 4. Redmi Note 15 Pro Plus 5G — 12GB/512GB — ₱27,990
 5. Redmi Turbo 5 — 12GB/256GB — ₱20,990
-6. Infinix Note 60 Pro 5G — 16GB/256GB — ₱19,990
-7. TECNO Camon 50 — 16GB/256GB — ₱13,490
+6. Infinix Note 60 Pro 5G — 8GB RAM + 8GB Extended / 256GB — ₱19,990
+7. TECNO Camon 50 — 8GB RAM + 8GB Extended / 256GB — ₱13,490
 8. POCO C85 — 8GB/256GB — ₱7,990
 9. POCO Pad X1 — 8GB/512GB — ₱23,990
 10. Xiaomi Pad 8 — 8GB/128GB — ₱19,990

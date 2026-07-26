@@ -47,17 +47,28 @@ then maps the database value into the same normalized product shape.
 modes. Persisted cart lines continue to store the stable product slug, current
 display variant, and quantity rather than a complete product object. Current
 product data, including SKU, is resolved by slug after hydration. Checkout can
-construct future line items containing `productSlug`, canonical `sku`, and
-`quantity`, but it does not send them in this checkpoint. Display variants are
-never used as transactional SKU substitutes.
+construct line items containing `productSlug`, canonical `sku`, and `quantity`
+for the server-only order endpoint. Display variants are never used as
+transactional SKU substitutes.
+
+Canonical SKUs are opaque identifiers. In particular, numerals within
+`GMT-INF-PH-N60P5G-16-256` and `GMT-TEC-PH-CAMON50-16-256` are not parsed as
+physical-RAM specifications. The approved static catalog separately records
+8GB physical RAM, 8GB extended RAM, and 256GB storage for each product, with
+the customer-facing variant `8GB RAM + 8GB Extended / 256GB`. Checkout keeps
+using the complete unchanged canonical SKU.
 
 Product specifications remain static presentation enrichment keyed by stable
 product slug. Only official manufacturer pages are used, and the verification
 status, omitted fields, and regional or memory-configuration conflicts are
 recorded in `docs/product-spec-source-matrix.md`. Database rows retain
 authority over transactional SKU, price, status, and catalog fields; static
-enrichment cannot overwrite those values. Checkout submission remains
-pending.
+enrichment cannot overwrite those values.
+
+Forward-only migration `20260726175847_correct_product_physical_ram.sql`
+corrects only the two matching variant rows by complete canonical SKU. It
+changes `ram_gb` and `variant_name` only, remains undeployed, and does not
+modify any of the seven deployed migrations.
 
 ## Decisions inherited from the approved architecture
 

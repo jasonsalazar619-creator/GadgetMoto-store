@@ -22,11 +22,23 @@ RLS is enabled on all four Migration 4 tables with zero policies, Data API acces
 
 ## Secure order transaction migration status
 
-Migration `20260726121534_secure_order_transaction_schema.sql` is drafted locally and remains unapplied. It is a forward-only extension of the deployed commerce and inventory schema; all six deployed migrations remain unchanged.
+Migration `20260726121534_secure_order_transaction_schema.sql` was deployed successfully. Migration version `20260726121534` matches locally and remotely, and all seven deployed migrations remain unchanged.
 
 The migration adds an `order_submissions` idempotency table, an `inventory_reservations` table and reservation-status enum, optional customer email, hashed order lookup tokens, duplicate line protection, required single-location fulfillment allocation, payment-attempt idempotency fields, reservation-linked inventory movement constraints, total-integrity checks, and append-only enforcement for operational history. It also creates a non-login `gadgetmoto_order_service` privilege role with server-only RLS policies and minimum grants for trusted order creation. It creates no login role, password, browser/Data API policy, seed record, tax rule, delivery-fee rule, payment-provider action, or public write path.
 
-Remote deployment, role membership, server credentials, store-location data, inventory data, reservation duration, and application integration remain deferred.
+The separate application transaction uses the deployed schema but has not been
+called. Login credentials, store-location data, inventory data, and controlled
+database validation remain outside this documentation checkpoint.
+
+## Product physical-RAM correction status
+
+Forward-only migration
+`20260726175847_correct_product_physical_ram.sql` is drafted locally and
+remains undeployed. It matches only the complete canonical SKUs for Infinix
+Note 60 Pro 5G and TECNO Camon 50, sets `ram_gb` to 8, and sets
+`variant_name` to `8GB RAM + 8GB Extended / 256GB`. It does not change SKU,
+storage, prices, SRPs, badges, financing, activation, inventory, product rows,
+or ordering. The seven deployed migrations remain immutable.
 
 ## Scope and design principles
 

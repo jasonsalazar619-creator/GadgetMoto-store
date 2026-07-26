@@ -7,6 +7,10 @@
 - Secure order migration `20260726121534_secure_order_transaction_schema.sql` was deployed successfully, and migration version `20260726121534` matches locally and remotely.
 - The secure order migration created schema and a non-login privilege role only; it contains no login credential, password, environment value, record, browser policy, tax rule, delivery-fee rule, or payment-provider behavior.
 - All seven deployed migrations remain immutable and unchanged.
+- Corrective migration
+  `20260726175847_correct_product_physical_ram.sql` exists locally only and
+  remains undeployed. It preserves both canonical SKUs and changes only the
+  approved physical-RAM and display-variant fields.
 - The uncalled server-only order-service code targets the deployed secure-order schema.
 - `ORDER_DATABASE_URL` remains unset, no order database client was instantiated, and no order connection or query occurred during order-service implementation.
 - The Supabase CLI is installed as a project development dependency.

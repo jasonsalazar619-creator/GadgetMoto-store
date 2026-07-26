@@ -13,6 +13,12 @@
 - Ambiguous files: 1
 - Product gallery size after this checkpoint: one image for each mapped product
 
+The 11 published images are approved user-supplied GadgetMoTo project assets.
+No manufacturer-page image was downloaded for this checkpoint, and no
+GadgetMoTo logo, watermark, price, label, or promotional copy was added to the
+published files. POCO C85 remains intentionally unmapped and continues to use
+the safe generated placeholder while awaiting an approved local image.
+
 The source posters are retained locally and ignored by Git. They contain product
 photography plus text that has not been approved as canonical catalog data. Only
 losslessly extracted product photography is published under `public/products/`.
@@ -134,6 +140,11 @@ channel. Sizes are in bytes. Candidate identity and readiness are documented in
 ## Duplicate and ambiguity review
 
 - No two discovered files share the same SHA-256 digest.
+- The 11 published 800 × 600 primary images also have 11 unique SHA-256
+  digests, and no published image path is mapped to more than one product.
+- Manual contact-sheet review found no unnecessary near-duplicate among the
+  published primary images and no unrelated store watermark or confidential
+  information.
 - `GADGET-MOTO/LEGION Y70 2026.PNG` and
   `GADGET-MOTO/Lenovo Legion Y70 2026.png` appear to concern the same likely
   product but are different files.
@@ -156,4 +167,5 @@ channel. Sizes are in bytes. Candidate identity and readiness are documented in
 - All 70 source files associated with incomplete new-product candidates remain
   local only. None is promoted to a product route or purchasable catalog entry.
 - POCO C85 retains the existing generated placeholder because no exact or
-  unambiguous matching source was found.
+  unambiguous approved local source was found. No online asset or another
+  product's image is substituted.

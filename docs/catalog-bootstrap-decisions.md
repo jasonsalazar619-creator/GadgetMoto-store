@@ -6,6 +6,14 @@ The user approved all catalog-bootstrap decisions. Migration version `2026071720
 
 Approved decisions include the exact twelve internal SKUs, null iPhone RAM, null SRPs for Apple iPhone 17 and POCO F8 Ultra, active brands/products/variants, non-featured products, variant sort order 0, first-appearance brand ordering, one shared migration-derived UTC publication timestamp, and exclusion of every non-catalog-bootstrap table.
 
+The matrix below remains the immutable historical record of the deployed
+bootstrap. A later approved correction treats the two `16` SKU segments for
+Infinix Note 60 Pro 5G and TECNO Camon 50 as opaque identifier text, not
+physical-RAM values. Forward-only migration
+`20260726175847_correct_product_physical_ram.sql` will change those two rows to
+8GB physical RAM and the variant label
+`8GB RAM + 8GB Extended / 256GB`; it remains undeployed.
+
 ## Explicit UUID mapping
 
 | Brand | Brand UUID | Sort order |

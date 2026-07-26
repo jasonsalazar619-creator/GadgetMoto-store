@@ -11,6 +11,10 @@ No proposed slug is assigned until the exact marketed product identity is
 approved. No official specification lookup was performed because every candidate
 is already blocked by missing GadgetMoTo transactional fields.
 
+Checkpoint 49A publishes no candidate. The approved catalog remains the same
+12 products, 68 incomplete candidates remain excluded, and POCO C85 continues
+to await an approved local image while using the safe storefront placeholder.
+
 ## Required-data codes
 
 - **M1 — complete catalog intake required:** exact approved product name; exact
@@ -110,9 +114,14 @@ and until the M1 intake is supplied.
 - Complete new products added: 0
 - Static catalog count: unchanged at 12
 - Product-route count: unchanged at 12
-- New migration: none
-- Existing products, slugs, SKUs, prices, SRPs, variants, ordering, and inventory:
+- New-product migration: none
+- Separate corrective migration:
+  `20260726175847_correct_product_physical_ram.sql`, undeployed
+- Existing products, slugs, SKUs, prices, SRPs, ordering, and inventory:
   unchanged
+- Approved variant correction: Infinix Note 60 Pro 5G and TECNO Camon 50 use
+  8GB physical RAM plus 8GB extended RAM with unchanged 256GB storage and
+  unchanged canonical SKUs
 - Candidate images: retained locally in `GADGET-MOTO/` and intentionally
   excluded from deployment until the corresponding D1/D2/D3 decisions are
   resolved
