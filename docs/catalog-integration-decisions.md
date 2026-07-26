@@ -12,15 +12,17 @@ The `gadgetmoto_storefront_reader` role exists as a non-login role with zero act
 
 The separate server login role `gadgetmoto_storefront_app` was created manually with `LOGIN` and `INHERIT` enabled. Role creation, database creation, RLS bypass, superuser, and replication capabilities are disabled, and the role has zero active connections. Its password exists only in the managed database configuration and the user's secure password storage; no password or connection string exists in Git.
 
-The app role inherits `gadgetmoto_storefront_reader`, and the membership was verified successfully. Effective `USAGE` on the `storefront` schema and `SELECT` on `storefront.catalog_products` were verified. Direct `SELECT` on `public.products` and `public.orders` remains unavailable. No browser-facing or Data API access was introduced, and storefront-consumer integration remains pending.
+The app role inherits `gadgetmoto_storefront_reader`, and the membership was verified successfully. Effective `USAGE` on the `storefront` schema and `SELECT` on `storefront.catalog_products` were verified. Direct `SELECT` on `public.products` and `public.orders` remains unavailable. No browser-facing or Data API access was introduced.
 
-All six deployed migrations remain immutable. The database contains the manually verified parity copy of 6 brands, 12 products, and 12 product variants. Postgres.js `3.4.9` is installed, and the server-only catalog boundary now implements `getCatalogProducts()` and `getCatalogProductBySlug()`. Application-consumer integration remains unimplemented, so static data in `src/data/prototype-products.ts` remains the live storefront source.
+All six deployed migrations remain immutable. The database contains the manually verified parity copy of 6 brands, 12 products, and 12 product variants. Postgres.js `3.4.9` is installed, and the server-only catalog boundary now implements `getCatalogProducts()` and `getCatalogProductBySlug()`. Controlled application-consumer integration has started with `/shop` only; static data in `src/data/prototype-products.ts` remains the active source under the default configuration.
 
 The adapter selects only the 17 approved columns from `storefront.catalog_products`, validates and normalizes the complete parity result, and rejects the entire result on any mismatch. `database-with-static-fallback` returns either the complete validated database catalog or the complete canonical static catalog; partial merging is prohibited. Static enrichment supplies only compatibility and presentation fields absent from the read model, including the legacy application `id`, fixed financing label, and placeholder `artSeed`.
 
 Controlled local verification passed in both static and database modes. Session pooler authentication using `gadgetmoto_storefront_app` succeeded, and the adapter returned exactly 12 validated and normalized products from the hosted storefront view. Canonical ordering, approved null-value parity, and complete-result validation passed. No partial fallback or mixed-source result occurred.
 
-The temporary verification route was removed, so no permanent diagnostic endpoint exists. Temporary local environment variables were removed, and no password, URI, endpoint, or environment value was committed. Storefront consumer integration remains pending, and static mode remains the default until the next approved integration phase.
+The temporary verification route was removed, so no permanent diagnostic endpoint exists. Temporary local environment variables were removed, and no password, URI, endpoint, or environment value was committed. Static mode remains the default.
+
+`/shop` is the first and only storefront route connected to the server catalog boundary. Its Server Component calls `getCatalogProducts()` exactly once and passes the complete normalized `PrototypeProduct` array through the existing typed `CatalogPage` prop boundary to the interactive Shop UI. No other storefront consumer is integrated, no global provider was introduced, and no database connection occurred during this checkpoint.
 
 ## Decisions inherited from the approved architecture
 
