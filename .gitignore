@@ -36,6 +36,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# local product-image intake (reviewed derivatives live in public/products)
+/GADGET-MOTO/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

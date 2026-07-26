@@ -1,7 +1,7 @@
 import type { PrototypeProduct } from "@/data/prototype-products";
 import { Badge } from "@/components/ui/badge";
 import { PriceDisplay } from "@/components/ui/price-display";
-import { DevicePlaceholder } from "./device-placeholder";
+import { ProductArtwork } from "./product-artwork";
 import Link from "next/link";
 import { ComparisonButton } from "@/components/comparison/comparison-button";
 
@@ -27,7 +27,11 @@ export function ProductCard({ product, layout = "standard" }: ProductCardProps) 
           <button aria-label={`Save ${product.name} to wishlist (preview)`} className="icon-control" disabled type="button"><HeartIcon /></button>
           <ComparisonButton className="icon-control" compact name={product.name} slug={product.slug} />
         </div>
-        <DevicePlaceholder category={product.category} />
+        <ProductArtwork
+          className="product-card__image"
+          product={product}
+          sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 25vw"
+        />
       </div>
       <div className="flex flex-1 flex-col p-6">
         <div>
