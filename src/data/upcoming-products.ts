@@ -1,3 +1,8 @@
+import {
+  upcomingProductContent,
+  type UpcomingProductSpecification,
+} from "@/data/upcoming-product-content";
+
 export type UpcomingProductCategory =
   | "Phone"
   | "Tablet"
@@ -17,6 +22,10 @@ export type UpcomingProduct = Readonly<{
   category: UpcomingProductCategory;
   primaryImage: UpcomingProductImage | null;
   images: readonly UpcomingProductImage[];
+  shortDescription: string;
+  description: string;
+  highlights: readonly string[];
+  specifications: readonly UpcomingProductSpecification[];
   availabilityMessage: "Details and availability coming soon.";
 }>;
 
@@ -50,6 +59,7 @@ const upcoming = (
           height,
         ),
   images,
+  ...upcomingProductContent[id],
   availabilityMessage: "Details and availability coming soon.",
 });
 
@@ -159,10 +169,20 @@ if (
   new Set(upcomingProducts.map(({ id }) => id)).size !==
     upcomingProducts.length ||
   upcomingProducts.some(
-    ({ id, name, brand, primaryImage, images }) =>
+    ({
+      id,
+      name,
+      brand,
+      primaryImage,
+      images,
+      shortDescription,
+      description,
+    }) =>
       !id.trim() ||
       !name.trim() ||
       !brand.trim() ||
+      !shortDescription?.trim() ||
+      !description?.trim() ||
       (primaryImage !== null &&
         (!primaryImage.src.startsWith("/upcoming/") ||
           !primaryImage.alt.trim() ||
@@ -179,6 +199,14 @@ if (
   )
 ) {
   throw new Error("Upcoming product preview validation failed.");
+}
+
+if (
+  Object.keys(upcomingProductContent).some(
+    (id) => !upcomingProducts.some((product) => product.id === id),
+  )
+) {
+  throw new Error("Upcoming product content assignment validation failed.");
 }
 
 const assignedImages = upcomingProducts.flatMap((product) => [

@@ -420,6 +420,19 @@ new folder record was available, so no catalog record or migration was added.
 
 The storefront structure and secure atomic order-creation code are complete. The transaction reloads authoritative variants and prices, calculates confirmed amounts in integer centavos, and does not trust client prices, line totals, subtotals, inventory claims, or payment status. The current launch state keeps live submission disabled and hands customers to Messenger after review; no order is submitted.
 
+## Upcoming-product content boundary
+
+The Coming Soon content contract adds only serializable descriptions,
+highlights, and label/value specifications to the separate preview type. It
+does not reuse the transactional `Product` type and adds no price, SKU, variant,
+stock, or commerce state. Highlights and specification sections render only
+when official-source data exists.
+
+The 68 preview entries remain outside the catalog provider, global product
+search, comparison, cart, checkout, inventory, orders, and `/api/orders`.
+Their complete audit is maintained in
+`docs/upcoming-product-content-audit.md`.
+
 ## Approval checklist
 
 - [x] Add `public.products.sort_order` as a nonnegative, required integer without an implicit default.

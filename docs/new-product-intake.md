@@ -150,3 +150,16 @@ and until the M1 intake is supplied.
 
 The customer-facing purchasable catalog remains exactly 12 products and 12
 unique product routes. The preview catalog contains 68 non-purchasable entries.
+
+## Description completion update
+
+All 68 intake candidates now have unique customer-facing short descriptions and
+full preview overviews. Thirty-five exact models have official-source
+highlights and specifications; 23 have partial official support but withhold
+specifications because of regional, naming, or source-detail limitations; ten
+lack an exact official source and use identity-level descriptions only.
+
+This content work does not resolve the M1 commercial intake blockers shown in
+the historical matrix above. It adds no price, SKU, variant, inventory record,
+transactional route, or migration row. The current per-product source and
+content status is authoritative in `docs/upcoming-product-content-audit.md`.

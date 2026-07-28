@@ -31,23 +31,34 @@ export async function generateMetadata({
     return { title: "Product preview not found | GadgetMoTo" };
   }
 
-  const description = `${product.name} is being prepared for a future GadgetMoTo catalog update. Details and availability are coming soon.`;
+  const title = `${product.name} Coming Soon | GadgetMoTo`;
 
   return {
-    title: `${product.name} Preview | GadgetMoTo`,
-    description,
+    title,
+    description: product.shortDescription,
     alternates: { canonical: `/coming-soon/${product.id}` },
-    openGraph: product.primaryImage
-      ? {
-          title: `${product.name} Preview | GadgetMoTo`,
-          description,
-          images: [
+    openGraph: {
+      title,
+      description: product.shortDescription,
+      type: "website",
+      images: product.primaryImage
+        ? [
             {
               url: product.primaryImage.src,
               width: product.primaryImage.width,
               height: product.primaryImage.height,
               alt: product.primaryImage.alt,
             },
+          ]
+        : undefined,
+    },
+    twitter: product.primaryImage
+      ? {
+          card: "summary_large_image",
+          title,
+          description: product.shortDescription,
+          images: [
+            product.primaryImage.src,
           ],
         }
       : undefined,
@@ -122,23 +133,65 @@ export default async function UpcomingProductPage({
               {product.brand} · {product.category}
             </p>
             <h1>{product.name}</h1>
-            <p>{product.availabilityMessage}</p>
+            <span className="upcoming-detail__status">Coming soon</span>
+            <p className="upcoming-detail__description">
+              {product.description}
+            </p>
+
+            {product.highlights.length > 0 ? (
+              <section
+                aria-labelledby="upcoming-highlights"
+                className="upcoming-detail__section"
+              >
+                <h2 id="upcoming-highlights">Key highlights</h2>
+                <ul className="upcoming-detail__highlights">
+                  {product.highlights.map((highlight) => (
+                    <li key={highlight}>{highlight}</li>
+                  ))}
+                </ul>
+              </section>
+            ) : null}
+
+            {product.specifications.length > 0 ? (
+              <section
+                aria-labelledby="upcoming-specifications"
+                className="upcoming-detail__section"
+              >
+                <h2 id="upcoming-specifications">Specifications</h2>
+                <dl className="upcoming-detail__specifications">
+                  {product.specifications.map(({ label, value }) => (
+                    <div key={label}>
+                      <dt>{label}</dt>
+                      <dd>{value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </section>
+            ) : null}
+
             <div className="upcoming-detail__notice" role="note">
-              <strong>Preview only</strong>
+              <strong>{product.availabilityMessage}</strong>
               <p>
-                Pricing, variants, stock, and purchase availability have not
-                been confirmed. This product is not available through the
+                This preview is informational and is not available through the
                 GadgetMoTo cart or checkout.
               </p>
             </div>
-            <a
-              className="button-link button-link--primary"
-              href={messengerUrl}
-              rel="noopener noreferrer"
-              target="_blank"
-            >
-              Message us for updates
-            </a>
+            <div className="upcoming-detail__actions">
+              <a
+                className="button-link button-link--primary"
+                href={messengerUrl}
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                Message us for updates
+              </a>
+              <Link
+                className="button-link button-link--secondary"
+                href="/coming-soon"
+              >
+                Back to Coming Soon
+              </Link>
+            </div>
           </div>
         </Container>
       </section>

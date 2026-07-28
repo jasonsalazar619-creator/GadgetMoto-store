@@ -249,10 +249,15 @@ from manufacturer pages. Verification was performed on 2026-07-26.
 - Verified: 10 products
 - Partially verified: 2 products
 - Conflict requiring approval: 0 products
-- Complete new folder products verified in the current phase: 0
-- The 68 incomplete image-folder candidates remain excluded; no new official
-  source was researched because each candidate is already blocked by missing
-  GadgetMoTo SKU, variant, price, status, and other required commercial data.
+- Complete new folder products admitted to the transactional catalog: 0
+- The separate 68-product Coming Soon catalog now has an official-source content
+  audit: 35 exact models have verified display-ready specifications, 23 are
+  partially verified, and ten lack an exact official source.
+- Upcoming research does not supply or approve GadgetMoTo SKU, variant, price,
+  status, inventory, or other required commercial data. Those records remain
+  excluded from every transactional consumer.
+- Per-product sources and withheld-field warnings are recorded in
+  `docs/upcoming-product-content-audit.md`.
 - iPhone RAM: intentionally absent because Apple does not publish a RAM value
   on the approved specification page.
 - Transactional correction: Infinix Note 60 Pro 5G and TECNO Camon 50 now use

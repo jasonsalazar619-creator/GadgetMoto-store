@@ -66,6 +66,11 @@ git diff --check
   safe placeholder for an ambiguous filename/poster conflict
 - Two non-duplicating upcoming-product galleries, isolated from transactional
   catalog behavior
+- Unique short descriptions and full overviews for all 68 upcoming products
+- Officially sourced highlights and specifications for 35 upcoming products,
+  with unsupported sections hidden for partially verified or unresolved models
+- Product-specific Coming Soon metadata and responsive, non-cropping preview
+  cards and detail pages
 - Original-aspect product media with one explicit primary image, a
   non-duplicating gallery contract, and contain-and-center rendering on cards,
   details, search, comparison, cart, and checkout
@@ -105,3 +110,9 @@ The authoritative 12-product record is documented in
 mapping are documented in `docs/product-media-source-matrix.md`; incomplete
 folder candidates and their non-transactional preview status are documented in
 `docs/new-product-intake.md`.
+
+Upcoming-product content sources, verification levels, unresolved naming
+conflicts, and per-product completion counts are recorded in
+`docs/upcoming-product-content-audit.md`. Content completion does not approve
+any preview for sale: the 68 records still have no price, SKU, stock, cart,
+checkout, inventory, order, or payment behavior.

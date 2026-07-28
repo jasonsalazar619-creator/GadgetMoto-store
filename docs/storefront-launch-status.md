@@ -33,6 +33,10 @@ Completed and validated:
 - Secure order endpoint code retained for controlled future activation
 - Vercel project connected to `origin/main`; pushes trigger production
   redeployment
+- All 68 Coming Soon products have unique short and full descriptions,
+  product-specific metadata, and responsive preview layouts
+- Thirty-five Coming Soon products display officially verified highlights and
+  specifications; incomplete or unresolved records hide those sections
 
 ## Current ordering mode
 
@@ -68,7 +72,8 @@ connection, query, SQL command, or Supabase command occurred.
   70 source files. Sixty-nine confidently mapped images are assigned across 67
   products; one ambiguous image remains unassigned and its neutral record uses
   a placeholder. All 68 products are visible once at `/coming-soon` and remain
-  excluded from purchasing and every transactional catalog consumer.
+  excluded from purchasing and every transactional catalog consumer. Their
+  descriptions are complete, but this does not constitute commercial approval.
 - The catalog remains 12 unique SKUs and 12 unique slugs, with 11 approved
   primary images and one placeholder.
 - The canonical static catalog is the default and build-safe fallback.

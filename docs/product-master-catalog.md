@@ -43,6 +43,12 @@ checkout records, or migration rows.
 Each still requires the complete M1 commercial intake before it can enter the
 approved catalog.
 
+The 68 preview entries now have completed descriptive copy. Thirty-five expose
+verified highlights and specifications from exact official sources; unsupported
+sections remain hidden for the other entries. Descriptive completion does not
+promote a preview into this master catalog and does not supply any missing
+commercial field. See `docs/upcoming-product-content-audit.md`.
+
 ## Migration status
 
 No catalog migration was generated. No complete new product was found, and all

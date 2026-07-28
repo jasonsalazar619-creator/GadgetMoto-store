@@ -33,7 +33,8 @@ export default function ComingSoonPage() {
             <p>
               Explore products we are preparing for future GadgetMoTo catalog
               updates. These previews are not yet available to purchase, and
-              pricing, variants, and availability have not been confirmed.
+              exact Philippine variants and availability have not been
+              confirmed.
             </p>
             <div className="upcoming-hero__summary" aria-label="Preview summary">
               <strong>{upcomingProducts.length}</strong>

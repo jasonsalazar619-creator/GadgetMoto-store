@@ -39,14 +39,14 @@ export function UpcomingProductCard({ product }: UpcomingProductCardProps) {
         <h3>
           <Link href={`/coming-soon/${product.id}`}>{product.name}</Link>
         </h3>
-        <p className="upcoming-product-card__message">
-          {product.availabilityMessage}
+        <p className="upcoming-product-card__description">
+          {product.shortDescription}
         </p>
         <Link
           className="upcoming-product-card__link"
           href={`/coming-soon/${product.id}`}
         >
-          View preview
+          View details
         </Link>
       </div>
     </article>
