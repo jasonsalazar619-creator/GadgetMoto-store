@@ -59,6 +59,9 @@ git diff --check
 - Global search, comparison, cart, and catalog-driven checkout integration
 - Contact-first checkout fallback that preserves cart contents and never fabricates order success
 - Product media for 11 products plus the approved POCO C85 placeholder
+- Original-aspect product media with one explicit primary image, a
+  non-duplicating gallery contract, and contain-and-center rendering on cards,
+  details, search, comparison, cart, and checkout
 - Responsive, accessibility, static-mode lint, and production-build validation
 
 ## Still pending
@@ -89,3 +92,8 @@ git diff --check
 - Vercel project connection: complete; production redeployment follows pushes to `main`
 
 The order contract, atomic transaction, inventory and idempotency boundaries, payment boundary, and unresolved launch decisions are documented in `docs/order-creation-transaction-plan.md`. Current launch readiness is summarized in `docs/storefront-launch-status.md`.
+
+The authoritative 12-product record is documented in
+`docs/product-master-catalog.md`. Image origins, dimensions, hashes, and active
+mapping are documented in `docs/product-media-source-matrix.md`; incomplete
+folder candidates remain in `docs/new-product-intake.md`.

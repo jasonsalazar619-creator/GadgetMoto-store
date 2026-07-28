@@ -16,7 +16,7 @@ export function ProductArtwork({
   loading,
   sizes,
 }: ProductArtworkProps) {
-  const image = product.images[0];
+  const image = product.primaryImage;
 
   if (!image) {
     return (

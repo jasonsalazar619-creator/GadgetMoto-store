@@ -14,9 +14,12 @@ Completed and validated:
 - Twelve canonical and unique product SKUs and slugs
 - Product search, comparison, cart, and checkout interface
 - Contact page and Facebook Messenger ordering path
-- Eleven approved product images and the POCO C85 generated placeholder
+- Eleven original-aspect approved product images and the POCO C85 generated
+  placeholder
 - Verified catalog specifications and corrected memory variants
 - Consistent square, centered, non-cropping product media
+- Explicit primary-image and non-duplicating gallery data shared across every
+  catalog consumer
 - Product, cart, search, comparison, and checkout empty states
 - Header, mobile navigation, footer, global not-found, loading, and error states
 - Responsive review at 320, 375, 430, 768, 1024, and 1440 pixels
@@ -57,6 +60,10 @@ connection, query, SQL command, or Supabase command occurred.
 ## Data and deployment boundary
 
 - The catalog remains exactly 12 products.
+- The image-folder review found 68 incomplete candidate products represented by
+  70 source files. They remain documented and excluded from purchasing.
+- The catalog remains 12 unique SKUs and 12 unique slugs, with 11 approved
+  primary images and one placeholder.
 - The canonical static catalog is the default and build-safe fallback.
 - All eight deployed migration files are user-confirmed as synchronized and
   were not edited during storefront completion.

@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   const product = await getCatalogProductBySlug((await params).slug);
   if (!product) return { title: "Product not found | GadgetMoTo" };
   const description = `View the ${product.name} in ${product.variant} at GadgetMoTo. Compare confirmed details and contact us for availability.`;
-  const image = product.images[0];
+  const image = product.primaryImage;
   return {
     title: formatProductTitle(product),
     description,
@@ -70,7 +70,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <div className="product-gallery">
             <div className={`product-gallery__main product-art--${product.artSeed}`}><ProductArtwork loading="eager" product={product} sizes="(max-width: 1023px) 100vw, 55vw" /></div>
             <p className="mt-4 text-xs text-[var(--color-muted)]">
-              {product.images.length
+              {product.primaryImage
                 ? "Product appearance may vary by color or regional configuration."
                 : "Product imagery is being prepared. The catalog details remain available below."}
             </p>

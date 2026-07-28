@@ -29,9 +29,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
       url: absoluteSiteUrl(`/products/${product.slug}`),
       changeFrequency: "weekly",
       priority: 0.8,
-      images: product.images.map((image) =>
-        absoluteSiteUrl(image.src),
-      ),
+      images: [
+        ...(product.primaryImage ? [product.primaryImage] : []),
+        ...product.images,
+      ].map((image) => absoluteSiteUrl(image.src)),
     }),
   );
 

@@ -2,51 +2,58 @@
 
 ## Audit summary
 
-- Audit date: 2026-07-26
+- Audit date: 2026-07-28
 - Local intake folder: `GADGET-MOTO/`
+- Repository image files after build/cache exclusions: 94
+- Brand-logo files excluded from product mapping: 2
+- Product-looking source and active files reviewed: 92
 - Files inspected in the intake folder: 82
 - Product-poster files: 81
 - Brand-logo files: 1
 - Existing catalog products matched: 11 of 12
 - Unique incomplete new-product candidates: 68
-- Exact binary duplicates: 0
+- Exact binary duplicates among intake sources: 0
+- Intentional source-to-public exact-copy pairs: 11
 - Ambiguous files: 1
-- Product gallery size after this checkpoint: one image for each mapped product
+- Product gallery size after this checkpoint: zero additional images; each
+  mapped product has one separate primary image
 - Storefront presentation: square, centered, `object-contain` media with
   consistent internal padding across customer-facing product surfaces
 
 The 11 published images are approved user-supplied GadgetMoTo project assets.
-No manufacturer-page image was downloaded for this checkpoint, and no
-GadgetMoTo logo, watermark, price, label, or promotional copy was added to the
-published files. POCO C85 remains intentionally unmapped and continues to use
-the safe generated placeholder while awaiting an approved local image.
+Each public image is now an exact byte copy of its original source poster. No
+crop, resize, compression, conversion, watermark addition, or other edit was
+performed. No manufacturer-page image was downloaded for this checkpoint.
+POCO C85 remains intentionally unmapped and continues to use the safe generated
+placeholder while awaiting an approved local image.
 
-The source posters are retained locally and ignored by Git. They contain product
-photography plus text that has not been approved as canonical catalog data. Only
-losslessly extracted product photography is published under `public/products/`.
-The resulting 800 × 600 PNG files use a white canvas, preserve the product aspect
-ratio, and omit poster text, prices, contact details, warranty statements, and
-other unverified claims.
+The source posters are retained locally and ignored by Git. The tracked public
+copies preserve the complete original canvases and intrinsic aspect ratios so
+device edges are not removed by source processing. Embedded poster text remains
+part of the original supplied pixels but is not imported as structured catalog
+data. Canonical specifications, prices, variants, availability, and policies
+remain controlled by the typed catalog and reviewed documentation.
 
 ## Existing-product mapping
 
-| Existing product | Source | Confidence | Published primary image | Gallery order |
+| Existing product | Source | Confidence | Published primary image | Media role |
 | --- | --- | --- | --- | --- |
-| Xiaomi 17 Ultra 5G Leica Kit | `GADGET-MOTO/ChatGPT Image Jun 7, 2026, 05_15_10 PM.png` | Probable; manually matched to the exact visible product name | `public/products/xiaomi-17-ultra-5g-leica-kit/primary.png` | 1 |
-| Apple iPhone 17 | `GADGET-MOTO/IPHONE 17.PNG` | Exact product name | `public/products/apple-iphone-17/primary.png` | 1 |
-| POCO F8 Ultra | `GADGET-MOTO/POCO F8 ULTRA.PNG` | Exact product name | `public/products/poco-f8-ultra/primary.png` | 1 |
-| Redmi Note 15 Pro Plus 5G | `GADGET-MOTO/REDMI NOTE15 PRO PLUS.PNG` | Exact product family; visible poster confirms 5G model | `public/products/redmi-note-15-pro-plus-5g/primary.png` | 1 |
-| Redmi Turbo 5 | `GADGET-MOTO/REDMI TURBO 5.PNG` | Exact product name | `public/products/redmi-turbo-5/primary.png` | 1 |
-| Infinix Note 60 Pro 5G | `GADGET-MOTO/Note60PRO.PNG` | Probable; visible poster confirms the complete model | `public/products/infinix-note-60-pro-5g/primary.png` | 1 |
-| TECNO Camon 50 | `GADGET-MOTO/TECNO CAMON 50.PNG` | Exact product name | `public/products/tecno-camon-50/primary.png` | 1 |
-| POCO C85 | No suitable file discovered | Unmapped | Existing generated placeholder retained | 0 |
-| POCO Pad X1 | `GADGET-MOTO/POCO PAD X1.PNG` | Exact product name | `public/products/poco-pad-x1/primary.png` | 1 |
-| Xiaomi Pad 8 | `GADGET-MOTO/XIAOMI PAD 8.PNG` | Exact product name | `public/products/xiaomi-pad-8/primary.png` | 1 |
-| Redmi Pad 2 Pro 5G | `GADGET-MOTO/REDMIPAD 2 PRO.PNG` | Exact product family; visible poster confirms 5G model | `public/products/redmi-pad-2-pro-5g/primary.png` | 1 |
-| TECNO Mega Pad Pro | `GADGET-MOTO/TECNO MEGAPAD PRO.PNG` | Exact product name | `public/products/tecno-mega-pad-pro/primary.png` | 1 |
+| Xiaomi 17 Ultra 5G Leica Kit | `GADGET-MOTO/ChatGPT Image Jun 7, 2026, 05_15_10 PM.png` | Probable; manually matched to the exact visible product name | `public/products/xiaomi-17-ultra-5g-leica-kit/original.png` | Primary only |
+| Apple iPhone 17 | `GADGET-MOTO/IPHONE 17.PNG` | Exact product name | `public/products/apple-iphone-17/original.png` | Primary only |
+| POCO F8 Ultra | `GADGET-MOTO/POCO F8 ULTRA.PNG` | Exact product name | `public/products/poco-f8-ultra/original.png` | Primary only |
+| Redmi Note 15 Pro Plus 5G | `GADGET-MOTO/REDMI NOTE15 PRO PLUS.PNG` | Exact product family; visible poster confirms 5G model | `public/products/redmi-note-15-pro-plus-5g/original.png` | Primary only |
+| Redmi Turbo 5 | `GADGET-MOTO/REDMI TURBO 5.PNG` | Exact product name | `public/products/redmi-turbo-5/original.png` | Primary only |
+| Infinix Note 60 Pro 5G | `GADGET-MOTO/Note60PRO.PNG` | Probable; visible poster confirms the complete model | `public/products/infinix-note-60-pro-5g/original.png` | Primary only |
+| TECNO Camon 50 | `GADGET-MOTO/TECNO CAMON 50.PNG` | Exact product name | `public/products/tecno-camon-50/original.png` | Primary only |
+| POCO C85 | No suitable file discovered | Unmapped | Existing generated placeholder retained | Placeholder |
+| POCO Pad X1 | `GADGET-MOTO/POCO PAD X1.PNG` | Exact product name | `public/products/poco-pad-x1/original.png` | Primary only |
+| Xiaomi Pad 8 | `GADGET-MOTO/XIAOMI PAD 8.PNG` | Exact product name | `public/products/xiaomi-pad-8/original.png` | Primary only |
+| Redmi Pad 2 Pro 5G | `GADGET-MOTO/REDMIPAD 2 PRO.PNG` | Exact product family; visible poster confirms 5G model | `public/products/redmi-pad-2-pro-5g/original.png` | Primary only |
+| TECNO Mega Pad Pro | `GADGET-MOTO/TECNO MEGAPAD PRO.PNG` | Exact product name | `public/products/tecno-mega-pad-pro/original.png` | Primary only |
 
-The mapped products each have only one unique suitable source image, so no empty
-thumbnail controls or duplicate gallery frames are added.
+The mapped products each have only one unique suitable source image, so each is
+an explicit primary image and the additional gallery arrays remain empty. No
+empty thumbnail controls or duplicate gallery frames are added.
 
 The final storefront audit confirmed that the 11 published image paths remain
 unique, each is assigned only to its matching product, and POCO C85 continues
@@ -146,9 +153,12 @@ channel. Sizes are in bytes. Candidate identity and readiness are documented in
 
 ## Duplicate and ambiguity review
 
-- No two discovered files share the same SHA-256 digest.
-- The 11 published 800 × 600 primary images also have 11 unique SHA-256
-  digests, and no published image path is mapped to more than one product.
+- No two intake-source files share the same SHA-256 digest.
+- The 11 published original primary images have 11 unique SHA-256 digests, and
+  no published image path is mapped to more than one product.
+- Each public image has the same SHA-256 digest as its ignored source file. The
+  11 exact-copy pairs are intentional archival/source relationships, not two
+  active mappings.
 - Manual contact-sheet review found no unnecessary near-duplicate among the
   published primary images and no unrelated store watermark or confidential
   information.
@@ -168,9 +178,9 @@ channel. Sizes are in bytes. Candidate identity and readiness are documented in
   is also a different binary rendition from the already tracked
   `public/brand/gadgetmoto-logo-original.jpg`, so the approved logo was not
   replaced.
-- Full poster images are excluded from public pages because embedded
-  specifications, contact information, pricing, warranty, delivery, and other
-  marketing statements have not been approved as canonical storefront data.
+- Embedded poster text is preserved in the original public assets but is not
+  treated as canonical structured product, pricing, warranty, delivery, or
+  policy data.
 - All 70 source files associated with incomplete new-product candidates remain
   local only. None is promoted to a product route or purchasable catalog entry.
 - POCO C85 retains the existing generated placeholder because no exact or

@@ -375,6 +375,21 @@ Implementation cannot proceed unless it guarantees:
 
 The catalog consumer-integration checkpoints described above are complete. Production configuration, write-side commerce behavior, payment processing, administration, and deployment verification remain separate future checkpoints.
 
+## Product media contract
+
+The shared normalized product now carries an explicit nullable `primaryImage`
+plus additional `images`. A null primary is reserved for the existing generated
+placeholder; gallery entries never repeat the primary path. Static and
+database-normalized catalogs preserve the same serializable media shape, and
+metadata, sitemap images, product cards, details, search, comparison, cart, and
+checkout consume it without adding a browser database boundary.
+
+The 11 approved primary assets are exact byte copies of the original
+user-supplied files. They preserve their intrinsic dimensions and render with
+contain-and-center behavior. POCO C85 remains the sole placeholder. The catalog
+still contains exactly 12 products, SKUs, slugs, and product routes. No complete
+new folder record was available, so no catalog record or migration was added.
+
 ## Final storefront structure status
 
 ### Completed

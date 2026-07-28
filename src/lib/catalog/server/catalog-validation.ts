@@ -229,6 +229,7 @@ export function normalizeDatabaseCatalogRows(
         financingMessage: staticProduct.financingMessage,
         financingAvailable: row.financing_available,
         artSeed: staticProduct.artSeed,
+        primaryImage: staticProduct.primaryImage,
         images: staticProduct.images,
         specifications: staticProduct.specifications,
       }),

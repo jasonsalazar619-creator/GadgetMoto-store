@@ -11,9 +11,12 @@ No proposed slug is assigned until the exact marketed product identity is
 approved. No official specification lookup was performed because every candidate
 is already blocked by missing GadgetMoTo transactional fields.
 
-Checkpoint 49A publishes no candidate. The approved catalog remains the same
-12 products, 68 incomplete candidates remain excluded, and POCO C85 continues
-to await an approved local image while using the safe storefront placeholder.
+The complete-folder catalog review publishes no candidate. The approved catalog
+remains the same 12 products, 68 incomplete candidates remain excluded, and
+POCO C85 continues to await an approved local image while using the safe
+storefront placeholder. The site has no separately approved non-transactional
+upcoming-product content model, so the candidates remain documented rather than
+being mixed into transactional search, product routes, cart, or checkout.
 
 ## Required-data codes
 
