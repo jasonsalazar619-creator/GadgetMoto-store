@@ -7,8 +7,8 @@ import { useComparison } from "./comparison-provider";
 
 const messengerUrl = "https://www.facebook.com/profile.php?id=100063905416187";
 const peso = new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP", maximumFractionDigits: 0 });
-const paymentMethods = "Maya online payment; Cash on store pickup; Manual bank or e-wallet transfer; Financing assistance through the sales team";
-const deliveryOptions = "Nationwide delivery; Same-day delivery where available; Store pickup in Cavite City. Details confirmed by the sales team.";
+const paymentMethods = "Maya online payment (coming later); manual bank or e-wallet transfer after sales-team confirmation; financing options are informational only; no cash on delivery";
+const deliveryOptions = "Nationwide delivery; same-day delivery where available; store pickup is currently unavailable. Details require sales-team confirmation.";
 
 export function ComparisonPageContent() {
   const { selectedProducts, selectionCount, removeProduct, clearProducts } = useComparison();
@@ -27,6 +27,7 @@ export function ComparisonPageContent() {
     ["Verified SRP", (product) => product.srp ? peso.format(product.srp) : "Not provided"],
     ["Savings", (product) => product.srp ? peso.format(product.srp - product.currentPrice) : "Not available"],
     ["Condition", (product) => product.condition],
+    ["Availability", () => "Contact us to confirm availability."],
     ["Promotion", (product) => product.badge === "sale" ? "Sale" : product.badge === "new" ? "New" : "None"],
     ["Financing", (product) => product.financingAvailable ? "Available through the sales team" : "Not available"],
     ["Store payment options", () => paymentMethods],

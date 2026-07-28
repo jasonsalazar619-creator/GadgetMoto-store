@@ -12,6 +12,8 @@
 - Exact binary duplicates: 0
 - Ambiguous files: 1
 - Product gallery size after this checkpoint: one image for each mapped product
+- Storefront presentation: square, centered, `object-contain` media with
+  consistent internal padding across customer-facing product surfaces
 
 The 11 published images are approved user-supplied GadgetMoTo project assets.
 No manufacturer-page image was downloaded for this checkpoint, and no
@@ -45,6 +47,11 @@ other unverified claims.
 
 The mapped products each have only one unique suitable source image, so no empty
 thumbnail controls or duplicate gallery frames are added.
+
+The final storefront audit confirmed that the 11 published image paths remain
+unique, each is assigned only to its matching product, and POCO C85 continues
+to use the approved generated placeholder. No external image hotlink, Base64
+image, fabricated product photo, or cross-product substitution was added.
 
 ## Source-file metadata
 

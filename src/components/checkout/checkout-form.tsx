@@ -96,6 +96,7 @@ function Field({
   value,
   error,
   onChange,
+  required = true,
   ...props
 }: {
   label: string;
@@ -103,6 +104,7 @@ function Field({
   value: string;
   error?: string;
   onChange: (name: FieldName, value: string) => void;
+  required?: boolean;
 } & Omit<
   React.InputHTMLAttributes<HTMLInputElement>,
   "name" | "value" | "onChange"
@@ -110,7 +112,12 @@ function Field({
   return (
     <label className="checkout-field" htmlFor={`checkout-${name}`}>
       <span>
-        {label} <b aria-hidden="true">*</b>
+        {label}{" "}
+        {required ? (
+          <b aria-hidden="true">*</b>
+        ) : (
+          <i>Optional</i>
+        )}
       </span>
       <input
         {...props}
@@ -119,6 +126,7 @@ function Field({
         id={`checkout-${name}`}
         name={name}
         onChange={(event) => onChange(name, event.target.value)}
+        required={required}
         value={value}
       />
       {error ? (
@@ -167,7 +175,11 @@ const getCustomerError = (
   return "We could not receive your order. Please try again later.";
 };
 
-export function CheckoutForm() {
+export function CheckoutForm({
+  onlineOrderingEnabled,
+}: {
+  onlineOrderingEnabled: boolean;
+}) {
   const { items, subtotal, clearCart } = useCart();
   const { productBySlug } = useCatalog();
   const [values, setValues] = useState(initialValues);
@@ -237,9 +249,9 @@ export function CheckoutForm() {
   }, [cartSignature]);
 
   useEffect(() => {
-    if (!cartSignature) return;
+    if (!onlineOrderingEnabled || !cartSignature) return;
     ensureIdempotencyKey();
-  }, [cartSignature, ensureIdempotencyKey]);
+  }, [cartSignature, ensureIdempotencyKey, onlineOrderingEnabled]);
 
   useEffect(() => {
     if (
@@ -283,7 +295,10 @@ export function CheckoutForm() {
       next.mobile =
         "Enter a Philippine mobile number such as 09XXXXXXXXX or +639XXXXXXXXX.";
     }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email.trim())) {
+    if (
+      values.email.trim() &&
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email.trim())
+    ) {
       next.email = "Enter a valid email address.";
     }
     if (!values.street.trim()) {
@@ -344,6 +359,13 @@ export function CheckoutForm() {
   };
 
   const submitOrder = async () => {
+    if (!onlineOrderingEnabled) {
+      setSubmissionError(
+        "Online order submission is currently unavailable. Please contact us to complete your order.",
+      );
+      return;
+    }
+
     if (submissionInFlightRef.current) return;
 
     const next = validate();
@@ -480,6 +502,30 @@ export function CheckoutForm() {
     }
   };
 
+  const contactSummary = [
+    "GadgetMoTo order inquiry",
+    ...items.map(
+      (item) =>
+        `${item.product.name} — ${item.variant} — Qty ${item.quantity}`,
+    ),
+    `Estimated merchandise subtotal: ${money.format(subtotal)}`,
+    `Delivery preference: ${deliveryLabels[values.delivery]}`,
+    "Please confirm product availability, delivery charges, and payment instructions.",
+  ].join("\n");
+
+  const copyContactSummary = async () => {
+    try {
+      await navigator.clipboard.writeText(contactSummary);
+      setGuidance(
+        "Order summary copied. Paste it into your Messenger conversation when you are ready.",
+      );
+    } catch {
+      setGuidance(
+        "Messenger is opening. The same order summary remains visible below for you to copy.",
+      );
+    }
+  };
+
   if (orderResult) {
     return (
       <section
@@ -552,10 +598,23 @@ export function CheckoutForm() {
         </p>
         <h1>Review your GadgetMoTo order.</h1>
         <p>
-          Provide delivery details, then submit the order for availability
-          and final-total confirmation.
+          Provide delivery details and review your cart before contacting
+          our sales team.
         </p>
       </div>
+      {!onlineOrderingEnabled ? (
+        <aside className="checkout-ordering-notice" role="status">
+          <h2>Contact-based ordering is active.</h2>
+          <p>
+            Online order submission is currently unavailable. Please
+            contact us to complete your order.
+          </p>
+          <p>
+            Contact us to confirm product availability, delivery charges,
+            and payment instructions.
+          </p>
+        </aside>
+      ) : null}
       {guidance ? (
         <p aria-live="polite" className="checkout-guidance">
           {guidance}
@@ -613,6 +672,7 @@ export function CheckoutForm() {
                 label="Email address"
                 name="email"
                 onChange={update}
+                required={false}
                 type="email"
                 value={values.email}
               />
@@ -650,8 +710,11 @@ export function CheckoutForm() {
                 >
                   <input disabled name="delivery" type="radio" />
                   <span>
-                    <strong>Store Pickup in Cavite City</strong>
-                    <small>Pickup option coming soon.</small>
+                    <strong>Store Pickup</strong>
+                    <small>
+                      Unavailable until branch and pickup details are
+                      confirmed.
+                    </small>
                   </span>
                 </label>
               </div>
@@ -729,8 +792,8 @@ export function CheckoutForm() {
                       <strong>{paymentLabels[method]}</strong>
                       <small>
                         {method === "maya-online"
-                          ? "Maya payment integration remains pending. Submitting this order will not process a payment."
-                          : "Payment details will be provided only after the order is reviewed and confirmed."}
+                          ? "Informational only. Maya payment integration remains pending, and no payment will be processed."
+                          : "Informational only. Payment instructions are provided after availability and delivery are confirmed."}
                       </small>
                     </span>
                   </label>
@@ -828,7 +891,7 @@ export function CheckoutForm() {
             </fieldset>
           </section>
           <button className="checkout-review-button" type="submit">
-            Review Order
+            Review Order Details
           </button>
         </div>
 
@@ -889,10 +952,15 @@ export function CheckoutForm() {
           tabIndex={-1}
         >
           <p className="type-eyebrow">ORDER REVIEW READY</p>
-          <h2>Review your details before submitting.</h2>
+          <h2>
+            {onlineOrderingEnabled
+              ? "Review your details before submitting."
+              : "Review your details before contacting us."}
+          </h2>
           <strong>
-            Submitting receives the order for review. It does not process
-            a payment or mark the order as paid.
+            {onlineOrderingEnabled
+              ? "Submitting receives the order for review. It does not process a payment or mark the order as paid."
+              : "Online submission is unavailable. Use the contact action below to continue deliberately through Messenger."}
           </strong>
           <div className="checkout-review-grid">
             <section>
@@ -954,6 +1022,22 @@ export function CheckoutForm() {
               </dd>
             </div>
           </dl>
+          {!onlineOrderingEnabled ? (
+            <section
+              aria-labelledby="checkout-contact-summary-title"
+              className="checkout-contact-summary"
+            >
+              <h3 id="checkout-contact-summary-title">
+                Order inquiry summary
+              </h3>
+              <pre>{contactSummary}</pre>
+              <p>
+                This summary contains cart and delivery-preference details
+                only. It does not include your personal contact or address
+                information.
+              </p>
+            </section>
+          ) : null}
           <div>
             <button
               onClick={() => {
@@ -966,14 +1050,28 @@ export function CheckoutForm() {
             >
               Edit Checkout Details
             </button>
-            <button
-              className="checkout-submit-order"
-              disabled={submitting}
-              onClick={submitOrder}
-              type="button"
-            >
-              {submitting ? "Sending order…" : "Submit Order"}
-            </button>
+            {onlineOrderingEnabled ? (
+              <button
+                className="checkout-submit-order"
+                disabled={submitting}
+                onClick={submitOrder}
+                type="button"
+              >
+                {submitting ? "Sending order…" : "Submit Order"}
+              </button>
+            ) : (
+              <a
+                className="checkout-submit-order"
+                href={messengerUrl}
+                onClick={() => {
+                  void copyContactSummary();
+                }}
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                Message us to complete your order
+              </a>
+            )}
           </div>
         </section>
       ) : null}

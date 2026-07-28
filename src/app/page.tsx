@@ -1,10 +1,12 @@
+import type { Metadata } from "next";
+
 import { BrandGrid } from "@/components/storefront/brand-grid";
 import { BudgetGrid } from "@/components/storefront/budget-grid";
 import { ComparePromo } from "@/components/storefront/compare-promo";
+import { ContactOrderSection } from "@/components/storefront/contact-order-section";
 import { DeliveryOptions } from "@/components/storefront/delivery-options";
 import { HeroSection } from "@/components/storefront/hero-section";
 import { PaymentOptions } from "@/components/storefront/payment-options";
-import { PriceAlertPreview } from "@/components/storefront/price-alert-preview";
 import { ProductCard } from "@/components/storefront/product-card";
 import { SectionHeading } from "@/components/storefront/section-heading";
 import { StorefrontFooter } from "@/components/storefront/storefront-footer";
@@ -18,6 +20,13 @@ const trustPoints = [
   ["Secure payment process", "Payment confirmation will follow a secure server-verified process."],
   ["Helpful sales support", "Connect with the GadgetMoTo sales team through Messenger."],
 ] as const;
+
+export const metadata: Metadata = {
+  title: "GadgetMoTo",
+  description:
+    "Shop phones and tablets with confirmed prices, flexible ways to pay, and nationwide delivery planning.",
+  alternates: { canonical: "/" },
+};
 
 export default async function Home() {
   const products = await getCatalogProducts();
@@ -36,7 +45,7 @@ export default async function Home() {
 
         <section className="py-[var(--space-section)]" id="new-arrivals">
           <Container className="storefront-container">
-            <SectionHeading eyebrow="New arrivals" title="Fresh upgrades just landed." description="Explore the latest verified phones in the GadgetMoTo prototype catalog." />
+            <SectionHeading eyebrow="Featured phones" title="Fresh upgrades worth exploring." description="Browse verified phones with confirmed variants and current GadgetMoTo prices." />
             <div className="product-grid mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {newArrivalProducts.map((product) => <ProductCard key={product.id} product={product} />)}
             </div>
@@ -52,14 +61,14 @@ export default async function Home() {
 
         <section className="py-[var(--space-section)]">
           <Container className="storefront-container">
-            <SectionHeading eyebrow="Shop by budget" title="Start with what feels right." description="A simple way to explore the range. Filtering will be added in a later checkpoint." />
+            <SectionHeading eyebrow="Shop by budget" title="Start with what feels right." description="Choose a price range to open the matching catalog selection." />
             <div className="mt-12"><BudgetGrid /></div>
           </Container>
         </section>
 
         <section className="overflow-hidden bg-[var(--color-sky)] py-[var(--space-section)]" id="tablets">
           <Container className="storefront-container">
-            <SectionHeading eyebrow="Featured tablets" title="More room to work, watch, and explore." description="Verified tablet picks from the GadgetMoTo prototype catalog." />
+            <SectionHeading eyebrow="Featured tablets" title="More room to work, watch, and explore." description="Verified tablet picks with confirmed variants and current GadgetMoTo prices." />
             <div className="product-grid mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {featuredTablets.map((product) => <ProductCard key={product.id} layout="tablet" product={product} />)}
             </div>
@@ -85,7 +94,7 @@ export default async function Home() {
           </Container>
         </section>
 
-        <PriceAlertPreview />
+        <ContactOrderSection />
       </main>
       <StorefrontFooter />
     </>

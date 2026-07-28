@@ -116,7 +116,7 @@ and until the M1 intake is supplied.
 - Product-route count: unchanged at 12
 - New-product migration: none
 - Separate corrective migration:
-  `20260726175847_correct_product_physical_ram.sql`, undeployed
+  `20260726175847_correct_product_physical_ram.sql`, deployed and synchronized
 - Existing products, slugs, SKUs, prices, SRPs, ordering, and inventory:
   unchanged
 - Approved variant correction: Infinix Note 60 Pro 5G and TECNO Camon 50 use
@@ -125,3 +125,7 @@ and until the M1 intake is supplied.
 - Candidate images: retained locally in `GADGET-MOTO/` and intentionally
   excluded from deployment until the corresponding D1/D2/D3 decisions are
   resolved
+
+The final storefront completion phase does not promote any intake candidate.
+The customer-facing catalog remains exactly 12 products and 12 unique product
+routes.

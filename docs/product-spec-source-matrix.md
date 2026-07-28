@@ -254,4 +254,5 @@ from manufacturer pages. Verification was performed on 2026-07-26.
 - Transactional correction: Infinix Note 60 Pro 5G and TECNO Camon 50 now use
   8GB physical RAM and the approved extended-memory label. Their canonical
   SKUs, prices, SRPs, storage, badges, financing, activation, and order remain
-  unchanged. The forward-only correction migration remains undeployed.
+  unchanged. The forward-only correction migration is deployed and
+  synchronized.

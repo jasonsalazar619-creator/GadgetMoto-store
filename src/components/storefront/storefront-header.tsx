@@ -11,7 +11,7 @@ export function StorefrontHeader() {
   return (
     <header className="relative z-30 bg-white">
       <div className="bg-[var(--color-ink)] py-2.5 text-center text-xs font-semibold tracking-wide text-white sm:text-sm">
-        <Container>Flexible ways to pay <span aria-hidden="true">•</span> Nationwide delivery <span aria-hidden="true">•</span> Store pickup in Cavite City</Container>
+        <Container>Flexible ways to pay <span aria-hidden="true">•</span> Nationwide delivery <span aria-hidden="true">•</span> Availability confirmed by our sales team</Container>
       </div>
       <Container className="storefront-container flex min-h-20 items-center justify-between gap-5 lg:min-h-24">
         <Link aria-label="GadgetMoTo home" className="storefront-lockup" href="/"><BrandLockup variant="compact" /></Link>
@@ -21,6 +21,7 @@ export function StorefrontHeader() {
           <Link className="nav-link" href="/tablets">Tablets</Link>
           <ComparisonCountLink />
           <Link className="nav-link" href="/#payments">Financing</Link>
+          <Link className="nav-link" href="/contact">Contact</Link>
         </nav>
         <div className="flex items-center gap-2">
           <GlobalSearchTrigger />
@@ -29,13 +30,14 @@ export function StorefrontHeader() {
         </div>
       </Container>
       <nav aria-label="Mobile navigation" className="border-y border-[var(--color-border)] lg:hidden">
-        <Container className="storefront-container flex gap-6 overflow-x-auto py-3.5 text-sm font-semibold text-[var(--color-graphite)]">
+        <Container className="mobile-nav-scroll storefront-container flex gap-6 overflow-x-auto py-3.5 text-sm font-semibold text-[var(--color-graphite)]">
           <Link className="whitespace-nowrap" href="/shop">Shop</Link>
           <Link className="whitespace-nowrap" href="/phones">Phones</Link>
           <Link className="whitespace-nowrap" href="/tablets">Tablets</Link>
           <ComparisonCountLink mobile />
           <Link className="whitespace-nowrap" href="/#payments">Ways to pay</Link>
-          <a className="whitespace-nowrap text-[var(--color-action)]" href={messengerUrl} rel="noopener noreferrer" target="_blank">Message Us</a>
+          <Link className="whitespace-nowrap" href="/contact">Contact</Link>
+          <a className="whitespace-nowrap text-[var(--color-action)]" href={messengerUrl} rel="noopener noreferrer" target="_blank">Messenger</a>
         </Container>
       </nav>
     </header>

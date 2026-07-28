@@ -10,9 +10,9 @@ The matrix below remains the immutable historical record of the deployed
 bootstrap. A later approved correction treats the two `16` SKU segments for
 Infinix Note 60 Pro 5G and TECNO Camon 50 as opaque identifier text, not
 physical-RAM values. Forward-only migration
-`20260726175847_correct_product_physical_ram.sql` will change those two rows to
+`20260726175847_correct_product_physical_ram.sql` changed those two rows to
 8GB physical RAM and the variant label
-`8GB RAM + 8GB Extended / 256GB`; it remains undeployed.
+`8GB RAM + 8GB Extended / 256GB`; it is deployed and synchronized.
 
 ## Explicit UUID mapping
 

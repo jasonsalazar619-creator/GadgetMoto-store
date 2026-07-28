@@ -22,7 +22,36 @@ export function generateStaticParams() { return getAllProducts().map(({ slug }) 
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
   const product = await getCatalogProductBySlug((await params).slug);
   if (!product) return { title: "Product not found | GadgetMoTo" };
-  return { title: formatProductTitle(product), description: `View the ${product.name} in ${product.variant} at GadgetMoTo. Explore available payment and delivery options.` };
+  const description = `View the ${product.name} in ${product.variant} at GadgetMoTo. Compare confirmed details and contact us for availability.`;
+  const image = product.images[0];
+  return {
+    title: formatProductTitle(product),
+    description,
+    alternates: { canonical: `/products/${product.slug}` },
+    openGraph: {
+      type: "website",
+      title: formatProductTitle(product),
+      description,
+      images: image
+        ? [
+            {
+              url: image.src,
+              width: image.width,
+              height: image.height,
+              alt: image.alt,
+            },
+          ]
+        : ["/brand/gadgetmoto-logo-original.jpg"],
+    },
+    twitter: {
+      card: image ? "summary_large_image" : "summary",
+      title: formatProductTitle(product),
+      description,
+      images: [
+        image?.src ?? "/brand/gadgetmoto-logo-original.jpg",
+      ],
+    },
+  };
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
@@ -39,7 +68,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
       <section className="pb-[var(--space-section)]">
         <Container className="storefront-container product-detail-grid">
           <div className="product-gallery">
-            <div className={`product-gallery__main product-art--${product.artSeed}`}><ProductArtwork product={product} sizes="(max-width: 1023px) 100vw, 55vw" /></div>
+            <div className={`product-gallery__main product-art--${product.artSeed}`}><ProductArtwork loading="eager" product={product} sizes="(max-width: 1023px) 100vw, 55vw" /></div>
             <p className="mt-4 text-xs text-[var(--color-muted)]">
               {product.images.length
                 ? "Product appearance may vary by color or regional configuration."
@@ -49,7 +78,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <div className="product-detail-info">
             <p className="type-eyebrow text-[var(--color-action)]">{product.brand} · {product.category}</p>
             <h1 className="type-h1 mt-5">{product.name}</h1>
-            <dl className="product-facts mt-7"><div><dt>Variant</dt><dd>{product.variant}</dd></div><div><dt>Condition</dt><dd>{product.condition}</dd></div><div><dt>Availability</dt><dd>Confirm with our sales team</dd></div></dl>
+            <dl className="product-facts mt-7"><div><dt>Variant</dt><dd>{product.variant}</dd></div><div><dt>Condition</dt><dd>{product.condition}</dd></div><div><dt>Availability</dt><dd>Contact us to confirm availability.</dd></div></dl>
             <PriceDisplay className="mt-8" currentPrice={product.currentPrice} originalPrice={product.srp} />
             <p className="mt-3 text-sm leading-relaxed text-[var(--color-muted)]">VAT is calculated separately. The applicable VAT rate is pending confirmation.</p>
             <p className="mt-4 font-semibold text-[var(--color-action)]">{product.financingMessage}</p>
@@ -77,8 +106,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
               ))}
             </dl>
           </article>
-          <article className="detail-summary"><p className="type-eyebrow text-[var(--color-action)]">Ways to pay</p><h2 className="type-h3 mt-4">Payment options</h2><ul><li>Maya online payment</li><li>Cash on store pickup</li><li>Manual bank or e-wallet transfer</li><li>Financing assistance through the sales team</li></ul><p>Financing availability and approval depend on the selected provider.</p></article>
-          <article className="detail-summary"><p className="type-eyebrow text-[var(--color-action)]">Getting your order</p><h2 className="type-h3 mt-4">Delivery and pickup</h2><ul><li>Nationwide delivery</li><li>Same-day delivery where available</li><li>Store pickup in Cavite City</li></ul><p>Availability and delivery details will be confirmed by the sales team.</p></article>
+          <article className="detail-summary"><p className="type-eyebrow text-[var(--color-action)]">Ways to pay</p><h2 className="type-h3 mt-4">Payment options</h2><ul><li>Maya online payment · coming later</li><li>Manual bank or e-wallet transfer after confirmation</li><li>Financing options are informational only</li><li>No cash on delivery</li></ul><p>Payment instructions and financing availability require sales-team confirmation.</p></article>
+          <article className="detail-summary"><p className="type-eyebrow text-[var(--color-action)]">Getting your order</p><h2 className="type-h3 mt-4">Delivery and pickup</h2><ul><li>Nationwide delivery</li><li>Same-day delivery where available</li><li>Store pickup currently unavailable</li></ul><p>Contact us to confirm availability, delivery charges, and timing.</p></article>
         </Container>
       </section>
       <section className="py-[var(--space-section)]">

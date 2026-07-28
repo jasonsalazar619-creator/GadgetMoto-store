@@ -6,7 +6,7 @@ This document records the final approved implementation decisions for moving the
 
 The user approved all 13 catalog-integration decisions without changes. The exact sort order 0 through 11, dedicated `storefront` schema and catalog view, non-login `gadgetmoto_storefront_reader` role, server-only direct PostgreSQL access, `database-with-static-fallback` launch mode, whole-result validation and fallback, static route and metadata fallback, and one shared normalized catalog provider are approved.
 
-Migration `20260717234135_catalog_ordering_storefront_read_model.sql` deployed successfully, and all seven deployed migration versions now match locally and remotely. The deployed `public.products.sort_order` values were manually verified as the exact approved sequence from 0 through 11. The `storefront.catalog_products` view was verified with all 17 approved columns and exactly 12 rows, and its product, variant, and pricing values passed manual parity verification.
+Migration `20260717234135_catalog_ordering_storefront_read_model.sql` deployed successfully. The later secure-order and physical-RAM correction migrations are also deployed, and all eight deployed migration versions are user-confirmed as synchronized locally and remotely. The deployed `public.products.sort_order` values were manually verified as the exact approved sequence from 0 through 11. The `storefront.catalog_products` view was verified with all 17 approved columns and exactly 12 rows, and its product, variant, and pricing values passed manual parity verification.
 
 The `gadgetmoto_storefront_reader` role exists as a non-login role with zero active connections. Login, superuser, role creation, database creation, RLS bypass, and replication are all disabled. No login credential or password exists, and no browser-facing or Data API access was introduced.
 
@@ -14,7 +14,7 @@ The separate server login role `gadgetmoto_storefront_app` was created manually 
 
 The app role inherits `gadgetmoto_storefront_reader`, and the membership was verified successfully. Effective `USAGE` on the `storefront` schema and `SELECT` on `storefront.catalog_products` were verified. Direct `SELECT` on `public.products` and `public.orders` remains unavailable. No browser-facing or Data API access was introduced.
 
-All seven deployed migrations remain immutable. The database contains the manually verified parity copy of 6 brands, 12 products, and 12 product variants. Postgres.js `3.4.9` is installed, and the server-only catalog boundary now implements request-memoized `getCatalogProducts()` and `getCatalogProductBySlug()`. Controlled application-consumer integration covers the homepage catalog sections, `/shop`, `/phones`, `/tablets`, and all 12 product-detail routes; static data in `src/data/prototype-products.ts` remains the active source under the default configuration.
+All eight deployed migrations remain immutable. The database contains the manually verified parity copy of 6 brands, 12 products, and 12 product variants. Postgres.js `3.4.9` is installed, and the server-only catalog boundary now implements request-memoized `getCatalogProducts()` and `getCatalogProductBySlug()`. Controlled application-consumer integration covers the homepage catalog sections, `/shop`, `/phones`, `/tablets`, and all 12 product-detail routes; static data in `src/data/prototype-products.ts` remains the active source under the default configuration.
 
 The adapter selects only the 17 approved columns from `storefront.catalog_products`, validates and normalizes the complete parity result, and rejects the entire result on any mismatch. `database-with-static-fallback` returns either the complete validated database catalog or the complete canonical static catalog; partial merging is prohibited. Static enrichment supplies only compatibility and presentation fields absent from the read model, including the legacy application `id`, fixed financing label, placeholder `artSeed`, and verified product specifications.
 
@@ -32,7 +32,7 @@ The homepage Server Component now calls `getCatalogProducts()` exactly once and 
 
 Product-detail rendering and metadata resolve exact slugs through `getCatalogProductBySlug()`, while related products use the same complete ordered catalog through request-scoped memoization. The canonical 12 static slugs remain the build-safe source for `generateStaticParams()`, and existing not-found behavior, metadata, related-product rules, routes, and presentation remain unchanged.
 
-The async root Server Component now loads one normalized catalog payload and passes it into `src/components/catalog/catalog-provider.tsx`. This client provider exposes read-only products, canonical SKU, and stable slug lookup helpers without diagnostics, environment values, database UUIDs, or server-only code. Global search, comparison, cart, and the checkout summary consume this shared data flow. Their ranking, result limit, localStorage keys, selection limit, quantities, current-price resolution, hydration safeguards, drawer and tray behavior, and empty states remain unchanged. Checkout remains a review-only client experience: it sends no customer, cart, order, or payment data to Supabase and performs no live payment action.
+The async root Server Component now loads one normalized catalog payload and passes it into `src/components/catalog/catalog-provider.tsx`. This client provider exposes read-only products, canonical SKU, and stable slug lookup helpers without diagnostics, environment values, database UUIDs, or server-only code. Global search, comparison, cart, and the checkout summary consume this shared data flow. Their ranking, result limit, localStorage keys, selection limit, quantities, current-price resolution, hydration safeguards, drawer and tray behavior, and empty states remain unchanged. Checkout validates and reviews customer choices but remains contact-first while live online submission is disabled; it performs no live payment action.
 
 ## Canonical SKU and specification enrichment
 
@@ -67,8 +67,8 @@ enrichment cannot overwrite those values.
 
 Forward-only migration `20260726175847_correct_product_physical_ram.sql`
 corrects only the two matching variant rows by complete canonical SKU. It
-changes `ram_gb` and `variant_name` only, remains undeployed, and does not
-modify any of the seven deployed migrations.
+changes `ram_gb` and `variant_name` only, is deployed and synchronized, and
+does not modify any earlier deployed migration.
 
 ## Decisions inherited from the approved architecture
 
@@ -364,7 +364,7 @@ Implementation cannot proceed unless it guarantees:
 - Global Search consumes the shared read-only payload.
 - Comparison no longer imports an independent static product source.
 - Cart resolves persisted slug-and-variant lines against the shared current catalog.
-- Checkout consumes catalog-resolved cart items and current prices while remaining review-only.
+- Checkout consumes catalog-resolved cart items and current prices, validates the customer-entered form, and remains contact-first while live online submission is disabled.
 
 ### Checkpoint E — Static-source retirement review
 
@@ -389,13 +389,13 @@ The catalog consumer-integration checkpoints described above are complete. Produ
 ### Still pending
 
 - Production environment configuration and deployment verification
-- Order-creation server transaction and customer checkout submission
+- Controlled activation and database testing of online order submission
 - Inventory reservation and expiry behavior
 - Delivery-fee and confirmed VAT rules
 - Maya payment integration, server verification, webhooks, and proof-of-payment handling where required
 - Staff authentication and admin catalog, inventory, and order-management tools
 
-The storefront structure is complete, and secure atomic order creation is the next backend phase. The future server transaction will reload authoritative variants and prices, calculate all confirmed amounts in integer centavos, and will not trust client prices, line totals, subtotals, inventory claims, or payment status. The current checkout performs review only and submits no order.
+The storefront structure and secure atomic order-creation code are complete. The transaction reloads authoritative variants and prices, calculates confirmed amounts in integer centavos, and does not trust client prices, line totals, subtotals, inventory claims, or payment status. The current launch state keeps live submission disabled and hands customers to Messenger after review; no order is submitted.
 
 ## Approval checklist
 

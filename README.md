@@ -1,6 +1,6 @@
 # GadgetMoTo Storefront
 
-GadgetMoTo is a production-oriented Next.js storefront for phones and tablets. The current website includes the approved responsive homepage, catalog and category pages, 12 product-detail routes, local product search, comparison, cart, and a delivery-only guest checkout with an uncalled secure order endpoint.
+GadgetMoTo is a production-oriented Next.js storefront for phones and tablets. The customer-facing website includes a responsive homepage, catalog and category pages, 12 product-detail routes, product search, comparison, cart, checkout, and contact-based ordering through Facebook Messenger.
 
 ## Current catalog architecture
 
@@ -9,9 +9,9 @@ GadgetMoTo is a production-oriented Next.js storefront for phones and tablets. T
 - Request-scoped catalog memoization for consistent server rendering and metadata
 - One server-initialized client catalog provider for search, comparison, cart, and checkout summaries
 - Canonical static catalog remains the default source, complete fallback, build-safe route-slug source, and placeholder-presentation source
-- A least-privilege PostgreSQL read model is prepared and previously verified, but production environment configuration and deployment verification remain pending
+- A least-privilege PostgreSQL read model is prepared and previously verified; production database configuration remains intentionally absent
 
-No environment file, database credential, configured order-database connection, public catalog API, or live payment flow is included in the repository.
+Live online submission is disabled by default. No environment file, database credential, configured order-database connection, public catalog API, or live payment flow is included in the repository.
 
 ## Local development
 
@@ -42,25 +42,28 @@ git diff --check
 - `/compare`
 - `/cart`
 - `/checkout`
+- `/contact`
 - `/privacy-policy`
 - `/terms-and-conditions`
 - `/design-system`
 
 ## Completed
 
-- Catalog and commerce database foundation with seven immutable deployed migrations
+- Catalog and commerce database foundation with eight immutable deployed migrations
 - Secure storefront read model and least-privilege reader architecture
 - Deployed secure order-transaction schema, an uncalled server-only order-creation service, and `POST /api/orders`
 - Server-only PostgreSQL client, catalog query, validation, normalization, and fallback
 - Controlled static and database connectivity verification
-- Homepage, shop, phones, tablets, product-detail, metadata, and related-product catalog integration
+- Homepage, shop, phones, tablets, product-detail, contact, metadata, sitemap, robots, and related-product catalog integration
 - Shared client catalog provider
-- Global search, comparison, cart, and catalog-driven checkout summary integration
-- Static-mode lint and production-build validation
+- Global search, comparison, cart, and catalog-driven checkout integration
+- Contact-first checkout fallback that preserves cart contents and never fabricates order success
+- Product media for 11 products plus the approved POCO C85 placeholder
+- Responsive, accessibility, static-mode lint, and production-build validation
 
 ## Still pending
 
-- Production environment configuration and deployment verification
+- Secure production database configuration and controlled live-order activation
 - Controlled database testing of the order-creation transaction
 - Reservation release, expiry-job, and conversion workflows
 - Controlled database and endpoint testing with inventory and location readiness
@@ -70,17 +73,19 @@ git diff --check
 - Proof-of-payment handling where required
 - Staff authentication
 - Admin catalog, inventory, and order-management tools
-- Production product imagery
+- Approved POCO C85 imagery
+- Final business-supplied privacy, terms, warranty, cancellation, and refund wording
 
-Checkout is connected to the secure endpoint in code, but the endpoint has not been called and production order configuration remains absent. No order or payment was created during implementation.
+`ONLINE_ORDERING_ENABLED` is the server-side activation gate. It is disabled unless explicitly set to `1`. While disabled, checkout does not call `POST /api/orders`; customers can review their cart and deliberately continue through Messenger. The endpoint also returns a safe unavailable response before parsing or creating an order. No order or payment was created during storefront completion.
 
 ## Current implementation status
 
 - Storefront catalog integration: complete
-- Checkout interface, review flow, submission states, and delivery-only request contract: complete
+- Checkout interface, validation, review flow, contact handoff, and delivery-only request contract: complete
 - Secure server-side order service and endpoint: implemented but uncalled
+- Live online-order submission: disabled pending controlled configuration and business readiness
 - Maya and other live payment integration: pending
 - Staff and admin tools: pending
-- Production environment configuration and deployment verification: pending
+- Vercel project connection: complete; production redeployment follows pushes to `main`
 
-The proposed order contract, atomic transaction, inventory and idempotency gaps, payment boundary, and unresolved launch decisions are documented in `docs/order-creation-transaction-plan.md`.
+The order contract, atomic transaction, inventory and idempotency boundaries, payment boundary, and unresolved launch decisions are documented in `docs/order-creation-transaction-plan.md`. Current launch readiness is summarized in `docs/storefront-launch-status.md`.

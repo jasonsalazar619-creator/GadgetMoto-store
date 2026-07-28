@@ -6,12 +6,14 @@ import { DevicePlaceholder } from "./device-placeholder";
 type ProductArtworkProps = Readonly<{
   product: PrototypeProduct;
   className?: string;
+  loading?: "eager" | "lazy";
   sizes: string;
 }>;
 
 export function ProductArtwork({
   product,
   className = "",
+  loading,
   sizes,
 }: ProductArtworkProps) {
   const image = product.images[0];
@@ -30,6 +32,7 @@ export function ProductArtwork({
       alt={image.alt}
       className={`product-artwork ${className}`.trim()}
       height={image.height}
+      loading={loading}
       sizes={sizes}
       src={image.src}
       width={image.width}

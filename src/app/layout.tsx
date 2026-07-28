@@ -7,10 +7,35 @@ import { CartProvider } from "@/components/cart/cart-provider";
 import { CartDrawer } from "@/components/cart/cart-drawer";
 import { CatalogProvider } from "@/components/catalog/catalog-provider";
 import { getCatalogProducts } from "@/lib/catalog/server/catalog";
+import { siteUrl } from "@/lib/site/server";
 
 export const metadata: Metadata = {
+  metadataBase: siteUrl,
   title: "GadgetMoTo",
   description: "Phones and tablets for every lifestyle, budget, and way to pay.",
+  applicationName: "GadgetMoTo",
+  openGraph: {
+    type: "website",
+    siteName: "GadgetMoTo",
+    title: "GadgetMoTo",
+    description:
+      "Phones and tablets for every lifestyle, budget, and way to pay.",
+    images: [
+      {
+        url: "/brand/gadgetmoto-logo-original.jpg",
+        width: 901,
+        height: 900,
+        alt: "GadgetMoTo logo",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary",
+    title: "GadgetMoTo",
+    description:
+      "Phones and tablets for every lifestyle, budget, and way to pay.",
+    images: ["/brand/gadgetmoto-logo-original.jpg"],
+  },
 };
 
 export default async function RootLayout({

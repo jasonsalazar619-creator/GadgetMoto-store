@@ -1,6 +1,7 @@
 import "server-only";
 
 export type OrderServerErrorCode =
+  | "ONLINE_ORDERING_DISABLED"
   | "ORDER_DATABASE_NOT_CONFIGURED"
   | "INVALID_CHECKOUT_REQUEST"
   | "EMPTY_CART"
@@ -18,6 +19,7 @@ export type OrderServerErrorCode =
   | "ORDER_CREATION_FAILED";
 
 const orderErrorMessages: Record<OrderServerErrorCode, string> = {
+  ONLINE_ORDERING_DISABLED: "Online order submission is unavailable.",
   ORDER_DATABASE_NOT_CONFIGURED:
     "Order service configuration is unavailable.",
   INVALID_CHECKOUT_REQUEST: "The checkout request is invalid.",

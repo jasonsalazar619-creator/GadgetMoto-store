@@ -1,13 +1,23 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import type { ProductCategory, PrototypeProduct } from "@/data/prototype-products";
 import { ProductCard } from "./product-card";
 
-type PriceFilter = "all" | "under-10" | "10-20" | "20-40" | "40-plus";
+export type PriceFilter =
+  | "all"
+  | "under-10"
+  | "10-20"
+  | "20-40"
+  | "40-plus";
 type PromotionFilter = "all" | "sale" | "new";
 type SortOption = "featured" | "price-asc" | "price-desc" | "name" | "brand";
-type CatalogExplorerProps = { products: readonly PrototypeProduct[]; fixedCategory?: ProductCategory; resultsLabel: string; showCategoryFilter?: boolean };
+type CatalogExplorerProps = {
+  products: readonly PrototypeProduct[];
+  fixedCategory?: ProductCategory;
+  resultsLabel: string;
+  showCategoryFilter?: boolean;
+};
 
 const priceOptions: readonly [PriceFilter, string][] = [["all", "All prices"], ["under-10", "Under ₱10,000"], ["10-20", "₱10,000–₱19,999"], ["20-40", "₱20,000–₱39,999"], ["40-plus", "₱40,000 and above"]];
 const messengerUrl = "https://www.facebook.com/profile.php?id=100063905416187";
@@ -16,9 +26,16 @@ function SelectField({ id, label, value, onChange, children }: { id: string; lab
   return <label className="catalog-field" htmlFor={id}><span>{label}</span><select id={id} onChange={(event) => onChange(event.target.value)} value={value}>{children}</select></label>;
 }
 
-export function CatalogExplorer({ products, fixedCategory, resultsLabel, showCategoryFilter = false }: CatalogExplorerProps) {
+export function CatalogExplorer({
+  products,
+  fixedCategory,
+  resultsLabel,
+  showCategoryFilter = false,
+}: CatalogExplorerProps) {
   const [query, setQuery] = useState("");
-  const [category, setCategory] = useState<"All" | ProductCategory>(fixedCategory ?? "All");
+  const [category, setCategory] = useState<"All" | ProductCategory>(
+    fixedCategory ?? "All",
+  );
   const [brand, setBrand] = useState("all");
   const [price, setPrice] = useState<PriceFilter>("all");
   const [ram, setRam] = useState("all");
@@ -31,6 +48,34 @@ export function CatalogExplorer({ products, fixedCategory, resultsLabel, showCat
   const brands = useMemo(() => [...new Set(products.map((product) => product.brand))].sort(), [products]);
   const ramValues = useMemo(() => [...new Set(products.flatMap((product) => product.ramGb === undefined ? [] : [product.ramGb]))].sort((a, b) => a - b), [products]);
   const storageValues = useMemo(() => [...new Set(products.map((product) => product.storageGb))].sort((a, b) => a - b), [products]);
+
+  useEffect(() => {
+    if (!showCategoryFilter) return;
+    const parameters = new URLSearchParams(window.location.search);
+    const requestedBrand = parameters.get("brand");
+    const requestedCategory = parameters.get("category");
+    const requestedPrice = parameters.get("price");
+    const applyUrlFilters = window.setTimeout(() => {
+      if (requestedBrand && brands.includes(requestedBrand)) {
+        setBrand(requestedBrand);
+      }
+      if (
+        !fixedCategory &&
+        (requestedCategory === "Phone" ||
+          requestedCategory === "Tablet")
+      ) {
+        setCategory(requestedCategory);
+      }
+      if (
+        requestedPrice &&
+        priceOptions.some(([value]) => value === requestedPrice)
+      ) {
+        setPrice(requestedPrice as PriceFilter);
+      }
+    }, 0);
+
+    return () => window.clearTimeout(applyUrlFilters);
+  }, [brands, fixedCategory, showCategoryFilter]);
 
   const visibleProducts = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase();

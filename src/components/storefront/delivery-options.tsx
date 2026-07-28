@@ -2,9 +2,9 @@ import { Container } from "@/components/ui/container";
 import { SectionHeading } from "./section-heading";
 
 const options = [
-  ["Nationwide Delivery", "Delivery options are available for customers across the Philippines."],
-  ["Same-Day Delivery", "Availability will be confirmed by the GadgetMoTo sales team."],
-  ["Store Pickup in Cavite City", "Choose store pickup and coordinate the details with our sales team."],
+  ["Nationwide Delivery", "Delivery ordering is available for planning. Charges, timing, and product availability are confirmed by the sales team."],
+  ["Same-Day Delivery", "Same-day service may be discussed where available and requires sales-team confirmation."],
+  ["Store Pickup", "Currently unavailable until branch and pickup details are confirmed."],
 ] as const;
 
 export function DeliveryOptions() {

@@ -1,4 +1,5 @@
 import { createOrder } from "@/lib/orders/server/create-order";
+import { isOnlineOrderingEnabled } from "@/lib/orders/server/config";
 import {
   sanitizeOrderServerError,
   type OrderServerErrorCode,
@@ -21,6 +22,8 @@ const conflictCodes: readonly OrderServerErrorCode[] = [
 ];
 
 const customerMessages: Record<OrderServerErrorCode, string> = {
+  ONLINE_ORDERING_DISABLED:
+    "Online order submission is currently unavailable. Please contact us to complete your order.",
   ORDER_DATABASE_NOT_CONFIGURED:
     "Online order submission is temporarily unavailable. Please try again later.",
   INVALID_CHECKOUT_REQUEST:
@@ -51,7 +54,12 @@ const customerMessages: Record<OrderServerErrorCode, string> = {
 };
 
 const errorStatus = (code: OrderServerErrorCode): number => {
-  if (code === "ORDER_DATABASE_NOT_CONFIGURED") return 503;
+  if (
+    code === "ONLINE_ORDERING_DISABLED" ||
+    code === "ORDER_DATABASE_NOT_CONFIGURED"
+  ) {
+    return 503;
+  }
   if (conflictCodes.includes(code)) return 409;
   if (code === "ORDER_CREATION_FAILED") return 500;
   return 400;
@@ -71,6 +79,10 @@ const safeError = (
   );
 
 export async function POST(request: Request): Promise<Response> {
+  if (!isOnlineOrderingEnabled()) {
+    return safeError("ONLINE_ORDERING_DISABLED");
+  }
+
   const mediaType = request.headers
     .get("content-type")
     ?.split(";", 1)[0]

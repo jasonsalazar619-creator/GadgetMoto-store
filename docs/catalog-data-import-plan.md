@@ -12,8 +12,9 @@ The tables below preserve the historical bootstrap values that were deployed
 by `20260717205111_catalog_bootstrap_data.sql`. Checkpoint 49A subsequently
 approved 8GB physical RAM plus 8GB extended RAM for Infinix Note 60 Pro 5G and
 TECNO Camon 50. The static catalog now presents that correction, while
-forward-only migration `20260726175847_correct_product_physical_ram.sql`
-remains undeployed. Both canonical SKUs remain unchanged opaque identifiers.
+forward-only migration `20260726175847_correct_product_physical_ram.sql` is
+deployed and synchronized. Both canonical SKUs remain unchanged opaque
+identifiers.
 
 This checkpoint changes no frontend behavior, runs no database command, and creates no inventory, homepage, commerce, alert, or audit data.
 

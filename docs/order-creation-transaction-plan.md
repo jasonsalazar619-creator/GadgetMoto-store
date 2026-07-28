@@ -2,7 +2,7 @@
 
 ## Status and scope
 
-This document defines the contract and trusted transaction for guest-order submission. The server-only configuration, lazy PostgreSQL client, strict request validator, safe contracts/errors, atomic transaction, and `POST /api/orders` Route Handler now exist. The checkout interface is connected to that endpoint, but the endpoint has not been called, `ORDER_DATABASE_URL` remains unset, and no order, reservation, payment attempt, or provider integration was created during implementation.
+This document defines the contract and trusted transaction for guest-order submission. The server-only configuration, lazy PostgreSQL client, strict request validator, safe contracts/errors, atomic transaction, and `POST /api/orders` Route Handler now exist. `ONLINE_ORDERING_ENABLED` is a server-only activation gate and is disabled by default. While disabled, checkout does not call the endpoint and the Route Handler returns a safe unavailable response before parsing a request or creating an order. The endpoint has not been called, `ORDER_DATABASE_URL` remains unset, and no order, reservation, payment attempt, or provider integration was created during implementation.
 
 The storefront and delivery-only guest checkout are complete. Private commerce tables have no browser policies or grants. The deployed secure-order migration provides a separate non-login order-service role and server-only policies; the storefront catalog reader still has no commerce-table write capability. Operational submission remains unavailable until server configuration, controlled database validation, and inventory/location readiness are completed.
 
@@ -12,7 +12,7 @@ The following launch rules are approved for the first production order workflow:
 
 - Guest checkout remains available; customer accounts are not required.
 - Customer mobile number is required.
-- Customer email is optional. The deployed `orders.customer_email` column and server contract support null, while the current checkout interface still requires email and must be reconciled before submission is enabled.
+- Customer email is optional. The deployed `orders.customer_email` column, server contract, and checkout interface all support an omitted email.
 - Checkout currently submits nationwide or same-day delivery only.
 - Store pickup remains visibly unavailable until an approved active GadgetMoTo branch record, address, schedule, pickup instructions, and inventory rows exist. No placeholder location or slug is used.
 - Cash on delivery and cash on store pickup are unavailable in the current delivery-only checkout.
@@ -84,7 +84,7 @@ while the catalog separately presents 8GB physical RAM, 8GB extended RAM, and
 
 The service creates every new inventory reservation with `current_timestamp + interval '30 minutes'` inside the same trusted transaction as the order and inventory writes. Idempotent replay returns the existing order and does not create or extend a reservation. Automated expiry release, conversion to sale, failed-payment release, and cancellation release remain future lifecycle work. The parameterized order insert derives `GM-` plus 32 uppercase hexadecimal characters from the SHA-256 idempotency-key hash, persists it under the deployed unique index, and returns the complete stored value. A domain-separated high-entropy confirmation token is derived from the UUID-v4 submission key; only the confirmation-token hash is stored.
 
-Only the server Route Handler imports `createOrder()`. No page, Client Component, provider, or Server Action imports server-order code. Checkout posts the approved contract to the Route Handler, but the endpoint has not been called. `ORDER_DATABASE_URL` remains unset, no database test occurred, no database client was instantiated, and no connection, query, order, reservation, movement, audit row, or payment attempt occurred.
+Only the server Route Handler imports `createOrder()`. No page, Client Component, provider, or Server Action imports server-order code. Checkout can post the approved contract only after the server-side online-order gate is deliberately enabled. Under the default disabled state it instead provides a deliberate Messenger handoff with a non-sensitive cart summary. The endpoint has not been called. `ORDER_DATABASE_URL` remains unset, no database test occurred, no database client was instantiated, and no connection, query, order, reservation, movement, audit row, or payment attempt occurred.
 
 ## Existing checkout and cart findings
 
@@ -103,7 +103,7 @@ The current `CheckoutForm` owns transient React state only and collects:
 
 Store pickup remains visible only as a disabled “Pickup option coming soon” control. The request can contain only nationwide or same-day delivery. Validation requires all address fields, a nonblank supported payment choice, all three acknowledgements, a minimally nonblank name, a syntactically valid email, and a Philippine mobile number matching the current UI rule.
 
-The form first validates and reveals an in-browser review panel. Its final submit action resolves each current cart slug through `CatalogProvider`, sends only product slug, canonical SKU, quantity, approved customer/fulfillment/payment fields, notes, and consent booleans, and calls `POST /api/orders`. It prevents double submission, preserves one UUID-v4 key across retries and refreshes for the same cart, regenerates the key when the cart changes, keeps the cart after failure, and clears it only after a confirmed safe success response. The endpoint has not been called in this checkpoint.
+The form first validates and reveals an in-browser review panel. When live ordering is enabled, its final submit action resolves each current cart slug through `CatalogProvider`, sends only product slug, canonical SKU, quantity, approved customer/fulfillment/payment fields, notes, and consent booleans, and calls `POST /api/orders`. It prevents double submission, preserves one UUID-v4 key across retries and refreshes for the same cart, regenerates the key when the cart changes, keeps the cart after failure, and clears it only after a confirmed safe success response. While disabled, no idempotency key is prepared, no endpoint call occurs, the cart is preserved, and the customer receives a Messenger contact action instead. The endpoint has not been called in this checkpoint.
 
 ### Cart and persisted identifiers
 
@@ -564,7 +564,7 @@ Decision rows in this matrix: **26**. Approved launch defaults are marked explic
 6. **Server transaction implementation — code complete, uncalled** — the minimum server-only client and transaction boundary exist with sanitized errors; no configured request has invoked them.
 7. **Transaction unit validation** — test contract parsing, normalization, totals, duplicate handling, status mapping, and rollback using isolated fixtures without hosted writes.
 8. **Controlled local database test** — with separately supplied local/test configuration, verify success and every rollback path. Stop if partial writes, excess privileges, or raw errors appear.
-9. **Checkout submission integration — code complete, endpoint uncalled** — the delivery-only form, trusted Route Handler, idempotency lifecycle, loading/error/success states, and authoritative-money boundary are implemented.
+9. **Checkout submission integration — code complete, safely gated, endpoint uncalled** — the delivery-only form, trusted Route Handler, idempotency lifecycle, loading/error/success states, contact fallback, and authoritative-money boundary are implemented. Live submission remains disabled by default.
 10. **Inventory concurrency testing** — test simultaneous last-unit orders, deterministic locks, deadlock retry, expiry, release, cancellation, and idempotent conversion.
 11. **Order confirmation UI** — display only the safe response, never internal identifiers or unverified payment success.
 12. **Maya payment initialization** — add server-side provider initialization only after order/amount confirmation and credential-management approval.
@@ -577,7 +577,7 @@ Each checkpoint ends with lint/build or SQL validation appropriate to its scope,
 
 ## Safety boundary for this plan
 
-- `POST /api/orders` exists and is the only consumer of the server-only TypeScript service; it remains uncalled and no payment integration exists.
+- `POST /api/orders` exists and is the only consumer of the server-only TypeScript service; it is protected by the default-disabled online-order gate, remains uncalled, and has no payment integration.
 - No customer or order data is submitted or stored.
 - No authoritative tax, fee, refund, warranty, cancellation, or retention policy is chosen.
 - No credential, endpoint, project identifier, connection string, or environment value is included.

@@ -29,7 +29,10 @@ No colors, hardware specifications, ratings, reviews, stock quantities, warranti
 
 ## Intentionally deferred
 
-Catalog interactions, product comparison, global search, and the local cart foundation are documented in their dedicated files. URL synchronization, checkout, accounts, authentication, inventory, reviews, payment integrations, database storage, and admin tools remain deferred.
+Catalog interactions, product comparison, global search, cart, and the
+contact-first checkout are documented in their dedicated files. Full catalog
+URL synchronization, accounts, staff authentication, live inventory
+enforcement, reviews, payment integrations, and admin tools remain deferred.
 
 ## Future database migration
 

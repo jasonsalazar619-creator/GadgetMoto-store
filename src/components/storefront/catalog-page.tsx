@@ -4,9 +4,27 @@ import { Container } from "@/components/ui/container";
 import { CatalogExplorer } from "./catalog-explorer";
 import { StorefrontPageShell } from "./storefront-page-shell";
 
-type CatalogPageProps = { eyebrow: string; title: string; description: string; products: readonly PrototypeProduct[]; fixedCategory?: "Phone" | "Tablet"; resultsLabel: string; showCategoryFilter?: boolean; backToShop?: boolean };
+type CatalogPageProps = {
+  eyebrow: string;
+  title: string;
+  description: string;
+  products: readonly PrototypeProduct[];
+  fixedCategory?: "Phone" | "Tablet";
+  resultsLabel: string;
+  showCategoryFilter?: boolean;
+  backToShop?: boolean;
+};
 
-export function CatalogPage({ eyebrow, title, description, products, fixedCategory, resultsLabel, showCategoryFilter = false, backToShop = false }: CatalogPageProps) {
+export function CatalogPage({
+  eyebrow,
+  title,
+  description,
+  products,
+  fixedCategory,
+  resultsLabel,
+  showCategoryFilter = false,
+  backToShop = false,
+}: CatalogPageProps) {
   return (
     <StorefrontPageShell>
       <section className="catalog-hero">
@@ -19,7 +37,12 @@ export function CatalogPage({ eyebrow, title, description, products, fixedCatego
       </section>
       <section className="pb-[var(--space-section)]">
         <Container className="storefront-container">
-          <CatalogExplorer fixedCategory={fixedCategory} products={products} resultsLabel={resultsLabel} showCategoryFilter={showCategoryFilter} />
+          <CatalogExplorer
+            fixedCategory={fixedCategory}
+            products={products}
+            resultsLabel={resultsLabel}
+            showCategoryFilter={showCategoryFilter}
+          />
         </Container>
       </section>
     </StorefrontPageShell>
