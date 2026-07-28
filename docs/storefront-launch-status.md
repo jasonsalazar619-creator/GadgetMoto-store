@@ -12,6 +12,8 @@ Completed and validated:
 - Shop, phones, and tablets catalog pages
 - Coming Soon page with all 68 unique folder candidates shown as
   non-purchasable previews
+- Sixty-eight static Coming Soon preview routes, 67 assigned primary images,
+  two additional gallery images, and one safe unresolved-identity placeholder
 - Twelve unique product-detail routes
 - Twelve canonical and unique product SKUs and slugs
 - Product search, comparison, cart, and checkout interface
@@ -63,8 +65,10 @@ connection, query, SQL command, or Supabase command occurred.
 
 - The catalog remains exactly 12 products.
 - The image-folder review found 68 incomplete candidate products represented by
-  70 source files. All are visible once at `/coming-soon` and remain excluded
-  from purchasing and every transactional catalog consumer.
+  70 source files. Sixty-nine confidently mapped images are assigned across 67
+  products; one ambiguous image remains unassigned and its neutral record uses
+  a placeholder. All 68 products are visible once at `/coming-soon` and remain
+  excluded from purchasing and every transactional catalog consumer.
 - The catalog remains 12 unique SKUs and 12 unique slugs, with 11 approved
   primary images and one placeholder.
 - The canonical static catalog is the default and build-safe fallback.

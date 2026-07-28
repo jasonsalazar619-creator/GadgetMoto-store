@@ -23,7 +23,7 @@ const productGroups = Array.from(
 export default function ComingSoonPage() {
   return (
     <StorefrontPageShell>
-      <main className="upcoming-page">
+      <div className="upcoming-page">
         <section className="upcoming-hero">
           <Container className="storefront-container">
             <p className="type-eyebrow text-[var(--color-action)]">
@@ -75,7 +75,7 @@ export default function ComingSoonPage() {
             ))}
           </div>
         </Container>
-      </main>
+      </div>
     </StorefrontPageShell>
   );
 }

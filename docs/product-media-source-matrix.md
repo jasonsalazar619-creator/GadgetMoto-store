@@ -38,14 +38,16 @@ are empty because no second unique approved source exists.
 
 ## Duplicate result
 
-- The 11 active primary-image hashes are unique.
+- The 11 transactional primary-image hashes are unique.
+- The 69 assigned upcoming-image hashes are unique.
 - No active image is assigned to more than one product.
 - No primary image is repeated in an active gallery.
-- The ignored intake sources and tracked public copies form 11 intentional
+- The ignored intake sources and tracked public copies form 80 intentional
   exact-copy pairs; only the public path is active in the storefront.
 - No old derivative remains active after the original-file replacement.
-- Two distinct possible near-duplicate source pairs and one ambiguous source
-  remain inactive and are described in `docs/product-image-inventory.md`.
+- The two same-product poster pairs are assigned as primary-plus-gallery media.
+- One ambiguous source remains unassigned and is described in
+  `docs/product-image-inventory.md`.
 
 ## Embedded poster content
 
@@ -57,13 +59,21 @@ not imported into transactional catalog data.
 
 ## Upcoming preview media
 
-The `/coming-soon` route displays 68 unique candidate posters from
-`public/upcoming/`. Each is an exact byte copy of one selected local intake
-source. The two likely duplicate candidate pairs each use one source poster, so
-no candidate is repeated. The filename/poster identity conflict is included
-under a neutral unconfirmed-identity label rather than being guessed.
+The `/coming-soon` route displays 68 unique product records. Sixty-seven use
+exact-copy primary posters from `public/upcoming/`. Lenovo Legion Y70 2026 and
+Redmi Turbo 4 Pro each add one distinct exact-copy gallery poster. The
+filename/poster identity conflict is included under a neutral
+unconfirmed-identity label with a generated placeholder rather than being
+guessed.
+
+| Product | Role | Active public image | Original source | Dimensions | SHA-256 |
+| --- | --- | --- | --- | --- | --- |
+| Lenovo Legion Y70 2026 | Gallery 01 | `public/upcoming/lenovo-legion-y70-2026-gallery-01.png` | `GADGET-MOTO/Lenovo Legion Y70 2026.png` | 1024×1536 | `a659816fb548ab45f92dba0c0a6484885587cb53db56c65270e220b77ac40cc6` |
+| Redmi Turbo 4 Pro | Gallery 01 | `public/upcoming/redmi-turbo-4-pro-gallery-01.png` | `GADGET-MOTO/REDMI TURBO 4 PRO(1).PNG` | 1024×1536 | `16346f828215af7f28277e0205ba78fa8a6f0e3606af194a2048f966b24c4829` |
+| Product identity to be confirmed | Unassigned | Generated placeholder | `GADGET-MOTO/Poco x7pro.png` remains unassigned | 1024×1536 | `d90f84d0f6028854380de4486ec436a63864068692e5b31253bc7926fddac199` |
 
 Upcoming preview assets are deliberately outside the transactional catalog
-media contract. They do not create product routes, SKUs, prices, variants,
-search results, comparison entries, cart lines, checkout records, inventory
-records, or database rows.
+media contract. Their `/coming-soon/[slug]` routes are preview-only; they do not
+create transactional product routes, SKUs, prices, variants, search results,
+comparison entries, cart lines, checkout records, inventory records, or
+database rows.

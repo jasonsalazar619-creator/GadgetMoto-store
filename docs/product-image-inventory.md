@@ -2,31 +2,40 @@
 
 ## Audit summary
 
-- Audit date: 2026-07-28
+- Audit date: 2026-07-29
 - Local intake folder: `GADGET-MOTO/`
-- Repository image files after build/cache exclusions: 94
+- Repository image files after build/cache exclusions: 163
+- Product-image files after excluding two brand-logo files: 161
+- Original user-supplied product images: 81
+- Original user-supplied upcoming-product images: 70
 - Brand-logo files excluded from product mapping: 2
-- Product-looking source and active files reviewed: 92
+- Product-looking source and active files reviewed: 161
 - Files inspected in the intake folder: 82
 - Product-poster files: 81
 - Brand-logo files: 1
 - Existing catalog products matched: 11 of 12
 - Unique incomplete new-product candidates: 68
-- Non-transactional preview images published: 68 exact source copies
+- Non-transactional preview images published and assigned: 69 exact source
+  copies
 - Exact binary duplicates among intake sources: 0
-- Intentional source-to-public exact-copy pairs: 11
+- Intentional source-to-public exact-copy pairs: 80
 - Ambiguous files: 1
-- Product gallery size after this checkpoint: zero additional images; each
-  mapped product has one separate primary image
-- Storefront presentation: square, centered, `object-contain` media with
-  consistent internal padding across customer-facing product surfaces
+- Upcoming primary images: 67
+- Upcoming gallery images: 2
+- Upcoming products using a generated placeholder: 1
+- Upcoming ambiguous and unmapped images: 1
+- Exact duplicate source files excluded: 0
+- Near-duplicate source files excluded: 0
+- Storefront presentation: established centered media canvases with
+  `object-contain`, preserved aspect ratios, and consistent internal padding
 
-The 11 published images are approved user-supplied GadgetMoTo project assets.
-Each public image is now an exact byte copy of its original source poster. No
-crop, resize, compression, conversion, watermark addition, or other edit was
-performed. No manufacturer-page image was downloaded for this checkpoint.
-POCO C85 remains intentionally unmapped and continues to use the safe generated
-placeholder while awaiting an approved local image.
+The 11 transactional images and 69 assigned upcoming images are approved
+user-supplied GadgetMoTo project assets. Each public image is an exact byte copy
+of its original source poster. No crop, resize, compression, conversion,
+watermark addition, or other edit was performed. No manufacturer-page image was
+downloaded for this checkpoint. POCO C85 remains intentionally unmapped and
+continues to use the safe generated placeholder while awaiting an approved local
+image.
 
 The source posters are retained locally and ignored by Git. The tracked public
 copies preserve the complete original canvases and intrinsic aspect ratios so
@@ -35,7 +44,8 @@ part of the original supplied pixels but is not imported as structured catalog
 data. Canonical specifications, prices, variants, availability, and policies
 remain controlled by the typed transactional catalog and reviewed
 documentation. The separate `/coming-soon` page shows all 68 unique candidates
-as previews only.
+as previews only. Sixty-seven products use assigned media, two of those have an
+additional gallery poster, and the unresolved-identity entry uses a placeholder.
 
 ## Existing-product mapping
 
@@ -54,13 +64,16 @@ as previews only.
 | Redmi Pad 2 Pro 5G | `GADGET-MOTO/REDMIPAD 2 PRO.PNG` | Exact product family; visible poster confirms 5G model | `public/products/redmi-pad-2-pro-5g/original.png` | Primary only |
 | TECNO Mega Pad Pro | `GADGET-MOTO/TECNO MEGAPAD PRO.PNG` | Exact product name | `public/products/tecno-mega-pad-pro/original.png` | Primary only |
 
-The mapped products each have only one unique suitable source image, so each is
-an explicit primary image and the additional gallery arrays remain empty. No
-empty thumbnail controls or duplicate gallery frames are added.
+The 12-product transactional catalog remains unchanged: its mapped products
+each have only one unique suitable source image, so its additional gallery
+arrays remain empty. In the separate upcoming catalog, Lenovo Legion Y70 2026
+and Redmi Turbo 4 Pro each have one primary poster and one distinct gallery
+poster. No primary path is repeated in a gallery.
 
-The final storefront audit confirmed that the 11 published image paths remain
-unique, each is assigned only to its matching product, and POCO C85 continues
-to use the approved generated placeholder. No external image hotlink, Base64
+The final storefront audit confirmed that the 11 transactional and 69 upcoming
+assigned image paths remain unique within their respective media sets. Each is
+assigned only to its matching product. POCO C85 and the unresolved upcoming
+identity use safe generated placeholders. No external image hotlink, Base64
 image, fabricated product photo, or cross-product substitution was added.
 
 ## Source-file metadata
@@ -157,8 +170,10 @@ channel. Sizes are in bytes. Candidate identity and readiness are documented in
 ## Duplicate and ambiguity review
 
 - No two intake-source files share the same SHA-256 digest.
-- The 11 published original primary images have 11 unique SHA-256 digests, and
-  no published image path is mapped to more than one product.
+- The 11 transactional original primary images have 11 unique SHA-256 digests.
+- The 69 assigned upcoming images have 69 unique SHA-256 digests.
+- No active image path is mapped to more than one product, and no primary image
+  is repeated in a gallery.
 - Each public image has the same SHA-256 digest as its ignored source file. The
   11 exact-copy pairs are intentional archival/source relationships, not two
   active mappings.
@@ -166,15 +181,15 @@ channel. Sizes are in bytes. Candidate identity and readiness are documented in
   published primary images and no unrelated store watermark or confidential
   information.
 - `GADGET-MOTO/LEGION Y70 2026.PNG` and
-  `GADGET-MOTO/Lenovo Legion Y70 2026.png` appear to concern the same likely
-  product but are different files.
-- `GADGET-MOTO/REDMI TURBO 4 PRO(1).PNG` and
-  `GADGET-MOTO/REDMI TURBO 4 PRO.PNG` appear to concern the same likely product
-  but are different files.
+  `GADGET-MOTO/Lenovo Legion Y70 2026.png` are different user-supplied posters
+  for the same product record. The first is primary and the second is gallery.
+- `GADGET-MOTO/REDMI TURBO 4 PRO.PNG` and
+  `GADGET-MOTO/REDMI TURBO 4 PRO(1).PNG` are different user-supplied posters for
+  the same product record. The first is primary and the second is gallery.
 - `GADGET-MOTO/Poco x7pro.png` is ambiguous: its filename says POCO X7 Pro,
-  while its visible poster content identifies an Infinix GT50 Pro. Its exact
-  preview copy is published with the neutral label **Product identity to be
-  confirmed** and is not mapped to a transactional product.
+  while its visible poster content identifies an Infinix GT50 Pro. It remains
+  unassigned; the neutral **Product identity to be confirmed** record uses a
+  generated placeholder until the intended identity is confirmed.
 
 ## Intentional exclusions
 
@@ -186,8 +201,8 @@ channel. Sizes are in bytes. Candidate identity and readiness are documented in
   treated as canonical structured product, pricing, warranty, delivery, or
   policy data.
 - All 68 unique incomplete candidates are represented once in the
-  non-purchasable preview catalog. None is promoted to a product route or
-  purchasable catalog entry.
+  non-purchasable preview catalog. None is promoted to a transactional product
+  route or purchasable catalog entry.
 - POCO C85 retains the existing generated placeholder because no exact or
   unambiguous approved local source was found. No online asset or another
   product's image is substituted.

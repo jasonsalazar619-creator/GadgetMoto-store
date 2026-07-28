@@ -39,6 +39,8 @@ git diff --check
 - `/phones`
 - `/tablets`
 - `/coming-soon` for all 68 non-purchasable folder candidates
+- `/coming-soon/[slug]` for 68 non-purchasable product previews and available
+  image galleries
 - `/products/[slug]` for all 12 approved products
 - `/compare`
 - `/cart`
@@ -60,8 +62,10 @@ git diff --check
 - Global search, comparison, cart, and catalog-driven checkout integration
 - Contact-first checkout fallback that preserves cart contents and never fabricates order success
 - Product media for 11 products plus the approved POCO C85 placeholder
-- Exact-copy preview media for all 68 unique incomplete folder candidates,
-  isolated from transactional catalog behavior
+- 69 exact-copy preview images assigned across 67 identified products, plus one
+  safe placeholder for an ambiguous filename/poster conflict
+- Two non-duplicating upcoming-product galleries, isolated from transactional
+  catalog behavior
 - Original-aspect product media with one explicit primary image, a
   non-duplicating gallery contract, and contain-and-center rendering on cards,
   details, search, comparison, cart, and checkout

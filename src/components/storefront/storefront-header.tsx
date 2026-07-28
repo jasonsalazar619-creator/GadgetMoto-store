@@ -15,7 +15,7 @@ export function StorefrontHeader() {
       </div>
       <Container className="storefront-container flex min-h-20 items-center justify-between gap-5 lg:min-h-24">
         <Link aria-label="GadgetMoTo home" className="storefront-lockup" href="/"><BrandLockup variant="compact" /></Link>
-        <nav aria-label="Main navigation" className="hidden items-center gap-6 text-[0.95rem] font-semibold text-[var(--color-graphite)] lg:flex xl:gap-8 xl:text-base">
+        <nav aria-label="Main navigation" className="hidden items-center gap-6 text-[0.95rem] font-semibold text-[var(--color-graphite)] xl:flex xl:gap-8 xl:text-base">
           <Link className="nav-link" href="/shop">Shop</Link>
           <Link className="nav-link" href="/phones">Phones</Link>
           <Link className="nav-link" href="/tablets">Tablets</Link>
@@ -30,7 +30,7 @@ export function StorefrontHeader() {
           <CartTrigger />
         </div>
       </Container>
-      <nav aria-label="Mobile navigation" className="border-y border-[var(--color-border)] lg:hidden">
+      <nav aria-label="Mobile navigation" className="border-y border-[var(--color-border)] xl:hidden">
         <Container className="mobile-nav-scroll storefront-container flex gap-6 overflow-x-auto py-3.5 text-sm font-semibold text-[var(--color-graphite)]">
           <Link className="whitespace-nowrap" href="/shop">Shop</Link>
           <Link className="whitespace-nowrap" href="/phones">Phones</Link>

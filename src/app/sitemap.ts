@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 
 import { getAllProducts } from "@/data/prototype-products";
+import { upcomingProducts } from "@/data/upcoming-products";
 import { absoluteSiteUrl } from "@/lib/site/server";
 
 const storefrontRoutes = [
@@ -36,6 +37,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
       ].map((image) => absoluteSiteUrl(image.src)),
     }),
   );
+  const previews: MetadataRoute.Sitemap = upcomingProducts.map((product) => ({
+    url: absoluteSiteUrl(`/coming-soon/${product.id}`),
+    changeFrequency: "monthly",
+    priority: 0.5,
+    images: [
+      ...(product.primaryImage ? [product.primaryImage] : []),
+      ...product.images,
+    ].map((image) => absoluteSiteUrl(image.src)),
+  }));
 
-  return [...pages, ...products];
+  return [...pages, ...products, ...previews];
 }

@@ -12,15 +12,18 @@ approved. No official specification lookup was performed because every candidate
 is already blocked by missing GadgetMoTo transactional fields.
 
 All 68 unique candidates are now visible through the separate, non-transactional
-`/coming-soon` preview catalog. They remain excluded from the approved
-purchasable catalog, product routes, global search, comparison, cart, checkout,
-inventory, and database migrations. This isolation makes the supplied posters
-visible without treating their embedded content as verified commerce data.
+`/coming-soon` preview catalog and its safe `/coming-soon/[slug]` preview
+routes. They remain excluded from the approved purchasable catalog,
+transactional `/products/[slug]` routes, global search, comparison, cart,
+checkout, inventory, and database migrations. This isolation makes the
+supplied posters visible without treating their embedded content as verified
+commerce data.
 
-Candidate 26 retains the neutral label **Product identity to be confirmed**
-because its filename and visible poster identity conflict. No identity was
-guessed. POCO C85 continues to await an approved local image while using the
-safe storefront placeholder in the 12-product transactional catalog.
+Candidate 26 retains the neutral label **Product identity to be confirmed** and
+uses a generated placeholder because its filename and visible poster identity
+conflict. Its ambiguous poster remains unassigned. No identity was guessed.
+POCO C85 continues to await an approved local image while using the safe
+storefront placeholder in the 12-product transactional catalog.
 
 ## Required-data codes
 
@@ -130,14 +133,20 @@ and until the M1 intake is supplied.
   8GB physical RAM plus 8GB extended RAM with unchanged 256GB storage and
   unchanged canonical SKUs
 - Preview catalog: all 68 unique candidates are shown once at `/coming-soon`
-  using exact copies in `public/upcoming/`
+- Image assignment: 67 products use exact-copy primary images; two of those
+  products also use one exact-copy gallery image; one unresolved product uses a
+  safe generated placeholder
+- Public convention: primary images use
+  `public/upcoming/<product-slug>.png`; additional unique images use
+  `public/upcoming/<product-slug>-gallery-01.png`
 - Transactional isolation: previews have no price, SKU, selectable variant,
   stock state, product route, search entry, comparison control, cart control,
   checkout path, inventory record, or migration row
-- Source alternatives: one source from each of the two likely duplicate pairs
-  is published; the other remains retained locally
-- Identity conflict: candidate 26 is visibly labeled as unconfirmed and remains
-  blocked by D3
+- Source alternatives: both distinct Lenovo Legion Y70 2026 posters and both
+  distinct Redmi Turbo 4 Pro posters are assigned to their respective single
+  product records as primary-plus-gallery media
+- Identity conflict: candidate 26 is visibly labeled as unconfirmed, its poster
+  is unassigned, and it remains blocked by D3
 
 The customer-facing purchasable catalog remains exactly 12 products and 12
 unique product routes. The preview catalog contains 68 non-purchasable entries.

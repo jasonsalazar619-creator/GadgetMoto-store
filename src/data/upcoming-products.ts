@@ -3,38 +3,53 @@ export type UpcomingProductCategory =
   | "Tablet"
   | "To be confirmed";
 
+export type UpcomingProductImage = Readonly<{
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+}>;
+
 export type UpcomingProduct = Readonly<{
   id: string;
   name: string;
   brand: string;
   category: UpcomingProductCategory;
-  image: Readonly<{
-    src: string;
-    alt: string;
-    width: number;
-    height: number;
-  }>;
+  primaryImage: UpcomingProductImage | null;
+  images: readonly UpcomingProductImage[];
   availabilityMessage: "Details and availability coming soon.";
 }>;
+
+const previewImage = (
+  src: string,
+  alt: string,
+  width: number,
+  height: number,
+): UpcomingProductImage => ({ src, alt, width, height });
 
 const upcoming = (
   id: string,
   name: string,
   brand: string,
   category: UpcomingProductCategory,
-  width: number,
-  height: number,
+  width: number | null,
+  height: number | null,
+  images: readonly UpcomingProductImage[] = [],
 ): UpcomingProduct => ({
   id,
   name,
   brand,
   category,
-  image: {
-    src: `/upcoming/${id}.png`,
-    alt: `${name} preview`,
-    width,
-    height,
-  },
+  primaryImage:
+    width === null || height === null
+      ? null
+      : previewImage(
+          `/upcoming/${id}.png`,
+          `${name} product preview`,
+          width,
+          height,
+        ),
+  images,
   availabilityMessage: "Details and availability coming soon.",
 });
 
@@ -49,7 +64,7 @@ export const upcomingProducts: readonly UpcomingProduct[] = [
   upcoming("infinix-note-edge-5g", "Infinix Note Edge 5G", "Infinix", "Phone", 1024, 1536),
   upcoming("infinix-note-60-ultra", "Infinix Note 60 Ultra", "Infinix", "Phone", 1024, 1536),
   upcoming("infinix-smart-20", "Infinix Smart 20", "Infinix", "Phone", 1024, 1536),
-  upcoming("identity-to-be-confirmed", "Product identity to be confirmed", "To be confirmed", "To be confirmed", 1024, 1536),
+  upcoming("identity-to-be-confirmed", "Product identity to be confirmed", "To be confirmed", "To be confirmed", null, null),
   upcoming("apple-ipad-a16-11th-gen", "Apple iPad A16 11th Gen", "Apple", "Tablet", 1024, 1536),
   upcoming("apple-iphone-14", "Apple iPhone 14", "Apple", "Phone", 1024, 1536),
   upcoming("apple-iphone-15", "Apple iPhone 15", "Apple", "Phone", 1024, 1536),
@@ -63,7 +78,22 @@ export const upcomingProducts: readonly UpcomingProduct[] = [
   upcoming("itel-power70", "itel Power70", "itel", "Phone", 1024, 1536),
   upcoming("itel-s26-ultra", "itel S26 Ultra", "itel", "Phone", 1023, 1537),
   upcoming("lenovo-legion-tab-y700-gen5", "Lenovo Legion Tab Y700 Gen5", "Lenovo", "Tablet", 1024, 1536),
-  upcoming("lenovo-legion-y70-2026", "Lenovo Legion Y70 2026", "Lenovo", "To be confirmed", 1024, 1536),
+  upcoming(
+    "lenovo-legion-y70-2026",
+    "Lenovo Legion Y70 2026",
+    "Lenovo",
+    "To be confirmed",
+    1024,
+    1536,
+    [
+      previewImage(
+        "/upcoming/lenovo-legion-y70-2026-gallery-01.png",
+        "Lenovo Legion Y70 2026 alternate product poster",
+        1024,
+        1536,
+      ),
+    ],
+  ),
   upcoming("lenovo-legion-tab-y700", "Lenovo Legion Tab Y700", "Lenovo", "Tablet", 1024, 1536),
   upcoming("oneplus-ace6t", "OnePlus Ace6T", "OnePlus", "Phone", 1024, 1536),
   upcoming("oppo-a6t", "OPPO A6T", "OPPO", "Phone", 1024, 1536),
@@ -89,7 +119,22 @@ export const upcomingProducts: readonly UpcomingProduct[] = [
   upcoming("redmi-note-15-pro-5g", "Redmi Note 15 Pro 5G", "Redmi", "Phone", 1024, 1535),
   upcoming("redmi-pad-2-4g", "Redmi Pad 2 4G", "Redmi", "Tablet", 1024, 1536),
   upcoming("redmi-pad-2-se", "Redmi Pad 2 SE", "Redmi", "Tablet", 1024, 1535),
-  upcoming("redmi-turbo-4-pro", "Redmi Turbo 4 Pro", "Redmi", "Phone", 1023, 1537),
+  upcoming(
+    "redmi-turbo-4-pro",
+    "Redmi Turbo 4 Pro",
+    "Redmi",
+    "Phone",
+    1023,
+    1537,
+    [
+      previewImage(
+        "/upcoming/redmi-turbo-4-pro-gallery-01.png",
+        "Redmi Turbo 4 Pro alternate product poster",
+        1024,
+        1536,
+      ),
+    ],
+  ),
   upcoming("redmi-turbo-4", "Redmi Turbo 4", "Redmi", "Phone", 1024, 1536),
   upcoming("redmi-turbo-5-max", "Redmi Turbo 5 Max", "Redmi", "Phone", 1024, 1536),
   upcoming("samsung-galaxy-a07-lte", "Samsung Galaxy A07 LTE", "Samsung", "Phone", 1023, 1537),
@@ -113,18 +158,43 @@ if (
   upcomingProducts.length !== 68 ||
   new Set(upcomingProducts.map(({ id }) => id)).size !==
     upcomingProducts.length ||
-  new Set(upcomingProducts.map(({ image }) => image.src)).size !==
-    upcomingProducts.length ||
   upcomingProducts.some(
-    ({ id, name, brand, image }) =>
+    ({ id, name, brand, primaryImage, images }) =>
       !id.trim() ||
       !name.trim() ||
       !brand.trim() ||
-      !image.src.startsWith("/upcoming/") ||
-      !image.alt.trim() ||
-      image.width < 1 ||
-      image.height < 1,
+      (primaryImage !== null &&
+        (!primaryImage.src.startsWith("/upcoming/") ||
+          !primaryImage.alt.trim() ||
+          primaryImage.width < 1 ||
+          primaryImage.height < 1)) ||
+      images.some(
+        (image) =>
+          !image.src.startsWith("/upcoming/") ||
+          !image.alt.trim() ||
+          image.width < 1 ||
+          image.height < 1 ||
+          image.src === primaryImage?.src,
+      ),
   )
 ) {
   throw new Error("Upcoming product preview validation failed.");
+}
+
+const assignedImages = upcomingProducts.flatMap((product) => [
+  ...(product.primaryImage ? [product.primaryImage] : []),
+  ...product.images,
+]);
+
+if (
+  assignedImages.length !== 69 ||
+  new Set(assignedImages.map(({ src }) => src)).size !== assignedImages.length
+) {
+  throw new Error("Upcoming product image assignment validation failed.");
+}
+
+export function getUpcomingProductById(
+  id: string,
+): UpcomingProduct | undefined {
+  return upcomingProducts.find((product) => product.id === id);
 }

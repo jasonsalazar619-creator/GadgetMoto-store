@@ -376,10 +376,12 @@ Implementation cannot proceed unless it guarantees:
 The catalog consumer-integration checkpoints described above are complete. Production configuration, write-side commerce behavior, payment processing, administration, and deployment verification remain separate future checkpoints.
 
 The separate `/coming-soon` preview catalog is not a catalog-provider consumer.
-Its 68 folder-supplied poster entries contain no transactional price, SKU,
-variant, stock, product-route, comparison, cart, checkout, inventory, or
-database behavior. Global product search and all commerce flows continue to use
-only the 12 canonical products.
+Its 68 records and preview-detail routes contain no transactional price, SKU,
+variant, stock, `/products` route, comparison, cart, checkout, inventory, or
+database behavior. Sixty-seven records use exact-copy primary media, two add an
+exact-copy gallery poster, and the ambiguous identity record uses a generated
+placeholder. Global product search and all commerce flows continue to use only
+the 12 canonical products.
 
 ## Product media contract
 

@@ -35,8 +35,11 @@ through the isolated `/coming-soon` preview catalog.
 
 `docs/new-product-intake.md` is the authoritative list for 68 incomplete
 candidates represented by 70 source files. All 68 are displayed once as
-non-purchasable preview cards. They have no transactional product routes, search
-results, comparison entries, cart lines, checkout records, or migration rows.
+non-purchasable preview cards with safe preview-detail routes. Sixty-seven have
+assigned primary images, two have an additional gallery image, and the
+unresolved-identity entry uses a generated placeholder. They have no
+transactional product routes, search results, comparison entries, cart lines,
+checkout records, or migration rows.
 Each still requires the complete M1 commercial intake before it can enter the
 approved catalog.
 
