@@ -375,6 +375,12 @@ Implementation cannot proceed unless it guarantees:
 
 The catalog consumer-integration checkpoints described above are complete. Production configuration, write-side commerce behavior, payment processing, administration, and deployment verification remain separate future checkpoints.
 
+The separate `/coming-soon` preview catalog is not a catalog-provider consumer.
+Its 68 folder-supplied poster entries contain no transactional price, SKU,
+variant, stock, product-route, comparison, cart, checkout, inventory, or
+database behavior. Global product search and all commerce flows continue to use
+only the 12 canonical products.
+
 ## Product media contract
 
 The shared normalized product now carries an explicit nullable `primaryImage`

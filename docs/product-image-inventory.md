@@ -12,6 +12,7 @@
 - Brand-logo files: 1
 - Existing catalog products matched: 11 of 12
 - Unique incomplete new-product candidates: 68
+- Non-transactional preview images published: 68 exact source copies
 - Exact binary duplicates among intake sources: 0
 - Intentional source-to-public exact-copy pairs: 11
 - Ambiguous files: 1
@@ -32,7 +33,9 @@ copies preserve the complete original canvases and intrinsic aspect ratios so
 device edges are not removed by source processing. Embedded poster text remains
 part of the original supplied pixels but is not imported as structured catalog
 data. Canonical specifications, prices, variants, availability, and policies
-remain controlled by the typed catalog and reviewed documentation.
+remain controlled by the typed transactional catalog and reviewed
+documentation. The separate `/coming-soon` page shows all 68 unique candidates
+as previews only.
 
 ## Existing-product mapping
 
@@ -169,8 +172,9 @@ channel. Sizes are in bytes. Candidate identity and readiness are documented in
   `GADGET-MOTO/REDMI TURBO 4 PRO.PNG` appear to concern the same likely product
   but are different files.
 - `GADGET-MOTO/Poco x7pro.png` is ambiguous: its filename says POCO X7 Pro,
-  while its visible poster content identifies an Infinix GT50 Pro. It is not
-  mapped or published.
+  while its visible poster content identifies an Infinix GT50 Pro. Its exact
+  preview copy is published with the neutral label **Product identity to be
+  confirmed** and is not mapped to a transactional product.
 
 ## Intentional exclusions
 
@@ -181,8 +185,9 @@ channel. Sizes are in bytes. Candidate identity and readiness are documented in
 - Embedded poster text is preserved in the original public assets but is not
   treated as canonical structured product, pricing, warranty, delivery, or
   policy data.
-- All 70 source files associated with incomplete new-product candidates remain
-  local only. None is promoted to a product route or purchasable catalog entry.
+- All 68 unique incomplete candidates are represented once in the
+  non-purchasable preview catalog. None is promoted to a product route or
+  purchasable catalog entry.
 - POCO C85 retains the existing generated placeholder because no exact or
   unambiguous approved local source was found. No online asset or another
   product's image is substituted.

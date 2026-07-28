@@ -1,6 +1,6 @@
 # GadgetMoTo Storefront
 
-GadgetMoTo is a production-oriented Next.js storefront for phones and tablets. The customer-facing website includes a responsive homepage, catalog and category pages, 12 product-detail routes, product search, comparison, cart, checkout, and contact-based ordering through Facebook Messenger.
+GadgetMoTo is a production-oriented Next.js storefront for phones and tablets. The customer-facing website includes a responsive homepage, catalog and category pages, 12 product-detail routes, a separate 68-item Coming Soon preview catalog, product search, comparison, cart, checkout, and contact-based ordering through Facebook Messenger.
 
 ## Current catalog architecture
 
@@ -38,6 +38,7 @@ git diff --check
 - `/shop`
 - `/phones`
 - `/tablets`
+- `/coming-soon` for all 68 non-purchasable folder candidates
 - `/products/[slug]` for all 12 approved products
 - `/compare`
 - `/cart`
@@ -59,6 +60,8 @@ git diff --check
 - Global search, comparison, cart, and catalog-driven checkout integration
 - Contact-first checkout fallback that preserves cart contents and never fabricates order success
 - Product media for 11 products plus the approved POCO C85 placeholder
+- Exact-copy preview media for all 68 unique incomplete folder candidates,
+  isolated from transactional catalog behavior
 - Original-aspect product media with one explicit primary image, a
   non-duplicating gallery contract, and contain-and-center rendering on cards,
   details, search, comparison, cart, and checkout
@@ -96,4 +99,5 @@ The order contract, atomic transaction, inventory and idempotency boundaries, pa
 The authoritative 12-product record is documented in
 `docs/product-master-catalog.md`. Image origins, dimensions, hashes, and active
 mapping are documented in `docs/product-media-source-matrix.md`; incomplete
-folder candidates remain in `docs/new-product-intake.md`.
+folder candidates and their non-transactional preview status are documented in
+`docs/new-product-intake.md`.

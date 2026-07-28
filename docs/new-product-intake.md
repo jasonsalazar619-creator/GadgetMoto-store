@@ -11,12 +11,16 @@ No proposed slug is assigned until the exact marketed product identity is
 approved. No official specification lookup was performed because every candidate
 is already blocked by missing GadgetMoTo transactional fields.
 
-The complete-folder catalog review publishes no candidate. The approved catalog
-remains the same 12 products, 68 incomplete candidates remain excluded, and
-POCO C85 continues to await an approved local image while using the safe
-storefront placeholder. The site has no separately approved non-transactional
-upcoming-product content model, so the candidates remain documented rather than
-being mixed into transactional search, product routes, cart, or checkout.
+All 68 unique candidates are now visible through the separate, non-transactional
+`/coming-soon` preview catalog. They remain excluded from the approved
+purchasable catalog, product routes, global search, comparison, cart, checkout,
+inventory, and database migrations. This isolation makes the supplied posters
+visible without treating their embedded content as verified commerce data.
+
+Candidate 26 retains the neutral label **Product identity to be confirmed**
+because its filename and visible poster identity conflict. No identity was
+guessed. POCO C85 continues to await an approved local image while using the
+safe storefront placeholder in the 12-product transactional catalog.
 
 ## Required-data codes
 
@@ -125,10 +129,15 @@ and until the M1 intake is supplied.
 - Approved variant correction: Infinix Note 60 Pro 5G and TECNO Camon 50 use
   8GB physical RAM plus 8GB extended RAM with unchanged 256GB storage and
   unchanged canonical SKUs
-- Candidate images: retained locally in `GADGET-MOTO/` and intentionally
-  excluded from deployment until the corresponding D1/D2/D3 decisions are
-  resolved
+- Preview catalog: all 68 unique candidates are shown once at `/coming-soon`
+  using exact copies in `public/upcoming/`
+- Transactional isolation: previews have no price, SKU, selectable variant,
+  stock state, product route, search entry, comparison control, cart control,
+  checkout path, inventory record, or migration row
+- Source alternatives: one source from each of the two likely duplicate pairs
+  is published; the other remains retained locally
+- Identity conflict: candidate 26 is visibly labeled as unconfirmed and remains
+  blocked by D3
 
-The final storefront completion phase does not promote any intake candidate.
-The customer-facing catalog remains exactly 12 products and 12 unique product
-routes.
+The customer-facing purchasable catalog remains exactly 12 products and 12
+unique product routes. The preview catalog contains 68 non-purchasable entries.

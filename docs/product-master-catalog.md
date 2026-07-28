@@ -10,8 +10,9 @@ commercial product record.
 
 The catalog contains 12 unique SKUs and 12 unique slugs. No duplicate product
 name, SKU, slug, route, or active image mapping was found. The 68 additional
-folder candidates are intentionally excluded from this table because their
-required transactional records are incomplete.
+folder candidates are intentionally excluded from this transactional table
+because their required commerce records are incomplete. They are visible only
+through the isolated `/coming-soon` preview catalog.
 
 ## Approved products
 
@@ -32,11 +33,12 @@ required transactional records are incomplete.
 
 ## Pending folder products
 
-`docs/new-product-intake.md` is the authoritative list for 68 identifiable but
-incomplete candidates represented by 70 source files. They have no purchasable
-cards, product routes, search results, comparison entries, cart lines, checkout
-records, or migration rows. Each requires the complete M1 commercial intake
-before publication.
+`docs/new-product-intake.md` is the authoritative list for 68 incomplete
+candidates represented by 70 source files. All 68 are displayed once as
+non-purchasable preview cards. They have no transactional product routes, search
+results, comparison entries, cart lines, checkout records, or migration rows.
+Each still requires the complete M1 commercial intake before it can enter the
+approved catalog.
 
 ## Migration status
 

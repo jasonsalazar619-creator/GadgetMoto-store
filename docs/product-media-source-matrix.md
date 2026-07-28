@@ -54,3 +54,16 @@ text is preserved as supplied because the files were not edited. Canonical
 product names, variants, prices, specifications, availability, and policies
 remain the structured storefront values documented elsewhere; poster text is
 not imported into transactional catalog data.
+
+## Upcoming preview media
+
+The `/coming-soon` route displays 68 unique candidate posters from
+`public/upcoming/`. Each is an exact byte copy of one selected local intake
+source. The two likely duplicate candidate pairs each use one source poster, so
+no candidate is repeated. The filename/poster identity conflict is included
+under a neutral unconfirmed-identity label rather than being guessed.
+
+Upcoming preview assets are deliberately outside the transactional catalog
+media contract. They do not create product routes, SKUs, prices, variants,
+search results, comparison entries, cart lines, checkout records, inventory
+records, or database rows.

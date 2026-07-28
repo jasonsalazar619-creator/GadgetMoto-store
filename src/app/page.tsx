@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
 import { BrandGrid } from "@/components/storefront/brand-grid";
 import { BudgetGrid } from "@/components/storefront/budget-grid";
@@ -56,6 +57,22 @@ export default async function Home() {
           <Container className="storefront-container">
             <SectionHeading align="center" eyebrow="Browse by brand" title="Find your familiar favorites." />
             <div className="mt-12"><BrandGrid /></div>
+          </Container>
+        </section>
+
+        <section className="upcoming-home-promo">
+          <Container className="storefront-container">
+            <div>
+              <p className="type-eyebrow text-[var(--color-action)]">Coming soon</p>
+              <h2>See what could be your next upgrade.</h2>
+              <p>
+                Browse 68 new product previews while GadgetMoTo confirms their
+                exact variants, pricing, and availability.
+              </p>
+            </div>
+            <Link className="button-link button-link--primary" href="/coming-soon">
+              Explore product previews
+            </Link>
           </Container>
         </section>
 
