@@ -86,7 +86,7 @@ git diff --check
 - Delivery-fee and VAT implementation after business rules are confirmed
 - Maya payment integration, server verification, and webhooks
 - Proof-of-payment handling where required
-- Admin product CRUD, image uploads, and autosave
+- Admin product-image uploads and gallery management
 - Admin inventory and order-management tools
 - Approved POCO C85 imagery
 - Final business-supplied privacy, terms, warranty, cancellation, and refund wording
@@ -101,7 +101,9 @@ git diff --check
 - Live online-order submission: disabled pending controlled configuration and business readiness
 - Maya and other live payment integration: pending
 - Secure staff authentication and protected admin shell: implemented
-- Admin product-management mutations: pending
+- Validated admin product CRUD, autosave, archival, guarded draft deletion,
+  audit logging, and storefront revalidation: implemented
+- Admin product-image workflow: pending
 - Vercel project connection: complete; production redeployment follows pushes to `main`
 
 The order contract, atomic transaction, inventory and idempotency boundaries, payment boundary, and unresolved launch decisions are documented in `docs/order-creation-transaction-plan.md`. Current launch readiness is summarized in `docs/storefront-launch-status.md`.

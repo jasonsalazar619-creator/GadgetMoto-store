@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { StorefrontPageShell } from "@/components/storefront/storefront-page-shell";
 import { UpcomingProductCard } from "@/components/storefront/upcoming-product-card";
 import { Container } from "@/components/ui/container";
-import { upcomingProducts } from "@/data/upcoming-products";
+import { getUpcomingProducts } from "@/lib/catalog/server/upcoming-catalog";
 
 export const metadata: Metadata = {
   title: "Coming Soon | GadgetMoTo",
@@ -12,15 +12,15 @@ export const metadata: Metadata = {
   alternates: { canonical: "/coming-soon" },
 };
 
-const productGroups = Array.from(
-  upcomingProducts.reduce((groups, product) => {
-    const products = groups.get(product.brand) ?? [];
-    groups.set(product.brand, [...products, product]);
-    return groups;
-  }, new Map<string, typeof upcomingProducts>()),
-);
-
-export default function ComingSoonPage() {
+export default async function ComingSoonPage() {
+  const upcomingProducts = await getUpcomingProducts();
+  const productGroups = Array.from(
+    upcomingProducts.reduce((groups, product) => {
+      const products = groups.get(product.brand) ?? [];
+      groups.set(product.brand, [...products, product]);
+      return groups;
+    }, new Map<string, typeof upcomingProducts>()),
+  );
   return (
     <StorefrontPageShell>
       <div className="upcoming-page">

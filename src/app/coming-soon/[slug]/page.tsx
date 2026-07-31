@@ -7,9 +7,9 @@ import { DevicePlaceholder } from "@/components/storefront/device-placeholder";
 import { StorefrontPageShell } from "@/components/storefront/storefront-page-shell";
 import { Container } from "@/components/ui/container";
 import {
-  getUpcomingProductById,
   upcomingProducts,
 } from "@/data/upcoming-products";
+import { getUpcomingProductBySlug } from "@/lib/catalog/server/upcoming-catalog";
 
 const messengerUrl =
   "https://www.facebook.com/profile.php?id=100063905416187";
@@ -25,7 +25,7 @@ export function generateStaticParams() {
 export async function generateMetadata({
   params,
 }: UpcomingProductPageProps): Promise<Metadata> {
-  const product = getUpcomingProductById((await params).slug);
+  const product = await getUpcomingProductBySlug((await params).slug);
 
   if (!product) {
     return { title: "Product preview not found | GadgetMoTo" };
@@ -68,7 +68,7 @@ export async function generateMetadata({
 export default async function UpcomingProductPage({
   params,
 }: UpcomingProductPageProps) {
-  const product = getUpcomingProductById((await params).slug);
+  const product = await getUpcomingProductBySlug((await params).slug);
 
   if (!product) {
     notFound();

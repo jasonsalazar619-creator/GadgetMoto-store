@@ -32,7 +32,12 @@ Completed and validated:
   Twitter metadata, sitemap, and robots directives
 - Secure order endpoint code retained for controlled future activation
 - Secure Supabase staff login, protected admin shell, read-only dashboard, and
-  protected product-management placeholder
+  protected product management
+- Searchable, filterable, paginated admin product list; validated draft
+  creation; product and variant editing; 800 ms autosave with manual fallback;
+  archival; and guarded unused-draft deletion
+- Automatic catalog audit triggers and storefront route revalidation after
+  successful administrator mutations
 - Vercel project connected to `origin/main`; pushes trigger production
   redeployment
 - All 68 Coming Soon products have unique short and full descriptions,
@@ -96,7 +101,7 @@ connection, query, SQL command, or Supabase command occurred.
 - Approved automatic delivery-fee rules
 - Approved VAT rules and rate
 - Maya merchant credentials, server initialization, and verified webhooks
-- Admin product CRUD, image uploads, and autosave
+- Admin product-image uploads and gallery controls
 - Admin order and inventory tools
 - Approved POCO C85 product image
 - Final privacy, terms, warranty, cancellation, refund, and retention policies

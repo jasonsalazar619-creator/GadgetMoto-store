@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 
-import { getAllProducts } from "@/data/prototype-products";
-import { upcomingProducts } from "@/data/upcoming-products";
+import { getCatalogProducts } from "@/lib/catalog/server/catalog";
+import { getUpcomingProducts } from "@/lib/catalog/server/upcoming-catalog";
 import { absoluteSiteUrl } from "@/lib/site/server";
 
 const storefrontRoutes = [
@@ -18,7 +18,11 @@ const storefrontRoutes = [
   "/terms-and-conditions",
 ] as const;
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const [catalogProducts, upcomingProducts] = await Promise.all([
+    getCatalogProducts(),
+    getUpcomingProducts(),
+  ]);
   const pages: MetadataRoute.Sitemap = storefrontRoutes.map(
     (pathname) => ({
       url: absoluteSiteUrl(pathname),
@@ -26,7 +30,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: pathname === "/" ? 1 : pathname === "/shop" ? 0.9 : 0.7,
     }),
   );
-  const products: MetadataRoute.Sitemap = getAllProducts().map(
+  const products: MetadataRoute.Sitemap = catalogProducts.map(
     (product) => ({
       url: absoluteSiteUrl(`/products/${product.slug}`),
       changeFrequency: "weekly",

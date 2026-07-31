@@ -29,6 +29,8 @@ export type PrototypeProduct = {
   primaryImage: ProductImage | null;
   images: readonly ProductImage[];
   specifications: readonly ProductSpecification[];
+  shortDescription?: string;
+  fullDescription?: string;
 };
 
 const products: readonly PrototypeProduct[] = [

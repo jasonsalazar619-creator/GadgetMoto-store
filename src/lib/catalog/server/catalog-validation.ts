@@ -8,15 +8,15 @@ import {
 import { CatalogServerError } from "./catalog-error";
 import type { CatalogDatabaseRow } from "./database-catalog";
 
-const parityProductCount = 12;
 const uuidPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 type SupportedBadge = NonNullable<PrototypeProduct["badge"]>;
 
 type ValidatedCatalogRow = Readonly<{
   row: CatalogDatabaseRow;
-  staticProduct: PrototypeProduct;
+  staticProduct: PrototypeProduct | undefined;
   category: ProductCategory;
   condition: PrototypeProduct["condition"];
   badge: SupportedBadge | null;
@@ -31,6 +31,9 @@ const failValidation = (): never => {
 const isNonblankString = (value: unknown): value is string =>
   typeof value === "string" && value.trim().length > 0;
 
+const isOptionalText = (value: unknown): value is string | null =>
+  value === null || (typeof value === "string" && value.trim().length > 0);
+
 const isSafeNonnegativeInteger = (value: unknown): value is number =>
   typeof value === "number" &&
   Number.isSafeInteger(value) &&
@@ -39,10 +42,7 @@ const isSafeNonnegativeInteger = (value: unknown): value is number =>
 const readCentavos = (value: unknown): number => {
   if (isSafeNonnegativeInteger(value)) return value;
 
-  if (
-    typeof value !== "string" ||
-    !/^(0|[1-9][0-9]*)$/.test(value)
-  ) {
+  if (typeof value !== "string" || !/^(0|[1-9][0-9]*)$/.test(value)) {
     return failValidation();
   }
 
@@ -64,13 +64,6 @@ const getBadge = (value: string | null): SupportedBadge | null => {
   return failValidation();
 };
 
-const getExpectedBrandSlug = (brand: string): string =>
-  brand
-    .trim()
-    .toLocaleLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
-
 const assertUnique = (values: readonly string[]): void => {
   if (new Set(values).size !== values.length) failValidation();
 };
@@ -78,43 +71,41 @@ const assertUnique = (values: readonly string[]): void => {
 function validateDatabaseCatalogRows(
   rows: readonly CatalogDatabaseRow[],
 ): readonly ValidatedCatalogRow[] {
-  const staticProducts = getAllProducts();
+  if (rows.length > 1000) failValidation();
+
   const staticBySlug = new Map(
-    staticProducts.map((product) => [product.slug, product]),
+    getAllProducts().map((product) => [product.slug, product]),
   );
-  const expectedSlugs = staticProducts.map((product) => product.slug);
 
-  if (
-    rows.length !== parityProductCount ||
-    staticProducts.length !== parityProductCount
-  ) {
-    failValidation();
-  }
-
-  const validatedRows = rows.map((row, index): ValidatedCatalogRow => {
+  const validatedRows = rows.map((row): ValidatedCatalogRow => {
     if (
       !isNonblankString(row.product_id) ||
       !uuidPattern.test(row.product_id) ||
       !isNonblankString(row.variant_id) ||
       !uuidPattern.test(row.variant_id) ||
       !isNonblankString(row.product_slug) ||
+      !slugPattern.test(row.product_slug) ||
       !isNonblankString(row.product_name) ||
       !isNonblankString(row.brand_name) ||
       !isNonblankString(row.brand_slug) ||
+      !slugPattern.test(row.brand_slug) ||
       !isNonblankString(row.sku) ||
       !isNonblankString(row.variant_name) ||
       !isSafeNonnegativeInteger(row.product_sort_order) ||
       (!isSafeNonnegativeInteger(row.ram_gb) && row.ram_gb !== null) ||
+      row.ram_gb === 0 ||
       !isSafeNonnegativeInteger(row.storage_gb) ||
       row.storage_gb === 0 ||
-      typeof row.financing_available !== "boolean"
+      typeof row.financing_available !== "boolean" ||
+      !isOptionalText(row.short_description) ||
+      !isOptionalText(row.full_description) ||
+      !(
+        (row.primary_image_path === null && row.primary_image_alt === null) ||
+        (isNonblankString(row.primary_image_path) &&
+          isNonblankString(row.primary_image_alt))
+      )
     ) {
       failValidation();
-    }
-
-    const staticProduct = staticBySlug.get(row.product_slug);
-    if (!staticProduct || expectedSlugs[index] !== row.product_slug) {
-      return failValidation();
     }
 
     const category = getCategory(row.category);
@@ -123,32 +114,17 @@ function validateDatabaseCatalogRows(
     const currentPriceCentavos = readCentavos(row.current_price_centavos);
     const srpCentavos =
       row.srp_centavos === null ? null : readCentavos(row.srp_centavos);
-    const expectedRam = staticProduct.ramGb ?? null;
-    const expectedSrpCentavos =
-      staticProduct.srp === undefined ? null : staticProduct.srp * 100;
 
     if (
-      row.product_sort_order !== index ||
-      row.product_name !== staticProduct.name ||
-      row.brand_name !== staticProduct.brand ||
-      row.brand_slug !== getExpectedBrandSlug(staticProduct.brand) ||
-      category !== staticProduct.category ||
-      row.sku !== staticProduct.sku ||
-      row.variant_name !== staticProduct.variant ||
-      row.ram_gb !== expectedRam ||
-      row.storage_gb !== staticProduct.storageGb ||
-      condition !== staticProduct.condition ||
-      badge !== (staticProduct.badge ?? null) ||
-      row.financing_available !== staticProduct.financingAvailable ||
-      currentPriceCentavos !== staticProduct.currentPrice * 100 ||
-      srpCentavos !== expectedSrpCentavos
+      srpCentavos !== null &&
+      srpCentavos < currentPriceCentavos
     ) {
-      return failValidation();
+      failValidation();
     }
 
     return {
       row,
-      staticProduct,
+      staticProduct: staticBySlug.get(row.product_slug),
       category,
       condition,
       badge,
@@ -158,35 +134,9 @@ function validateDatabaseCatalogRows(
   });
 
   assertUnique(validatedRows.map(({ row }) => row.product_slug));
-  assertUnique(validatedRows.map(({ row }) => row.sku.toLowerCase()));
-  assertUnique(validatedRows.map(({ row }) => row.product_id.toLowerCase()));
-  assertUnique(validatedRows.map(({ row }) => row.variant_id.toLowerCase()));
-
-  if (
-    expectedSlugs.some(
-      (slug) => !validatedRows.some(({ row }) => row.product_slug === slug),
-    ) ||
-    validatedRows.some(({ row }) => !staticBySlug.has(row.product_slug))
-  ) {
-    failValidation();
-  }
-
-  const apple = validatedRows.find(
-    ({ row }) => row.product_slug === "apple-iphone-17",
-  );
-  const pocoF8 = validatedRows.find(
-    ({ row }) => row.product_slug === "poco-f8-ultra",
-  );
-
-  if (
-    !apple ||
-    apple.row.ram_gb !== null ||
-    apple.srpCentavos !== null ||
-    !pocoF8 ||
-    pocoF8.srpCentavos !== null
-  ) {
-    failValidation();
-  }
+  assertUnique(validatedRows.map(({ row }) => row.sku.toLocaleLowerCase()));
+  assertUnique(validatedRows.map(({ row }) => row.product_id.toLocaleLowerCase()));
+  assertUnique(validatedRows.map(({ row }) => row.variant_id.toLocaleLowerCase()));
 
   return validatedRows;
 }
@@ -212,26 +162,41 @@ export function normalizeDatabaseCatalogRows(
         badge,
         currentPriceCentavos,
         srpCentavos,
-      }): PrototypeProduct => ({
-        id: staticProduct.id,
-        slug: row.product_slug,
-        sku: row.sku,
-        brand: row.brand_name,
-        name: row.product_name,
-        category,
-        variant: row.variant_name,
-        currentPrice: currentPriceCentavos / 100,
-        ...(srpCentavos === null ? {} : { srp: srpCentavos / 100 }),
-        ...(row.ram_gb === null ? {} : { ramGb: row.ram_gb }),
-        storageGb: row.storage_gb,
-        condition,
-        ...(badge === null ? {} : { badge }),
-        financingMessage: staticProduct.financingMessage,
-        financingAvailable: row.financing_available,
-        artSeed: staticProduct.artSeed,
-        primaryImage: staticProduct.primaryImage,
-        images: staticProduct.images,
-        specifications: staticProduct.specifications,
-      }),
+      }): PrototypeProduct => {
+        const primaryImage =
+          staticProduct?.primaryImage?.src === row.primary_image_path
+            ? staticProduct.primaryImage
+            : null;
+
+        return {
+          id: staticProduct?.id ?? row.product_slug,
+          slug: row.product_slug,
+          sku: row.sku,
+          brand: row.brand_name,
+          name: row.product_name,
+          category,
+          variant: row.variant_name,
+          currentPrice: currentPriceCentavos / 100,
+          ...(srpCentavos === null ? {} : { srp: srpCentavos / 100 }),
+          ...(row.ram_gb === null ? {} : { ramGb: row.ram_gb }),
+          storageGb: row.storage_gb,
+          condition,
+          ...(badge === null ? {} : { badge }),
+          financingMessage: "Financing options available",
+          financingAvailable: row.financing_available,
+          artSeed:
+            staticProduct?.artSeed ??
+            (category === "Tablet" ? "wide-orbit" : "orbit-blue"),
+          primaryImage,
+          images: staticProduct?.images ?? [],
+          specifications: staticProduct?.specifications ?? [],
+          ...(row.short_description
+            ? { shortDescription: row.short_description }
+            : {}),
+          ...(row.full_description
+            ? { fullDescription: row.full_description }
+            : {}),
+        };
+      },
     );
 }

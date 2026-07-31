@@ -36,12 +36,12 @@ export default async function ProtectedAdminLayout({
           >
             Products
           </Link>
-          <span
-            aria-disabled="true"
-            className="rounded-[var(--radius-sm)] px-4 py-3 text-sm text-slate-400"
+          <Link
+            className="rounded-[var(--radius-sm)] px-4 py-3 font-bold hover:bg-white/10"
+            href="/admin/products/new"
           >
-            Add product — coming next
-          </span>
+            Add product
+          </Link>
         </nav>
         <div className="mt-auto border-t border-white/15 pt-5">
           <p className="font-bold">{admin.displayName}</p>
@@ -87,6 +87,12 @@ export default async function ProtectedAdminLayout({
               href="/admin/products"
             >
               Products
+            </Link>
+            <Link
+              className="min-h-11 shrink-0 rounded-[var(--radius-round)] border bg-white px-5 py-2.5 font-bold text-[var(--color-action)]"
+              href="/admin/products/new"
+            >
+              Add product
             </Link>
           </nav>
         </header>

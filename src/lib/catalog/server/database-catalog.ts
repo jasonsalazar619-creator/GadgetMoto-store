@@ -21,6 +21,10 @@ export type CatalogDatabaseRow = {
   srp_centavos: string | number | null;
   badge: string | null;
   financing_available: boolean;
+  short_description: string | null;
+  full_description: string | null;
+  primary_image_path: string | null;
+  primary_image_alt: string | null;
 };
 
 export async function loadDatabaseCatalogRows(): Promise<
@@ -46,7 +50,11 @@ export async function loadDatabaseCatalogRows(): Promise<
         current_price_centavos,
         srp_centavos,
         badge,
-        financing_available
+        financing_available,
+        short_description,
+        full_description,
+        primary_image_path,
+        primary_image_alt
       from storefront.catalog_products
       order by product_sort_order asc, product_slug asc, sku asc
     `;

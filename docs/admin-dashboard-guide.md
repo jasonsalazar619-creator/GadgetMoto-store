@@ -2,15 +2,17 @@
 
 ## Current checkpoint
 
-The secure staff-authentication foundation and protected admin shell are
-implemented. Product creation, editing, archival, image uploads, and autosave
-remain unavailable until their reviewed checkpoints.
+The secure staff-authentication foundation, protected admin shell, and
+validated product-management workflow are implemented. Product-image uploads
+remain unavailable until their reviewed checkpoint.
 
 Admin routes:
 
 - `/admin/login` — staff email/password sign-in
 - `/admin` — protected read-only dashboard shell
-- `/admin/products` — protected product-management placeholder
+- `/admin/products` — protected searchable and filterable product list
+- `/admin/products/new` — protected explicit draft-creation form
+- `/admin/products/[id]` — protected product editor
 
 There is no public signup, password-recovery flow, social login, or customer
 account feature.
@@ -105,19 +107,64 @@ following manually in the Supabase Dashboard:
 Do not enable public signup. Do not place staff email addresses, passwords,
 UUIDs, tokens, or project identifiers in documentation or Git.
 
+## Product-management workflow
+
+The product list loads after administrator verification and displays each
+product once. It supports name, SKU, and slug search; brand, category, and
+status filters; name or recently-updated sorting; and 20-item pagination.
+Coming Soon records with no commercial variant display no fabricated SKU or
+price.
+
+New products begin as private drafts. The creation form requires a confirmed
+name, existing active brand, and category. It proposes a unique slug, performs
+a server uniqueness check, creates no SKU or price, and redirects to the
+protected editor.
+
+The editor supports:
+
+- name, slug, brand, category, short description, and full description
+- Draft, Coming Soon, and Active lifecycle changes
+- featured state and nonnegative display order
+- peso price and SRP input converted server-side to integer centavos
+- badge and confirmed financing availability
+- variant name, physical RAM, extended RAM, storage, and SKU
+- structured label/value specifications
+
+Existing canonical SKUs remain locked by default. SKU changes require
+unlocking and explicit confirmation. Slug changes require a separate route
+confirmation. Active products require complete descriptions, category, SKU,
+variant, storage, and current price. Coming Soon products require descriptions
+but may remain without a SKU, variant, price, or inventory.
+
+Valid changes autosave after approximately 800 milliseconds. Only changed
+database fields are written. Requests are serialized, newer edits remain
+queued, stale responses do not replace current typing, and an explicit Save
+button remains available. The editor announces Unsaved changes, Saving,
+Saved, and Save failed states and warns before leaving with pending changes.
+
+Archive is the normal removal operation. It requires confirmation, records the
+archive timestamp, removes the product from public read models, and preserves
+images, inventory, orders, and audit history. Permanent deletion is shown only
+for a non-preview draft without a variant, requires the exact product name,
+and remains subject to the deployed database dependency guard. Blocked
+deletion recommends archive instead.
+
+The deployed product and variant triggers automatically write safe audit
+entries containing the administrator ID, entity ID, operation, changed field
+names, and timestamp. Values, descriptions, prices, passwords, tokens,
+cookies, and request bodies are not copied into audit records.
+
+Successful mutations revalidate the homepage, catalog routes, Coming Soon,
+affected detail routes, sitemap, shared root catalog payload, and admin
+summaries. The server-only active and Coming Soon read models now supply
+approved database edits when database catalog mode is enabled. Static mode
+remains the build-safe and controlled fallback.
+
 ## Deferred product-management work
 
-The `/admin/products` route is intentionally read-only. The following remain
-pending:
-
-- product list, search, filters, and paging
-- explicit draft creation
-- validated product and variant editing
-- price and SRP editing in integer centavos
-- archive and guarded permanent deletion
-- product-image upload and gallery management
-- autosave and save-status behavior
-- public-route revalidation after approved changes
+- product-image upload, replace, reorder, publication, and deletion
+- inventory-level and movement management
+- order-management tools
 
 ## Troubleshooting
 
@@ -128,8 +175,12 @@ pending:
   could not be verified.
 - **Returned to storefront:** the authenticated user did not have an active
   administrator staff profile.
-- **Counts unavailable:** authorization succeeded, but the catalog read could
+- **Counts or product list unavailable:** authorization succeeded, but the catalog read could
   not be confirmed safely. No mutation is attempted.
+- **Save failed:** the request was denied, invalid, conflicted, or could not be
+  confirmed. Refresh before retrying; no raw database error is displayed.
+- **Delete blocked:** the draft has a retained relationship and must be
+  archived instead.
 
 Raw Supabase errors, token values, cookie contents, SQL details, and project
 identifiers must not be added to troubleshooting output.

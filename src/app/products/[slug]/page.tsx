@@ -78,6 +78,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <div className="product-detail-info">
             <p className="type-eyebrow text-[var(--color-action)]">{product.brand} · {product.category}</p>
             <h1 className="type-h1 mt-5">{product.name}</h1>
+            {product.shortDescription ? (
+              <p className="mt-5 text-lg leading-8 text-[var(--color-muted)]">
+                {product.shortDescription}
+              </p>
+            ) : null}
             <dl className="product-facts mt-7"><div><dt>Variant</dt><dd>{product.variant}</dd></div><div><dt>Condition</dt><dd>{product.condition}</dd></div><div><dt>Availability</dt><dd>Contact us to confirm availability.</dd></div></dl>
             <PriceDisplay className="mt-8" currentPrice={product.currentPrice} originalPrice={product.srp} />
             <p className="mt-3 text-sm leading-relaxed text-[var(--color-muted)]">VAT is calculated separately. The applicable VAT rate is pending confirmation.</p>
@@ -97,6 +102,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
               Official product details
             </p>
             <h2 className="type-h3 mt-4">Verified specifications</h2>
+            {product.fullDescription ? (
+              <p className="mt-5 max-w-4xl leading-8 text-[var(--color-muted)]">
+                {product.fullDescription}
+              </p>
+            ) : null}
             <dl className="product-facts mt-6">
               {product.specifications.map((specification) => (
                 <div key={specification.label}>

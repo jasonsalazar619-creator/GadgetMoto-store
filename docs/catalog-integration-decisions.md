@@ -433,6 +433,40 @@ search, comparison, cart, checkout, inventory, orders, and `/api/orders`.
 Their complete audit is maintained in
 `docs/upcoming-product-content-audit.md`.
 
+## Administrator write-side integration
+
+The protected product-management application now uses the deployed Supabase
+administrator policies and automatic audit triggers. Every Server Action
+re-verifies the Auth user and active `administrator` staff profile, validates
+an allowlisted request, performs only the requested product or primary-variant
+change, returns a sanitized result, and revalidates affected public routes.
+The browser never supplies an authoritative role, database price, or
+publication decision.
+
+The active catalog adapter no longer assumes immutable parity values for the
+original 12 products. It validates any complete server-only active read-model
+result for unique slugs, SKUs, product IDs, and variant IDs; supported enums;
+safe integer centavos; SRP ordering; valid relationships; and one flattened
+active variant per product. The original static catalog remains the complete
+fallback when database mode fails validation. Static presentation enrichment
+is used only when a known slug matches; new active products receive no
+fabricated specifications or product media.
+
+The separate Coming Soon pages now read
+`storefront.coming_soon_products` through the same server-only source-mode
+boundary. Database preview rows remain non-transactional and contain no SKU,
+price, inventory, cart, comparison, checkout, or order behavior. Their
+repository media uses only already-known dimensions; unknown managed media is
+withheld until the product-image workflow is implemented. Static preview data
+remains the build-safe fallback and continues to generate the approved 68
+routes.
+
+Administrator edits can therefore update active product names, descriptions,
+prices, visibility, and Coming Soon content without mixing database and static
+records. Draft and archived products remain absent from public read models.
+Revalidation covers the shared root catalog payload, homepage, shop, phones,
+tablets, Coming Soon listing and details, active product details, and sitemap.
+
 ## Approval checklist
 
 - [x] Add `public.products.sort_order` as a nonnegative, required integer without an implicit default.

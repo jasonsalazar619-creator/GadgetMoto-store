@@ -19,8 +19,9 @@ export default async function AdminDashboardPage() {
           Admin dashboard
         </h1>
         <p className="mt-4 max-w-2xl leading-7 text-sky-50">
-          Secure administrator access is active. Product editing, uploads, and
-          autosave will be enabled in controlled follow-up checkpoints.
+          Secure administrator access, validated product management, and
+          autosave are active. Product-image uploads remain in the next
+          controlled checkpoint.
         </p>
       </header>
 
@@ -72,7 +73,7 @@ export default async function AdminDashboardPage() {
       <section className="mt-8 grid gap-4 md:grid-cols-3">
         {[
           ["Authentication", "Server-verified administrator access is active."],
-          ["Product management", "Product CRUD is scheduled for the next checkpoint."],
+          ["Product management", "Validated product CRUD and autosave are active."],
           ["Image workflow", "Secure Storage uploads and gallery controls remain pending."],
         ].map(([title, description]) => (
           <article
