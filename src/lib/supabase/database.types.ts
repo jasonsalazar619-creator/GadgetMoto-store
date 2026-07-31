@@ -92,6 +92,7 @@ export type Database = {
           full_description: string | null;
           highlights: Json;
           specifications: Json;
+          commerce_draft: Json;
           status: ProductStatus;
           is_featured: boolean;
           is_public_preview: boolean;
@@ -111,6 +112,7 @@ export type Database = {
           full_description?: string | null;
           highlights?: Json;
           specifications?: Json;
+          commerce_draft?: Json;
           status?: ProductStatus;
           is_featured?: boolean;
           is_public_preview?: boolean;
@@ -129,6 +131,7 @@ export type Database = {
           full_description?: string | null;
           highlights?: Json;
           specifications?: Json;
+          commerce_draft?: Json;
           status?: ProductStatus;
           is_featured?: boolean;
           is_public_preview?: boolean;
@@ -249,6 +252,17 @@ export type Database = {
       can_permanently_delete_variant: {
         Args: { target_variant_id: string };
         Returns: boolean;
+      };
+      promote_coming_soon_product: {
+        Args: { target_product_id: string };
+        Returns:
+          | "PUBLISHED"
+          | "FORBIDDEN"
+          | "NOT_FOUND"
+          | "NOT_COMING_SOON"
+          | "NOT_READY"
+          | "DUPLICATE_SLUG"
+          | "DUPLICATE_SKU";
       };
     };
     Enums: {

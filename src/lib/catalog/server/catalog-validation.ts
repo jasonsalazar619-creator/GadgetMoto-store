@@ -5,6 +5,9 @@ import {
   type ProductCategory,
   type PrototypeProduct,
 } from "@/data/prototype-products";
+import { upcomingProducts } from "@/data/upcoming-products";
+import type { ProductImage } from "@/data/product-images";
+import type { ProductSpecification } from "@/data/product-specifications";
 import { CatalogServerError } from "./catalog-error";
 import type { CatalogDatabaseRow } from "./database-catalog";
 
@@ -22,6 +25,8 @@ type ValidatedCatalogRow = Readonly<{
   badge: SupportedBadge | null;
   currentPriceCentavos: number;
   srpCentavos: number | null;
+  images: readonly ProductImage[];
+  specifications: readonly ProductSpecification[];
 }>;
 
 const failValidation = (): never => {
@@ -68,6 +73,70 @@ const assertUnique = (values: readonly string[]): void => {
   if (new Set(values).size !== values.length) failValidation();
 };
 
+const imageByPath = new Map<string, ProductImage>(
+  [
+    ...getAllProducts().flatMap((product) => [
+      ...(product.primaryImage ? [product.primaryImage] : []),
+      ...product.images,
+    ]),
+    ...upcomingProducts.flatMap((product) => [
+      ...(product.primaryImage ? [product.primaryImage] : []),
+      ...product.images,
+    ]),
+  ].map((image) => [image.src, image] as const),
+);
+
+function readImages(value: unknown): readonly ProductImage[] {
+  if (!Array.isArray(value)) return failValidation();
+  if (value.length > 20) failValidation();
+
+  const images = value.flatMap((item) => {
+    if (
+      typeof item !== "object" ||
+      item === null ||
+      Array.isArray(item) ||
+      !("storagePath" in item) ||
+      typeof item.storagePath !== "string"
+    ) {
+      return failValidation();
+    }
+    const image = imageByPath.get(item.storagePath);
+    return image ? [image] : [];
+  });
+
+  assertUnique(images.map(({ src }) => src));
+  return images;
+}
+
+function readSpecifications(
+  value: unknown,
+): readonly ProductSpecification[] {
+  if (!Array.isArray(value)) return failValidation();
+  if (value.length > 40) failValidation();
+
+  const specifications = value.map((item) => {
+    if (
+      typeof item !== "object" ||
+      item === null ||
+      Array.isArray(item) ||
+      !("label" in item) ||
+      !("value" in item) ||
+      typeof item.label !== "string" ||
+      typeof item.value !== "string" ||
+      !item.label.trim() ||
+      !item.value.trim()
+    ) {
+      return failValidation();
+    }
+    return { label: item.label, value: item.value };
+  });
+
+  assertUnique(
+    specifications.map(({ label }) => label.trim().toLocaleLowerCase()),
+  );
+  return specifications;
+}
+
 function validateDatabaseCatalogRows(
   rows: readonly CatalogDatabaseRow[],
 ): readonly ValidatedCatalogRow[] {
@@ -94,6 +163,9 @@ function validateDatabaseCatalogRows(
       !isSafeNonnegativeInteger(row.product_sort_order) ||
       (!isSafeNonnegativeInteger(row.ram_gb) && row.ram_gb !== null) ||
       row.ram_gb === 0 ||
+      (!isSafeNonnegativeInteger(row.extended_ram_gb) &&
+        row.extended_ram_gb !== null) ||
+      row.extended_ram_gb === 0 ||
       !isSafeNonnegativeInteger(row.storage_gb) ||
       row.storage_gb === 0 ||
       typeof row.financing_available !== "boolean" ||
@@ -114,6 +186,8 @@ function validateDatabaseCatalogRows(
     const currentPriceCentavos = readCentavos(row.current_price_centavos);
     const srpCentavos =
       row.srp_centavos === null ? null : readCentavos(row.srp_centavos);
+    const images = readImages(row.images);
+    const specifications = readSpecifications(row.specifications);
 
     if (
       srpCentavos !== null &&
@@ -130,6 +204,8 @@ function validateDatabaseCatalogRows(
       badge,
       currentPriceCentavos,
       srpCentavos,
+      images,
+      specifications,
     };
   });
 
@@ -162,11 +238,13 @@ export function normalizeDatabaseCatalogRows(
         badge,
         currentPriceCentavos,
         srpCentavos,
+        images,
+        specifications,
       }): PrototypeProduct => {
         const primaryImage =
           staticProduct?.primaryImage?.src === row.primary_image_path
             ? staticProduct.primaryImage
-            : null;
+            : images.find(({ src }) => src === row.primary_image_path) ?? null;
 
         return {
           id: staticProduct?.id ?? row.product_slug,
@@ -188,8 +266,11 @@ export function normalizeDatabaseCatalogRows(
             staticProduct?.artSeed ??
             (category === "Tablet" ? "wide-orbit" : "orbit-blue"),
           primaryImage,
-          images: staticProduct?.images ?? [],
-          specifications: staticProduct?.specifications ?? [],
+          images:
+            staticProduct?.images ??
+            images.filter(({ src }) => src !== primaryImage?.src),
+          specifications:
+            staticProduct?.specifications ?? specifications,
           ...(row.short_description
             ? { shortDescription: row.short_description }
             : {}),

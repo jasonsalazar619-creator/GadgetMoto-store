@@ -14,5 +14,11 @@ export default async function AdminProductEditorPage({
   const data = await getAdminProductEditor(id);
   if (!data) notFound();
 
-  return <ProductEditor brands={data.brands} initialProduct={data.product} />;
+  return (
+    <ProductEditor
+      brands={data.brands}
+      initialProduct={data.product}
+      key={data.product.updatedAt}
+    />
+  );
 }

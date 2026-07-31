@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArchiveProductButton } from "@/components/admin/archive-product-button";
+import { MakeOfficialButton } from "@/components/admin/make-official-button";
 import type {
   AdminProductLifecycle,
   AdminProductListItem,
@@ -50,6 +51,26 @@ function lifecycleClass(lifecycle: AdminProductLifecycle): string {
   return "bg-amber-100 text-amber-900";
 }
 
+function readinessLabel(product: AdminProductListItem): string {
+  if (product.lifecycle === "active") return "Official";
+  if (
+    product.lifecycle === "coming_soon" &&
+    product.readiness.isReady
+  ) {
+    return "Ready to publish";
+  }
+  return "Missing information";
+}
+
+function readinessClass(product: AdminProductListItem): string {
+  if (product.lifecycle === "active") {
+    return "bg-emerald-100 text-emerald-800";
+  }
+  return product.lifecycle === "coming_soon" && product.readiness.isReady
+    ? "bg-sky-100 text-sky-800"
+    : "bg-amber-100 text-amber-900";
+}
+
 function ProductThumbnail({ product }: { product: AdminProductListItem }) {
   return (
     <div className="relative grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-[var(--radius-sm)] bg-[var(--color-ice)]">
@@ -92,6 +113,7 @@ export default async function AdminProductsPage({
   const category = readParam(params, "category");
   const status = readParam(params, "status");
   const sort = readParam(params, "sort") === "name" ? "name" : "updated";
+  const published = readParam(params, "published") === "1";
   const requestedPage = Number.parseInt(readParam(params, "page"), 10);
 
   const filtered = products
@@ -148,6 +170,15 @@ export default async function AdminProductsPage({
           Add draft product
         </Link>
       </header>
+
+      {published ? (
+        <p
+          className="mt-6 rounded-[var(--radius-md)] bg-emerald-50 p-4 font-bold text-emerald-800"
+          role="status"
+        >
+          Product published successfully.
+        </p>
+      ) : null}
 
       <form
         className="mt-8 grid gap-4 rounded-[var(--radius-lg)] border bg-white p-5 shadow-[var(--shadow-sm)] md:grid-cols-2 xl:grid-cols-6"
@@ -276,6 +307,11 @@ export default async function AdminProductsPage({
                     >
                       {lifecycleLabels[product.lifecycle]}
                     </span>
+                    <span
+                      className={`mt-2 ml-2 inline-flex rounded-full px-3 py-1 text-xs font-bold ${readinessClass(product)}`}
+                    >
+                      {readinessLabel(product)}
+                    </span>
                   </div>
                 </div>
                 <dl className="mt-5 grid grid-cols-2 gap-3 text-sm">
@@ -312,6 +348,13 @@ export default async function AdminProductsPage({
                   >
                     Edit
                   </Link>
+                  {product.lifecycle === "coming_soon" &&
+                  product.readiness.isReady ? (
+                    <MakeOfficialButton
+                      compact
+                      productId={product.id}
+                    />
+                  ) : null}
                   {product.lifecycle !== "archived" ? (
                     <ArchiveProductButton
                       compact
@@ -336,6 +379,7 @@ export default async function AdminProductsPage({
                     "Brand",
                     "Category",
                     "Status",
+                    "Readiness",
                     "SKU",
                     "Price",
                     "Updated",
@@ -377,6 +421,13 @@ export default async function AdminProductsPage({
                         {lifecycleLabels[product.lifecycle]}
                       </span>
                     </td>
+                    <td className="px-4 py-4">
+                      <span
+                        className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${readinessClass(product)}`}
+                      >
+                        {readinessLabel(product)}
+                      </span>
+                    </td>
                     <td className="max-w-56 break-all px-4 py-4 text-sm">
                       {product.sku ?? "Not set"}
                     </td>
@@ -394,6 +445,13 @@ export default async function AdminProductsPage({
                         >
                           Edit
                         </Link>
+                        {product.lifecycle === "coming_soon" &&
+                        product.readiness.isReady ? (
+                          <MakeOfficialButton
+                            compact
+                            productId={product.id}
+                          />
+                        ) : null}
                         {product.lifecycle !== "archived" ? (
                           <ArchiveProductButton
                             compact

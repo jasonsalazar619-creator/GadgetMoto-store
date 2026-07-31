@@ -33,6 +33,7 @@ export type NormalizedProductSubmission = {
     sku: string | null;
     variantName: string | null;
     ramGb: number | null;
+    ramNotApplicable: boolean;
     extendedRamGb: number | null;
     storageGb: number | null;
     currentPriceCentavos: number | null;
@@ -205,6 +206,7 @@ export function validateProductSubmission(
       "sku",
       "variantName",
       "ramGb",
+      "ramNotApplicable",
       "extendedRamGb",
       "storageGb",
       "currentPricePesos",
@@ -326,6 +328,13 @@ export function validateProductSubmission(
   if (extendedRamGb === 0) {
     errors.extendedRamGb = "Extended RAM must be positive.";
   }
+  if (typeof input.variant.ramNotApplicable !== "boolean") {
+    errors.ramNotApplicable = "Select a valid physical RAM state.";
+  }
+  if (ramGb !== null && input.variant.ramNotApplicable === true) {
+    errors.ramNotApplicable =
+      "Clear physical RAM before marking it not applicable.";
+  }
   if (storageGb === 0) errors.storageGb = "Storage must be positive.";
   if (
     srpCentavos !== null &&
@@ -356,17 +365,9 @@ export function validateProductSubmission(
         input.variant.storageGb ||
         input.variant.currentPricePesos ||
         input.variant.srpPesos ||
-        input.variant.badge,
+        input.variant.badge ||
+        input.variant.ramNotApplicable,
     );
-
-  if (requested) {
-    if (!sku) errors.sku = "SKU is required for a variant.";
-    if (!variantName) errors.variantName = "Variant name is required.";
-    if (storageGb === null) errors.storageGb = "Storage is required.";
-    if (currentPriceCentavos === null) {
-      errors.currentPricePesos = "Current price is required.";
-    }
-  }
 
   if (lifecycle === "active") {
     if (!category) errors.category = "Active products need a category.";
@@ -378,6 +379,27 @@ export function validateProductSubmission(
     }
     if (!requested) {
       errors.variant = "Active products need a complete purchasable variant.";
+    }
+    if (!sku) errors.sku = "Active products need a canonical SKU.";
+    if (!variantName) {
+      errors.variantName = "Active products need a variant name.";
+    }
+    if (
+      ramGb === null &&
+      input.variant.ramNotApplicable !== true
+    ) {
+      errors.ramGb =
+        "Enter physical RAM or confirm that it is not applicable.";
+    }
+    if (storageGb === null) {
+      errors.storageGb = "Active products need confirmed storage.";
+    }
+    if (
+      currentPriceCentavos === null ||
+      currentPriceCentavos <= 0
+    ) {
+      errors.currentPricePesos =
+        "Active products need a selling price greater than zero.";
     }
   }
 
@@ -417,6 +439,7 @@ export function validateProductSubmission(
         sku: sku || null,
         variantName: variantName || null,
         ramGb,
+        ramNotApplicable: input.variant.ramNotApplicable as boolean,
         extendedRamGb,
         storageGb,
         currentPriceCentavos,

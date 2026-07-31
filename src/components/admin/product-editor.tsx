@@ -7,8 +7,10 @@ import {
   useState,
   useTransition,
 } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { MakeOfficialButton } from "@/components/admin/make-official-button";
 import {
   archiveProductAction,
   deleteDraftProductAction,
@@ -33,6 +35,8 @@ function centavosToPesos(value: number | null): string {
 }
 
 function formFromProduct(product: AdminProductEditorData): EditorForm {
+  const variant = product.variant ?? product.variantDraft;
+
   return {
     name: product.name,
     slug: product.slug,
@@ -45,24 +49,31 @@ function formFromProduct(product: AdminProductEditorData): EditorForm {
     sortOrder: String(product.sortOrder),
     specifications: product.specifications,
     variant: {
-      sku: product.variant?.sku ?? "",
-      variantName: product.variant?.variantName ?? "",
+      sku: variant.sku ?? "",
+      variantName: variant.variantName ?? "",
       ramGb:
-        product.variant?.ramGb === null || product.variant?.ramGb === undefined
+        variant.ramGb === null || variant.ramGb === undefined
           ? ""
-          : String(product.variant.ramGb),
+          : String(variant.ramGb),
+      ramNotApplicable:
+        "ramNotApplicable" in variant
+          ? variant.ramNotApplicable
+          : variant.ramGb === null,
       extendedRamGb:
-        product.variant?.extendedRamGb === null ||
-        product.variant?.extendedRamGb === undefined
+        variant.extendedRamGb === null ||
+        variant.extendedRamGb === undefined
           ? ""
-          : String(product.variant.extendedRamGb),
-      storageGb: product.variant ? String(product.variant.storageGb) : "",
+          : String(variant.extendedRamGb),
+      storageGb:
+        variant.storageGb === null || variant.storageGb === undefined
+          ? ""
+          : String(variant.storageGb),
       currentPricePesos: centavosToPesos(
-        product.variant?.currentPriceCentavos ?? null,
+        variant.currentPriceCentavos ?? null,
       ),
-      srpPesos: centavosToPesos(product.variant?.srpCentavos ?? null),
-      badge: product.variant?.badge ?? "",
-      financingAvailable: product.variant?.financingAvailable ?? true,
+      srpPesos: centavosToPesos(variant.srpCentavos ?? null),
+      badge: variant.badge ?? "",
+      financingAvailable: variant.financingAvailable,
     },
     confirmSlugChange: false,
     confirmSkuChange: false,
@@ -151,17 +162,8 @@ function clientFormIsValid(form: EditorForm, hasVariant: boolean): boolean {
     currentPriceCentavos === undefined ||
     srpCentavos === undefined ||
     (form.variant.sku !== "" &&
-      !/^[A-Z0-9][A-Z0-9-]{2,79}$/.test(form.variant.sku))
-  ) {
-    return false;
-  }
-
-  if (
-    variantRequested &&
-    (!form.variant.sku.trim() ||
-      !form.variant.variantName.trim() ||
-      !form.variant.storageGb ||
-      !form.variant.currentPricePesos)
+      !/^[A-Z0-9][A-Z0-9-]{2,79}$/.test(form.variant.sku)) ||
+    (form.variant.ramNotApplicable && form.variant.ramGb !== "")
   ) {
     return false;
   }
@@ -179,7 +181,13 @@ function clientFormIsValid(form: EditorForm, hasVariant: boolean): boolean {
     (!form.category ||
       !form.shortDescription.trim() ||
       !form.fullDescription.trim() ||
-      !variantRequested)
+      !variantRequested ||
+      !form.variant.sku.trim() ||
+      !form.variant.variantName.trim() ||
+      (!form.variant.ramGb && !form.variant.ramNotApplicable) ||
+      !form.variant.storageGb ||
+      currentPriceCentavos === null ||
+      currentPriceCentavos <= BigInt(0))
   );
 }
 
@@ -730,7 +738,9 @@ export function ProductEditor({
                 <option value="coming_soon">
                   Coming Soon — public preview only
                 </option>
-                <option value="active">Active — purchasable</option>
+                {baseline.lifecycle === "active" ? (
+                  <option value="active">Active — purchasable</option>
+                ) : null}
               </select>
               <FieldError errors={fieldErrors} field="lifecycle" />
             </div>
@@ -831,7 +841,11 @@ export function ProductEditor({
         </Section>
 
         <Section
-          description="A complete SKU, name, storage, and current price are required before a variant can be saved."
+          description={
+            baseline.lifecycle === "coming_soon"
+              ? "Incomplete commercial details autosave safely without making this product purchasable."
+              : "Active products require a complete canonical variant."
+          }
           title="Variant"
         >
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -937,6 +951,31 @@ export function ProductEditor({
               </div>
             ))}
           </div>
+          <label className="mt-5 flex gap-3 rounded-[var(--radius-sm)] bg-[var(--color-ice)] p-4">
+            <input
+              checked={form.variant.ramNotApplicable}
+              className="mt-1 h-4 w-4"
+              onChange={(event) =>
+                updateForm((current) => ({
+                  ...current,
+                  variant: {
+                    ...current.variant,
+                    ramNotApplicable: event.target.checked,
+                    ...(event.target.checked ? { ramGb: "" } : {}),
+                  },
+                }))
+              }
+              type="checkbox"
+            />
+            <span>
+              <strong>Physical RAM is not applicable</strong>
+              <span className="mt-1 block text-sm text-[var(--color-muted)]">
+                Use only when the official variant does not have an applicable
+                physical RAM value. Do not use this to guess an unknown value.
+              </span>
+            </span>
+          </label>
+          <FieldError errors={fieldErrors} field="ramNotApplicable" />
           {skuChanged ? (
             <label className="mt-5 flex gap-3 rounded-[var(--radius-sm)] bg-amber-50 p-4 text-sm">
               <input
@@ -1035,16 +1074,81 @@ export function ProductEditor({
         </Section>
 
         <Section title="Product Images">
-          <div className="rounded-[var(--radius-md)] bg-[var(--color-ice)] p-5">
-            <p className="font-bold">
-              Image management will be added in the next checkpoint.
-            </p>
-            <p className="mt-2 text-sm leading-6 text-[var(--color-muted)]">
-              Existing image records remain unchanged. Upload, reorder,
-              replacement, and deletion controls are intentionally unavailable.
-            </p>
-          </div>
+          {baseline.images.length ? (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {baseline.images.map((image) => (
+                <figure
+                  className="overflow-hidden rounded-[var(--radius-md)] border bg-[var(--color-ice)]"
+                  key={image.id}
+                >
+                  <div className="relative aspect-[4/3] bg-white">
+                    <Image
+                      alt={image.alt}
+                      className="object-contain p-3"
+                      fill
+                      sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 33vw"
+                      src={image.src}
+                    />
+                  </div>
+                  <figcaption className="p-4 text-sm">
+                    <strong>{image.isPrimary ? "Primary image" : "Gallery image"}</strong>
+                    <span className="mt-1 block text-[var(--color-muted)]">
+                      {image.isPublished ? "Approved for storefront use" : "Not published"}
+                    </span>
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-[var(--radius-md)] bg-[var(--color-ice)] p-5">
+              <p className="font-bold">No assigned image is available.</p>
+            </div>
+          )}
+          <p className="mt-4 text-sm leading-6 text-[var(--color-muted)]">
+            Existing assignments are preserved. Upload, reorder, replacement,
+            and deletion controls remain deferred to the product-image
+            checkpoint.
+          </p>
         </Section>
+
+        {baseline.lifecycle === "coming_soon" ? (
+          <Section
+            description="Publication is a separate confirmed transaction. Autosave never publishes this product."
+            title="Make this product official"
+          >
+            <ul className="grid gap-3 sm:grid-cols-2">
+              {baseline.readiness.items.map((item) => (
+                <li
+                  className={`flex items-start gap-3 rounded-[var(--radius-sm)] p-3 text-sm ${
+                    item.complete
+                      ? "bg-emerald-50 text-emerald-900"
+                      : "bg-amber-50 text-amber-950"
+                  }`}
+                  key={item.key}
+                >
+                  <span aria-hidden="true" className="font-bold">
+                    {item.complete ? "✓" : "○"}
+                  </span>
+                  <span>{item.label}</span>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-6">
+              <MakeOfficialButton
+                disabled={
+                  !baseline.readiness.isReady ||
+                  status !== "saved"
+                }
+                productId={baseline.id}
+              />
+            </div>
+            {!baseline.readiness.isReady ? (
+              <p className="mt-3 text-sm text-[var(--color-muted)]">
+                Complete and save every checklist item to enable publication.
+              </p>
+            ) : null}
+          </Section>
+        ) : null}
 
         <Section
           description="Archive preserves history. Permanent deletion is restricted by the deployed database guard."

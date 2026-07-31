@@ -21,8 +21,36 @@ export type AdminProductSpecification = {
 };
 
 export type AdminProductImage = {
+  id: string;
   src: string;
   alt: string;
+  isPrimary: boolean;
+  isPublished: boolean;
+};
+
+export type AdminProductReadinessItem = {
+  key:
+    | "name"
+    | "slug"
+    | "brand"
+    | "category"
+    | "description"
+    | "primaryImage"
+    | "sku"
+    | "uniqueSku"
+    | "variantName"
+    | "ram"
+    | "storage"
+    | "priceEntered"
+    | "priceValid"
+    | "srp";
+  label: string;
+  complete: boolean;
+};
+
+export type AdminProductReadiness = {
+  isReady: boolean;
+  items: AdminProductReadinessItem[];
 };
 
 export type AdminProductListItem = {
@@ -37,6 +65,7 @@ export type AdminProductListItem = {
   currentPriceCentavos: number | null;
   updatedAt: string;
   primaryImage: AdminProductImage | null;
+  readiness: AdminProductReadiness;
 };
 
 export type AdminProductVariant = {
@@ -54,6 +83,19 @@ export type AdminProductVariant = {
   updatedAt: string;
 };
 
+export type AdminProductVariantDraft = {
+  sku: string | null;
+  variantName: string | null;
+  ramGb: number | null;
+  ramNotApplicable: boolean;
+  extendedRamGb: number | null;
+  storageGb: number | null;
+  currentPriceCentavos: number | null;
+  srpCentavos: number | null;
+  badge: ProductBadge | null;
+  financingAvailable: boolean;
+};
+
 export type AdminProductEditorData = {
   id: string;
   name: string;
@@ -68,6 +110,9 @@ export type AdminProductEditorData = {
   sortOrder: number;
   specifications: AdminProductSpecification[];
   variant: AdminProductVariant | null;
+  variantDraft: AdminProductVariantDraft;
+  images: AdminProductImage[];
+  readiness: AdminProductReadiness;
   updatedAt: string;
 };
 
@@ -94,6 +139,18 @@ export type ProductMutationResult =
       fieldErrors?: Record<string, string>;
     };
 
+export type ProductPromotionResult =
+  | {
+      ok: true;
+      message: "Product published successfully.";
+    }
+  | {
+      ok: false;
+      code: ProductMutationCode;
+      message: string;
+      fieldErrors?: Record<string, string>;
+    };
+
 export type ProductEditorSubmission = {
   productId: string;
   name: string;
@@ -110,6 +167,7 @@ export type ProductEditorSubmission = {
     sku: string;
     variantName: string;
     ramGb: string;
+    ramNotApplicable: boolean;
     extendedRamGb: string;
     storageGb: string;
     currentPricePesos: string;

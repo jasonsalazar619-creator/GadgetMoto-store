@@ -25,6 +25,9 @@ export type CatalogDatabaseRow = {
   full_description: string | null;
   primary_image_path: string | null;
   primary_image_alt: string | null;
+  extended_ram_gb: number | null;
+  specifications: unknown;
+  images: unknown;
 };
 
 export async function loadDatabaseCatalogRows(): Promise<
@@ -54,7 +57,10 @@ export async function loadDatabaseCatalogRows(): Promise<
         short_description,
         full_description,
         primary_image_path,
-        primary_image_alt
+        primary_image_alt,
+        extended_ram_gb,
+        specifications,
+        images
       from storefront.catalog_products
       order by product_sort_order asc, product_slug asc, sku asc
     `;

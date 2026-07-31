@@ -15,6 +15,7 @@ import type {
   AdminProductEditorData,
   ProductMutationCode,
   ProductMutationResult,
+  ProductPromotionResult,
 } from "@/lib/admin/products/types";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
@@ -28,6 +29,7 @@ type AuthorizedContext = {
   supabase: SupabaseClient<Database>;
   administratorId: string;
 };
+type ProductMutationFailure = Extract<ProductMutationResult, { ok: false }>;
 
 type DestructiveResult =
   | { ok: true; message: string; redirectTo?: string }
@@ -52,12 +54,12 @@ function failure(
   code: ProductMutationCode,
   message: string,
   fieldErrors?: Record<string, string>,
-): ProductMutationResult {
+): ProductMutationFailure {
   return { ok: false, code, message, ...(fieldErrors ? { fieldErrors } : {}) };
 }
 
 async function authorizeMutation():
-  Promise<AuthorizedContext | ProductMutationResult> {
+  Promise<AuthorizedContext | ProductMutationFailure> {
   const authorization = await getAuthenticatedAdmin();
 
   if (!authorization.ok) {
@@ -86,7 +88,7 @@ async function authorizeMutation():
 }
 
 function isAuthorizedContext(
-  value: AuthorizedContext | ProductMutationResult,
+  value: AuthorizedContext | ProductMutationFailure,
 ): value is AuthorizedContext {
   return "supabase" in value;
 }
@@ -181,6 +183,9 @@ function revalidateStorefront(oldSlug: string, newSlug = oldSlug): void {
   revalidatePath("/phones");
   revalidatePath("/tablets");
   revalidatePath("/coming-soon");
+  revalidatePath("/compare");
+  revalidatePath("/cart");
+  revalidatePath("/checkout");
   revalidatePath(`/products/${oldSlug}`);
   revalidatePath(`/coming-soon/${oldSlug}`);
   if (newSlug !== oldSlug) {
@@ -194,10 +199,7 @@ async function reloadEditor(
   supabase: SupabaseClient<Database>,
   productId: string,
 ): Promise<AdminProductEditorData | null> {
-  const current = await loadCurrentProduct(supabase, productId);
-  return current
-    ? adminProductInternals.toEditorData(current.product, current.variant)
-    : null;
+  return adminProductInternals.loadEditorData(supabase, productId);
 }
 
 export async function saveProductAction(
@@ -247,6 +249,16 @@ export async function saveProductAction(
   }
 
   if (
+    value.lifecycle === "active" &&
+    current.product.status !== "active"
+  ) {
+    return failure("INVALID_PRODUCT", invalidProductMessage, {
+      lifecycle:
+        "Use Make Official to validate and publish a Coming Soon product.",
+    });
+  }
+
+  if (
     value.slug !== current.product.slug &&
     !value.confirmSlugChange
   ) {
@@ -265,7 +277,7 @@ export async function saveProductAction(
     });
   }
 
-  const [brandResult, slugResult, skuResult] = await Promise.all([
+  const [brandResult, slugResult, skuResult, draftSkuResult] = await Promise.all([
     context.supabase
       .from("brands")
       .select("id")
@@ -286,6 +298,12 @@ export async function saveProductAction(
           .neq("id", current.variant?.id ?? "00000000-0000-0000-0000-000000000000")
           .maybeSingle()
       : Promise.resolve({ data: null, error: null }),
+    value.variant.sku
+      ? context.supabase
+          .from("products")
+          .select("id, commerce_draft")
+          .neq("id", value.productId)
+      : Promise.resolve({ data: [], error: null }),
   ]);
 
   if (brandResult.error || !brandResult.data) {
@@ -306,7 +324,24 @@ export async function saveProductAction(
   if (skuResult.error) {
     return failure("PRODUCT_SAVE_FAILED", saveFailedMessage);
   }
-  if (skuResult.data) {
+  if (draftSkuResult.error) {
+    return failure("PRODUCT_SAVE_FAILED", saveFailedMessage);
+  }
+  const duplicateDraftSku = (draftSkuResult.data ?? []).some(({ commerce_draft }) => {
+    if (
+      typeof commerce_draft !== "object" ||
+      commerce_draft === null ||
+      Array.isArray(commerce_draft) ||
+      typeof commerce_draft.sku !== "string"
+    ) {
+      return false;
+    }
+    return (
+      commerce_draft.sku.trim().toLocaleLowerCase() ===
+      value.variant.sku?.toLocaleLowerCase()
+    );
+  });
+  if (skuResult.data || duplicateDraftSku) {
     return failure(
       "DUPLICATE_PRODUCT_SKU",
       "That SKU is already assigned to another product.",
@@ -346,7 +381,12 @@ export async function saveProductAction(
   }
 
   let variant = current.variant;
-  if (value.variant.requested) {
+  const saveCanonicalVariant =
+    current.product.status === "active" ||
+    (current.product.status === "draft" &&
+      !current.product.is_public_preview &&
+      current.variant !== null);
+  if (value.variant.requested && saveCanonicalVariant) {
     const variantValues = {
       sku: value.variant.sku as string,
       variant_name: value.variant.variantName as string,
@@ -411,6 +451,20 @@ export async function saveProductAction(
     short_description: value.shortDescription,
     full_description: value.fullDescription,
     specifications: value.specifications,
+    commerce_draft: targetActive
+      ? {}
+      : {
+          sku: value.variant.sku,
+          variantName: value.variant.variantName,
+          ramGb: value.variant.ramGb,
+          ramNotApplicable: value.variant.ramNotApplicable,
+          extendedRamGb: value.variant.extendedRamGb,
+          storageGb: value.variant.storageGb,
+          currentPriceCentavos: value.variant.currentPriceCentavos,
+          srpCentavos: value.variant.srpCentavos,
+          badge: value.variant.badge,
+          financingAvailable: value.variant.financingAvailable,
+        },
     is_featured: value.isFeatured,
     sort_order: value.sortOrder,
     status: targetArchived ? "archived" : targetActive ? "active" : "draft",
@@ -442,6 +496,84 @@ export async function saveProductAction(
   revalidatePath(`/admin/products/${value.productId}`);
 
   return { ok: true, product, message: "Saved" };
+}
+
+export async function makeOfficialProductAction(
+  input: unknown,
+): Promise<ProductPromotionResult> {
+  const context = await authorizeMutation();
+  if (!isAuthorizedContext(context)) return context;
+
+  if (
+    typeof input !== "object" ||
+    input === null ||
+    Object.keys(input).length !== 1 ||
+    !("productId" in input) ||
+    typeof input.productId !== "string" ||
+    !isValidUuid(input.productId)
+  ) {
+    return failure("INVALID_PRODUCT", "Invalid publication request.");
+  }
+
+  const current = await loadCurrentProduct(context.supabase, input.productId);
+  if (!current) {
+    return failure("PRODUCT_NOT_FOUND", "The product no longer exists.");
+  }
+
+  const { data, error } = await context.supabase.rpc(
+    "promote_coming_soon_product",
+    { target_product_id: input.productId },
+  );
+
+  if (error) {
+    return failure(
+      "PRODUCT_SAVE_FAILED",
+      "The product could not be published safely. Refresh and try again.",
+    );
+  }
+
+  if (data === "DUPLICATE_SLUG") {
+    return failure(
+      "DUPLICATE_PRODUCT_SLUG",
+      "That product slug is already in use.",
+      { slug: "Choose a unique slug." },
+    );
+  }
+  if (data === "DUPLICATE_SKU") {
+    return failure(
+      "DUPLICATE_PRODUCT_SKU",
+      "That SKU is already assigned to another product.",
+      { sku: "Choose a unique SKU." },
+    );
+  }
+  if (data === "NOT_FOUND") {
+    return failure("PRODUCT_NOT_FOUND", "The product no longer exists.");
+  }
+  if (data === "FORBIDDEN") {
+    return failure(
+      "ADMIN_FORBIDDEN",
+      "Administrator access is required.",
+    );
+  }
+  if (data === "NOT_COMING_SOON") {
+    return failure(
+      "INVALID_PRODUCT",
+      "Only a Coming Soon product can use Make Official.",
+    );
+  }
+  if (data !== "PUBLISHED") {
+    return failure(
+      "INVALID_PRODUCT",
+      "Complete every readiness item before publishing.",
+    );
+  }
+
+  revalidateStorefront(current.product.slug);
+  revalidatePath("/admin");
+  revalidatePath("/admin/products");
+  revalidatePath(`/admin/products/${input.productId}`);
+
+  return { ok: true, message: "Product published successfully." };
 }
 
 export async function archiveProductAction(
