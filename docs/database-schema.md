@@ -254,7 +254,7 @@ Cash on delivery is intentionally absent. Only `brand_new` is active at launch. 
 
 ## `updated_at` strategy
 
-A reusable `BEFORE UPDATE` database trigger will assign the transaction timestamp to `updated_at`; its function and attachment will be reviewed and implemented in a future migration. It applies to brands, products, variants, locations, inventory levels, staff profiles, orders, fulfillments, payments, price-alert subscriptions, and homepage sections. `product_images`, addresses, order items, and placements are created records without an automatic update requirement unless workflows later prove one. Append-only `inventory_movements`, `payment_events`, and `audit_logs` must not receive update triggers and should reject ordinary updates/deletes.
+A reusable `BEFORE UPDATE` database trigger assigns the transaction timestamp to `updated_at`. It applies to brands, products, variants, locations, inventory levels, staff profiles, orders, fulfillments, payments, price-alert subscriptions, and homepage sections. The pending admin product-management migration adds the same maintenance to `product_images` because administrators will edit alt text, ordering, publication, and primary-image state. Addresses, order items, and placements remain created records without automatic update maintenance unless workflows later prove one. Append-only `inventory_movements`, `payment_events`, and `audit_logs` must not receive update triggers and should reject ordinary updates/deletes.
 
 ## Order-total integrity
 
@@ -382,3 +382,33 @@ These do not block schema planning, but must be resolved before their relevant m
 - Price-alert email provider
 - Final product specification fields
 - Imported-unit classification, if later required
+
+## Admin product-management migration
+
+Migration `20260731090806_admin_product_management_schema.sql` is drafted
+locally and remains unexecuted. It does not modify the eight deployed
+migrations.
+
+The migration minimally extends the unified catalog for secure administrator
+management:
+
+- full descriptions, structured highlights and specifications, Coming Soon
+  preview state, and archival timestamps on products
+- nullable category for unresolved previews, with category still required for
+  active products
+- separate nullable extended RAM on variants
+- image publication state, unique paths, and image `updated_at` maintenance
+- deferred invariants preventing Coming Soon purchases and requiring an active
+  variant for active products
+- active-administrator RLS policies and least-privilege grants
+- trigger-enforced, field-name-only product, variant, and image audit entries
+- a private, restricted `product-images` Storage bucket
+- guarded hard deletion for unused drafts only
+- approved server-only live and Coming Soon read models
+- defensive backfill of the existing catalog media and exactly 68
+  non-purchasable Coming Soon products
+
+The 12 live canonical product slugs, SKUs, and integer-centavo prices remain
+unchanged. The migration creates no staff account, credential, order, payment,
+inventory quantity, public catalog write path, or seed outside the reviewed
+catalog backfill. See `docs/admin-product-management-schema.md`.
