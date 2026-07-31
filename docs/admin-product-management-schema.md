@@ -2,14 +2,13 @@
 
 ## Checkpoint status
 
-Migration `20260731090806_admin_product_management_schema.sql` is local,
-unexecuted, and awaiting manual review and deployment. No Supabase command or
-SQL command ran while this migration was created. The eight deployed
-migrations remain immutable and unchanged.
+Migration `20260731090806_admin_product_management_schema.sql` is deployed and
+synchronized as migration 9. The previous eight deployed migrations remain
+immutable and unchanged.
 
-This checkpoint prepares database authorization and catalog data for a future
-secure admin application. It does not create authentication screens, admin
-routes, browser clients, staff users, credentials, or environment values.
+The secure Supabase Auth client foundation, `/admin/login`, protected admin
+layout, dashboard shell, products placeholder, and logout are implemented.
+No staff user, credential, or environment value is created by the repository.
 
 ## Existing-schema findings
 
@@ -209,41 +208,17 @@ constraints provide additional duplicate protection. Migration history is the
 one-time execution authority; unexpected pre-existing incoming slugs cause a
 failure instead of silently duplicating or overwriting catalog data.
 
-## Manual deployment checkpoint
+## Deployment record
 
-Do not run these commands until this migration has been reviewed and approved.
-On this Windows computer, the manual operator should run:
-
-```powershell
-npx.cmd supabase migration list --linked
-npx.cmd supabase db push --linked --dry-run
-npx.cmd supabase db push --linked
-```
-
-The dry run must list only:
-
-`20260731090806_admin_product_management_schema.sql`
-
-After deployment, manually verify:
-
-- local and remote migration versions match
-- the 12 live names, slugs, SKUs, and integer-centavo prices are unchanged
-- exactly 68 Coming Soon preview products exist once
-- Coming Soon previews have no active variants
-- the administrator policies require an active administrator staff profile
-- anonymous and ordinary authenticated users cannot write catalog data
-- `product-images` is private and has the reviewed size and MIME restrictions
-- public media reads require an approved published image record
-- no staff user, credential, secret, order, payment, or inventory quantity was created
+Migration version `20260731090806` is confirmed in local and remote migration
+history. The deployed catalog contains the reviewed 12 live products and 68
+Coming Soon previews. Administrator policies, guarded deletion, audit
+triggers, restricted Storage configuration, and read models are live.
 
 ## Deferred application work
 
-Until deployment is manually confirmed, the following remain intentionally
-deferred:
+The following remain intentionally deferred:
 
-- official Supabase browser and SSR dependencies
-- Supabase Auth helpers and session middleware
-- `/admin/login` and protected `/admin` routes
 - product list, product editor, and draft-creation UI
 - autosave and server-side admin handlers
 - Storage upload, replace, reorder, and deletion workflows

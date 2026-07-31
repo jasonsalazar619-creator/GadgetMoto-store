@@ -6,7 +6,7 @@
 - The confirmed region is Southeast Asia (Singapore).
 - Secure order migration `20260726121534_secure_order_transaction_schema.sql` was deployed successfully, and migration version `20260726121534` matches locally and remotely.
 - The secure order migration created schema and a non-login privilege role only; it contains no login credential, password, environment value, record, browser policy, tax rule, delivery-fee rule, or payment-provider behavior.
-- All eight deployed migrations are user-confirmed as synchronized, immutable, and unchanged during storefront completion.
+- All nine deployed migrations are user-confirmed as synchronized, immutable, and unchanged during storefront completion.
 - Corrective migration
   `20260726175847_correct_product_physical_ram.sql` is deployed and synchronized.
   It preserves both canonical SKUs and changes only the
@@ -108,14 +108,19 @@
 - API keys and database passwords must never be committed.
 - Local Supabase services are not running, and Docker is not required for this checkpoint.
 - Admin product-management migration
-  `20260731090806_admin_product_management_schema.sql` is local and unexecuted.
-- The pending migration prepares administrator-only catalog policies, guarded
-  deletion, a restricted private `product-images` bucket, reviewed storefront
-  read models, and the exact 68-product Coming Soon backfill.
-- No Supabase command or SQL command ran while the migration was created.
-- No staff user, credential, project identifier, URL, password, token, API
-  key, connection string, environment value, order, payment, or inventory
-  quantity was created.
-- Manual migration listing, linked dry run, deployment, and post-deployment
-  verification remain required before authentication or admin application work
-  begins.
+  `20260731090806_admin_product_management_schema.sql` is deployed and
+  synchronized as migration 9.
+- The deployed migration provides administrator-only catalog policies,
+  guarded deletion, a restricted private `product-images` bucket, reviewed
+  storefront read models, and the exact 68-product Coming Soon backfill.
+- Supabase SSR authentication uses only
+  `NEXT_PUBLIC_SUPABASE_URL` and
+  `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
+- Configuration values remain outside Git and must be supplied separately in
+  local and Vercel environments.
+- No service-role key, database password, PostgreSQL connection string, staff
+  credential, staff account, or populated environment file was added.
+- `/admin/login`, the protected `/admin` shell, the protected products
+  placeholder, and POST-based logout are implemented.
+- Product CRUD, image uploads, autosave, and the first manual administrator
+  account remain pending.

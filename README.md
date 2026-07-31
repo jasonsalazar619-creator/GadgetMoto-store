@@ -52,7 +52,7 @@ git diff --check
 
 ## Completed
 
-- Catalog and commerce database foundation with eight immutable deployed migrations
+- Catalog, commerce, and admin product-management database foundation with nine immutable deployed migrations
 - Secure storefront read model and least-privilege reader architecture
 - Deployed secure order-transaction schema, an uncalled server-only order-creation service, and `POST /api/orders`
 - Server-only PostgreSQL client, catalog query, validation, normalization, and fallback
@@ -86,8 +86,8 @@ git diff --check
 - Delivery-fee and VAT implementation after business rules are confirmed
 - Maya payment integration, server verification, and webhooks
 - Proof-of-payment handling where required
-- Staff authentication
-- Admin catalog, inventory, and order-management tools
+- Admin product CRUD, image uploads, and autosave
+- Admin inventory and order-management tools
 - Approved POCO C85 imagery
 - Final business-supplied privacy, terms, warranty, cancellation, and refund wording
 
@@ -100,7 +100,8 @@ git diff --check
 - Secure server-side order service and endpoint: implemented but uncalled
 - Live online-order submission: disabled pending controlled configuration and business readiness
 - Maya and other live payment integration: pending
-- Staff and admin tools: pending
+- Secure staff authentication and protected admin shell: implemented
+- Admin product-management mutations: pending
 - Vercel project connection: complete; production redeployment follows pushes to `main`
 
 The order contract, atomic transaction, inventory and idempotency boundaries, payment boundary, and unresolved launch decisions are documented in `docs/order-creation-transaction-plan.md`. Current launch readiness is summarized in `docs/storefront-launch-status.md`.

@@ -31,6 +31,8 @@ Completed and validated:
 - Route-specific metadata, product metadata, canonical URLs, Open Graph,
   Twitter metadata, sitemap, and robots directives
 - Secure order endpoint code retained for controlled future activation
+- Secure Supabase staff login, protected admin shell, read-only dashboard, and
+  protected product-management placeholder
 - Vercel project connected to `origin/main`; pushes trigger production
   redeployment
 - All 68 Coming Soon products have unique short and full descriptions,
@@ -77,8 +79,8 @@ connection, query, SQL command, or Supabase command occurred.
 - The catalog remains 12 unique SKUs and 12 unique slugs, with 11 approved
   primary images and one placeholder.
 - The canonical static catalog is the default and build-safe fallback.
-- All eight deployed migration files are user-confirmed as synchronized and
-  were not edited during storefront completion.
+- All nine deployed migration files are user-confirmed as synchronized and
+  remain unchanged.
 - No migration, dependency, environment file, credential, customer record, or
   application secret was added.
 - Vercel is connected to the GitHub `main` branch. The completion commit is
@@ -94,7 +96,7 @@ connection, query, SQL command, or Supabase command occurred.
 - Approved automatic delivery-fee rules
 - Approved VAT rules and rate
 - Maya merchant credentials, server initialization, and verified webhooks
-- Staff authentication
+- Admin product CRUD, image uploads, and autosave
 - Admin order and inventory tools
 - Approved POCO C85 product image
 - Final privacy, terms, warranty, cancellation, refund, and retention policies
