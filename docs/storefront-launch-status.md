@@ -84,15 +84,23 @@ connection, query, SQL command, or Supabase command occurred.
 - The catalog remains 12 unique SKUs and 12 unique slugs, with 11 approved
   primary images and one placeholder.
 - The canonical static catalog is the default and build-safe fallback.
-- All nine deployed migration files are user-confirmed as synchronized and
+- All ten deployed migration files are confirmed as synchronized and
   remain unchanged.
-- No migration, dependency, environment file, credential, customer record, or
-  application secret was added.
+- Migration 11, `20260802103548_product_color_variant_schema.sql`, exists only
+  as a local, unexecuted forward migration. It contains no seed colors and has
+  not changed the hosted schema.
+- No dependency, environment file, credential, customer record, or application
+  secret was added.
 - Vercel is connected to the GitHub `main` branch. The completion commit is
   intended to trigger its automatic production deployment.
 
 ## Ready to add later
 
+- Manual review, dry run, and deployment of Migration 11 before product-color
+  interfaces are implemented
+- Administrator color management and public color selection, followed by
+  cart/checkout persistence and trusted server revalidation
+- Protected 10-record AJAX pagination for every top-level admin data table
 - Starting inventory and stock-reservation readiness
 - Branch address, schedule, pickup instructions, and pickup activation
 - Secure `ORDER_DATABASE_URL` configuration outside Git

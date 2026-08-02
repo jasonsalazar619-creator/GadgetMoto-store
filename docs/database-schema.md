@@ -22,7 +22,7 @@ RLS is enabled on all four Migration 4 tables with zero policies, Data API acces
 
 ## Secure order transaction migration status
 
-Migration `20260726121534_secure_order_transaction_schema.sql` was deployed successfully. Migration version `20260726121534` matches locally and remotely. Together with the later physical-RAM correction and admin migration, all nine deployed migrations are user-confirmed as synchronized and remain immutable.
+Migration `20260726121534_secure_order_transaction_schema.sql` was deployed successfully. Migration version `20260726121534` matches locally and remotely. Together with the later physical-RAM correction, admin-management, and Coming Soon promotion migrations, all ten deployed migrations are synchronized and remain immutable.
 
 The migration adds an `order_submissions` idempotency table, an `inventory_reservations` table and reservation-status enum, optional customer email, hashed order lookup tokens, duplicate line protection, required single-location fulfillment allocation, payment-attempt idempotency fields, reservation-linked inventory movement constraints, total-integrity checks, and append-only enforcement for operational history. It also creates a non-login `gadgetmoto_order_service` privilege role with server-only RLS policies and minimum grants for trusted order creation. It creates no login role, password, browser/Data API policy, seed record, tax rule, delivery-fee rule, payment-provider action, or public write path.
 
@@ -38,11 +38,33 @@ It matches only the complete canonical SKUs for Infinix
 Note 60 Pro 5G and TECNO Camon 50, sets `ram_gb` to 8, and sets
 `variant_name` to `8GB RAM + 8GB Extended / 256GB`. It does not change SKU,
 storage, prices, SRPs, badges, financing, activation, inventory, product rows,
-or ordering. All nine deployed migrations remain immutable.
+or ordering. All ten deployed migrations remain immutable.
+
+## Coming Soon promotion migration status
+
+Migration `20260731112722_coming_soon_product_promotion.sql` is deployed and
+synchronized as Migration 10. It adds reviewed commercial-draft storage and an
+atomic active-product promotion function without changing existing live
+catalog rows. It remains immutable with the previous nine deployed migrations.
+
+## Product color variant migration status
+
+Migration 11,
+`20260802103548_product_color_variant_schema.sql`, is local and unexecuted. It
+adds a product-level color table, a server-only active-color read model,
+administrator and trusted-server RLS policies, minimized color audit entries,
+and nullable order-item color reference/snapshot fields. It inserts no colors
+and does not create color-specific SKUs, prices, or inventory.
+
+Migration 11 must receive a separate linked dry run, manual deployment, and
+local/remote history confirmation before any color-management or storefront
+interface is implemented. The ten deployed migration files were not edited.
 
 ## Scope and design principles
 
-This document is the production data-model plan only. It does not create SQL, migrations, policies, functions, seed data, or a remote Supabase connection. The plan contains 18 application tables.
+This document records the production data model and migration status. The
+deployed baseline contains 18 application tables; pending Migration 11 adds
+`product_color_variants` as the nineteenth table without inserting data.
 
 ## Catalog-data bootstrap planning
 
@@ -118,6 +140,25 @@ Cash on delivery is intentionally absent. Only `brand_new` is active at launch. 
 - Integrity and indexes: unique SKU; unique product plus normalized variant name; positive storage; positive RAM when supplied; nonnegative prices; supplied SRP cannot be below current price; indexes on product and active ordering. Apple iPhone 17 has no confirmed RAM value, so `ram_gb` remains nullable.
 - Lifecycle/access: deactivate rather than delete, especially once referenced by orders. Public reads only active variants of published products; authorized staff writes.
 
+### `product_color_variants` (Migration 11, pending)
+
+- Purpose: ordered product-level display colors without implying a separate
+  commercial SKU, price, or inventory record.
+- Primary key: UUID `id`.
+- Foreign key: required `product_id` to `products`; product deletion cascades
+  only after the existing product-deletion guard permits that deletion.
+- Fields: administrator-preserved `name`, database-generated
+  `normalized_name`, optional `hex_code`, `is_active`, nonnegative
+  `sort_order`, and created/updated timestamps.
+- Integrity and indexes: trimmed nonblank names; unique normalized color name
+  per product; optional strict `#RRGGBB` validation; partial active ordering
+  index.
+- Access: active administrator CRUD through existing staff authorization;
+  active publicly visible colors through the dedicated non-login storefront
+  reader; active colors through the trusted order-service role for selection
+  validation. No `anon` or browser write path exists.
+- Seed posture: empty. No product color is inferred or backfilled.
+
 ### `product_images`
 
 - Purpose: ordered product media metadata, supporting images first and video later.
@@ -188,6 +229,11 @@ Cash on delivery is intentionally absent. Only `brand_new` is active at launch. 
 - Columns: `order_id`, nullable `product_id`, nullable `variant_id`, product/brand/variant/SKU snapshots, `unit_price_centavos`, `quantity`, `line_total_centavos`, `created_at`.
 - Foreign keys: order is required; product/variant references use restrictive or nullable historical-safe behavior.
 - Integrity and indexes: quantity positive; unit price and line total nonnegative; line total equals unit price times quantity; required snapshot strings nonblank; index order ID.
+- Migration 11 extension: nullable `color_variant_id` plus immutable
+  `color_name_snapshot`. New order-item writes validate that a selected color
+  is active and belongs to the product, derive the snapshot from database data,
+  and require a selection only when active colors exist. Existing orders and
+  products without colors remain valid.
 - Lifecycle/access: snapshots survive source-product archival. No direct public access; trusted server creates them and authorized staff/service reads them.
 
 ### `order_fulfillments`

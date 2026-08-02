@@ -2,9 +2,10 @@
 
 ## Current checkpoint
 
-The secure staff-authentication foundation, protected admin shell, and
-validated product-management workflow are implemented. Product-image uploads
-remain unavailable until their reviewed checkpoint.
+The secure staff-authentication foundation, protected admin shell, validated
+product-management workflow, and Coming Soon promotion workflow are
+implemented. Product-image uploads remain unavailable until their reviewed
+checkpoint.
 
 Admin routes:
 
@@ -160,8 +161,25 @@ summaries. The server-only active and Coming Soon read models now supply
 approved database edits when database catalog mode is enabled. Static mode
 remains the build-safe and controlled fallback.
 
+## Product colors and pagination boundary
+
+Migration 11, `20260802103548_product_color_variant_schema.sql`, is local and
+unexecuted. It defines secure product-level color storage and order-item color
+snapshots but inserts no colors. Administrators cannot add, edit, activate,
+deactivate, reorder, or remove colors in the current interface, and no
+storefront swatch or color selector exists yet.
+
+The current product list still uses its existing server-rendered 20-record
+pagination. Ten-record server-side pagination, protected pagination endpoints,
+AJAX table replacement, URL-state persistence, and browser Back/Forward
+restoration remain blocked until Migration 11 is manually reviewed, dry-run,
+deployed, and confirmed in local and remote migration history. No application
+interface work from those later phases is included in this checkpoint.
+
 ## Deferred product-management work
 
+- product-color administrator controls and storefront/cart/checkout integration
+- 10-record protected AJAX pagination for top-level admin data tables
 - product-image upload, replace, reorder, publication, and deletion
 - inventory-level and movement management
 - order-management tools
