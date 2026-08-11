@@ -73,11 +73,11 @@ function readinessClass(product: AdminProductListItem): string {
 
 function ProductThumbnail({ product }: { product: AdminProductListItem }) {
   return (
-    <div className="relative grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-[var(--radius-sm)] bg-[var(--color-ice)]">
+    <div className="relative grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[linear-gradient(145deg,white,var(--color-ice))]">
       {product.primaryImage ? (
         <Image
           alt={product.primaryImage.alt}
-          className="h-full w-full object-contain p-1"
+          className="h-full w-full object-contain p-0.5"
           height={64}
           sizes="64px"
           src={product.primaryImage.src}

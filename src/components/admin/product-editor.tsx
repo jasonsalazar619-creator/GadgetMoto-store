@@ -1081,10 +1081,10 @@ export function ProductEditor({
                   className="overflow-hidden rounded-[var(--radius-md)] border bg-[var(--color-ice)]"
                   key={image.id}
                 >
-                  <div className="relative aspect-[4/3] bg-white">
+                  <div className="relative aspect-[4/5] bg-[radial-gradient(circle_at_50%_25%,white_0_38%,var(--color-ice)_78%)]">
                     <Image
                       alt={image.alt}
-                      className="object-contain p-3"
+                      className="object-contain p-1"
                       fill
                       sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 33vw"
                       src={image.src}

@@ -6,20 +6,22 @@ import Link from "next/link";
 import { ComparisonButton } from "@/components/comparison/comparison-button";
 
 type ProductCardProps = {
+  loading?: "eager" | "lazy";
   product: PrototypeProduct;
   layout?: "standard" | "tablet";
 };
 
-export function ProductCard({ product }: ProductCardProps) {
+export function ProductCard({ loading, product }: ProductCardProps) {
   return (
     <article className="product-card group flex h-full flex-col overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-white shadow-[var(--shadow-sm)] transition-[border-color,box-shadow,transform] duration-[var(--duration-base)] ease-[var(--ease-standard)] hover:-translate-y-1 hover:border-[var(--color-brand)] hover:shadow-[var(--shadow-md)] focus-within:border-[var(--color-action)] focus-within:shadow-[var(--focus-ring)]">
-      <div className="product-card__art relative flex items-center justify-center overflow-hidden bg-[linear-gradient(145deg,var(--color-ice),var(--color-sky))] p-8">
+      <div className="product-card__art relative flex items-center justify-center overflow-hidden">
         {product.badge ? <Badge className="absolute left-4 top-4" variant={product.badge}>{product.badge === "sale" ? "Sale" : "New"}</Badge> : null}
         <div className="product-card__actions absolute right-3 top-3 flex gap-2">
           <ComparisonButton className="icon-control" compact name={product.name} slug={product.slug} />
         </div>
         <ProductArtwork
           className="product-card__image"
+          loading={loading}
           product={product}
           sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 25vw"
         />
