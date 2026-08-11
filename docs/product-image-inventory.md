@@ -1,208 +1,126 @@
 # GadgetMoTo Product Image Inventory
 
-## Audit summary
+## 2026-08-11 phone-image refresh
 
-- Audit date: 2026-07-29
 - Local intake folder: `GADGET-MOTO/`
-- Repository image files after build/cache exclusions: 163
-- Product-image files after excluding two brand-logo files: 161
-- Original user-supplied product images: 81
-- Original user-supplied upcoming-product images: 70
-- Brand-logo files excluded from product mapping: 2
-- Product-looking source and active files reviewed: 161
-- Files inspected in the intake folder: 82
-- Product-poster files: 81
-- Brand-logo files: 1
-- Existing catalog products matched: 11 of 12
-- Unique incomplete new-product candidates: 68
-- Non-transactional preview images published and assigned: 69 exact source
-  copies
-- Exact binary duplicates among intake sources: 0
-- Intentional source-to-public exact-copy pairs: 80
-- Ambiguous files: 1
-- Upcoming primary images: 67
-- Upcoming gallery images: 2
-- Upcoming products using a generated placeholder: 1
-- Upcoming ambiguous and unmapped images: 1
-- Exact duplicate source files excluded: 0
-- Near-duplicate source files excluded: 0
-- Storefront presentation: established centered media canvases with
-  `object-contain`, preserved aspect ratios, and consistent internal padding
+- Newly uploaded local image files reviewed: 78
+- Catalog phone products audited: 68
+- Active phone products audited: 8
+- Coming Soon phone products audited: 60
+- Confident phone-image replacements: 65
+- Active phone-image replacements: 6
+- Coming Soon phone-image replacements: 59
+- Promoted Coming Soon replacements: 0; no separately promoted phone record exists
+- Tablet-image replacements: 0
+- Exact duplicate hashes among the 78 new uploads: 0
+- Exact duplicate hashes among the 65 published replacements: 0
+- Image processing: none; files were copied byte-for-byte
+- Public URL strategy: established primary paths were replaced in place so every
+  existing consumer receives the refreshed media without a broken reference
 
-The 11 transactional images and 69 assigned upcoming images are approved
-user-supplied GadgetMoTo project assets. Each public image is an exact byte copy
-of its original source poster. No crop, resize, compression, conversion,
-watermark addition, or other edit was performed. No manufacturer-page image was
-downloaded for this checkpoint. POCO C85 remains intentionally unmapped and
-continues to use the safe generated placeholder while awaiting an approved local
-image.
+The refreshed files are user-supplied GadgetMoTo project assets. They were not
+downloaded, cropped, resized, compressed, converted, recolored, watermarked, or
+otherwise modified. The previous and current public path is intentionally the
+same because the binary at that authoritative path was replaced. Intrinsic
+dimensions in the typed media mappings were updated where required.
 
-The source posters are retained locally and ignored by Git. The tracked public
-copies preserve the complete original canvases and intrinsic aspect ratios so
-device edges are not removed by source processing. Embedded poster text remains
-part of the original supplied pixels but is not imported as structured catalog
-data. Canonical specifications, prices, variants, availability, and policies
-remain controlled by the typed transactional catalog and reviewed
-documentation. The separate `/coming-soon` page shows all 68 unique candidates
-as previews only. Sixty-seven products use assigned media, two of those have an
-additional gallery poster, and the unresolved-identity entry uses a placeholder.
+## Replacement ledger
 
-## Existing-product mapping
+| Product name | Product slug | Previous primary path | New uploaded source | Current primary path | Status | Duplicate result |
+| --- | --- | --- | --- | --- | --- | --- |
+| Xiaomi 17 Ultra 5G Leica Kit | `xiaomi-17-ultra-5g-leica-kit` | `public/products/xiaomi-17-ultra-5g-leica-kit/original.png` | `GADGET-MOTO/xiaomi-17-ultra.png` | `public/products/xiaomi-17-ultra-5g-leica-kit/original.png` | Active | Unique SHA-256; replaced |
+| Apple iPhone 17 | `apple-iphone-17` | `public/products/apple-iphone-17/original.png` | `GADGET-MOTO/apple-iphone-17.png` | `public/products/apple-iphone-17/original.png` | Active | Unique SHA-256; replaced |
+| POCO F8 Ultra | `poco-f8-ultra` | `public/products/poco-f8-ultra/original.png` | `GADGET-MOTO/poco-f8-ultra.png` | `public/products/poco-f8-ultra/original.png` | Active | Unique SHA-256; replaced |
+| Redmi Turbo 5 | `redmi-turbo-5` | `public/products/redmi-turbo-5/original.png` | `GADGET-MOTO/redmi-turbo-5.png` | `public/products/redmi-turbo-5/original.png` | Active | Unique SHA-256; replaced |
+| Infinix Note 60 Pro 5G | `infinix-note-60-pro-5g` | `public/products/infinix-note-60-pro-5g/original.png` | `GADGET-MOTO/infinix-note-60-pro.png` | `public/products/infinix-note-60-pro-5g/original.png` | Active | Unique SHA-256; replaced |
+| TECNO Camon 50 | `tecno-camon-50` | `public/products/tecno-camon-50/original.png` | `GADGET-MOTO/tecno-camon-50.png` | `public/products/tecno-camon-50/original.png` | Active | Unique SHA-256; replaced |
+| HONOR 600 | `honor-600` | `public/upcoming/honor-600.png` | `GADGET-MOTO/honor-600-5g.png` | `public/upcoming/honor-600.png` | Coming Soon | Unique SHA-256; replaced |
+| HONOR WIN RT | `honor-win-rt` | `public/upcoming/honor-win-rt.png` | `GADGET-MOTO/honor-win-rt-5g.png` | `public/upcoming/honor-win-rt.png` | Coming Soon | Unique SHA-256; replaced |
+| HONOR WIN | `honor-win` | `public/upcoming/honor-win.png` | `GADGET-MOTO/honor-win-5g.png` | `public/upcoming/honor-win.png` | Coming Soon | Unique SHA-256; replaced |
+| HONOR X9D | `honor-x9d` | `public/upcoming/honor-x9d.png` | `GADGET-MOTO/honor-x9d.png` | `public/upcoming/honor-x9d.png` | Coming Soon | Unique SHA-256; replaced |
+| Infinix GT30 5G | `infinix-gt30-5g` | `public/upcoming/infinix-gt30-5g.png` | `GADGET-MOTO/infinix-gt-30-5g.png` | `public/upcoming/infinix-gt30-5g.png` | Coming Soon | Unique SHA-256; replaced |
+| Infinix GT30 Pro | `infinix-gt30-pro` | `public/upcoming/infinix-gt30-pro.png` | `GADGET-MOTO/infinix-gt-30-pro-5g.png` | `public/upcoming/infinix-gt30-pro.png` | Coming Soon | Unique SHA-256; replaced |
+| Infinix Hot 70 | `infinix-hot-70` | `public/upcoming/infinix-hot-70.png` | `GADGET-MOTO/infinix-hot-70.png` | `public/upcoming/infinix-hot-70.png` | Coming Soon | Unique SHA-256; replaced |
+| Infinix Note Edge 5G | `infinix-note-edge-5g` | `public/upcoming/infinix-note-edge-5g.png` | `GADGET-MOTO/infinix-note-edge-5g.png` | `public/upcoming/infinix-note-edge-5g.png` | Coming Soon | Unique SHA-256; replaced |
+| Infinix Note 60 Ultra | `infinix-note-60-ultra` | `public/upcoming/infinix-note-60-ultra.png` | `GADGET-MOTO/infinix-note-60-ultra-5g.png` | `public/upcoming/infinix-note-60-ultra.png` | Coming Soon | Unique SHA-256; replaced |
+| Infinix Smart 20 | `infinix-smart-20` | `public/upcoming/infinix-smart-20.png` | `GADGET-MOTO/infinix-smart-20.png` | `public/upcoming/infinix-smart-20.png` | Coming Soon | Unique SHA-256; replaced |
+| Apple iPhone 14 | `apple-iphone-14` | `public/upcoming/apple-iphone-14.png` | `GADGET-MOTO/apple-iphone-14.png` | `public/upcoming/apple-iphone-14.png` | Coming Soon | Unique SHA-256; replaced |
+| Apple iPhone 15 | `apple-iphone-15` | `public/upcoming/apple-iphone-15.png` | `GADGET-MOTO/apple-iphone-15.png` | `public/upcoming/apple-iphone-15.png` | Coming Soon | Unique SHA-256; replaced |
+| Apple iPhone 16 | `apple-iphone-16` | `public/upcoming/apple-iphone-16.png` | `GADGET-MOTO/apple-iphone-16.png` | `public/upcoming/apple-iphone-16.png` | Coming Soon | Unique SHA-256; replaced |
+| iQOO 15 Ultra | `iqoo-15-ultra` | `public/upcoming/iqoo-15-ultra.png` | `GADGET-MOTO/vivo-iqoo-15-ultra.png` | `public/upcoming/iqoo-15-ultra.png` | Coming Soon | Unique SHA-256; replaced |
+| iQOO 15 | `iqoo-15` | `public/upcoming/iqoo-15.png` | `GADGET-MOTO/vivo-iqoo-15.png` | `public/upcoming/iqoo-15.png` | Coming Soon | Unique SHA-256; replaced |
+| iQOO Z10 Turbo Plus | `iqoo-z10-turbo-plus` | `public/upcoming/iqoo-z10-turbo-plus.png` | `GADGET-MOTO/vivo-iqoo-z10-turbo-plus.png` | `public/upcoming/iqoo-z10-turbo-plus.png` | Coming Soon | Unique SHA-256; replaced |
+| iQOO Z10 Turbo Pro | `iqoo-z10-turbo-pro` | `public/upcoming/iqoo-z10-turbo-pro.png` | `GADGET-MOTO/vivo-iqoo-z10-turbo-pro.png` | `public/upcoming/iqoo-z10-turbo-pro.png` | Coming Soon | Unique SHA-256; replaced |
+| iQOO Z11 Turbo | `iqoo-z11-turbo` | `public/upcoming/iqoo-z11-turbo.png` | `GADGET-MOTO/vivo-iqoo-z11-turbo.png` | `public/upcoming/iqoo-z11-turbo.png` | Coming Soon | Unique SHA-256; replaced |
+| iQOO Z11 | `iqoo-z11` | `public/upcoming/iqoo-z11.png` | `GADGET-MOTO/vivo-iqoo-z11.png` | `public/upcoming/iqoo-z11.png` | Coming Soon | Unique SHA-256; replaced |
+| itel Power70 | `itel-power70` | `public/upcoming/itel-power70.png` | `GADGET-MOTO/itel-power-70.png` | `public/upcoming/itel-power70.png` | Coming Soon | Unique SHA-256; replaced |
+| itel S26 Ultra | `itel-s26-ultra` | `public/upcoming/itel-s26-ultra.png` | `GADGET-MOTO/itel-s26-ultra.png` | `public/upcoming/itel-s26-ultra.png` | Coming Soon | Unique SHA-256; replaced |
+| OnePlus Ace6T | `oneplus-ace6t` | `public/upcoming/oneplus-ace6t.png` | `GADGET-MOTO/one-plus-ace-6t.png` | `public/upcoming/oneplus-ace6t.png` | Coming Soon | Unique SHA-256; replaced |
+| OPPO A6T | `oppo-a6t` | `public/upcoming/oppo-a6t.png` | `GADGET-MOTO/oppo-a6t.png` | `public/upcoming/oppo-a6t.png` | Coming Soon | Unique SHA-256; replaced |
+| POCO C71 | `poco-c71` | `public/upcoming/poco-c71.png` | `GADGET-MOTO/poco-c71.png` | `public/upcoming/poco-c71.png` | Coming Soon | Unique SHA-256; replaced |
+| POCO C81 Pro | `poco-c81-pro` | `public/upcoming/poco-c81-pro.png` | `GADGET-MOTO/poco-c81-pro.png` | `public/upcoming/poco-c81-pro.png` | Coming Soon | Unique SHA-256; replaced |
+| POCO F6 | `poco-f6` | `public/upcoming/poco-f6.png` | `GADGET-MOTO/poco-f6.png` | `public/upcoming/poco-f6.png` | Coming Soon | Unique SHA-256; replaced |
+| POCO F7 | `poco-f7` | `public/upcoming/poco-f7.png` | `GADGET-MOTO/poco-f7.png` | `public/upcoming/poco-f7.png` | Coming Soon | Unique SHA-256; replaced |
+| POCO M8 5G | `poco-m8-5g` | `public/upcoming/poco-m8-5g.png` | `GADGET-MOTO/poco-m8-5g.png` | `public/upcoming/poco-m8-5g.png` | Coming Soon | Unique SHA-256; replaced |
+| POCO M8s | `poco-m8s` | `public/upcoming/poco-m8s.png` | `GADGET-MOTO/poco-m8s-5g.png` | `public/upcoming/poco-m8s.png` | Coming Soon | Unique SHA-256; replaced |
+| POCO X7 Pro | `poco-x7-pro` | `public/upcoming/poco-x7-pro.png` | `GADGET-MOTO/poco-x7-pro.png` | `public/upcoming/poco-x7-pro.png` | Coming Soon | Unique SHA-256; replaced |
+| POCO X8 Pro Max | `poco-x8-pro-max` | `public/upcoming/poco-x8-pro-max.png` | `GADGET-MOTO/poco-x8-pro-max.png` | `public/upcoming/poco-x8-pro-max.png` | Coming Soon | Unique SHA-256; replaced |
+| POCO X8 Pro | `poco-x8-pro` | `public/upcoming/poco-x8-pro.png` | `GADGET-MOTO/poco-x8-pro.png` | `public/upcoming/poco-x8-pro.png` | Coming Soon | Unique SHA-256; replaced |
+| Redmi 15 5G | `redmi-15-5g` | `public/upcoming/redmi-15-5g.png` | `GADGET-MOTO/redmi-15-5g.png` | `public/upcoming/redmi-15-5g.png` | Coming Soon | Unique SHA-256; replaced |
+| Redmi 15C 5G | `redmi-15c-5g` | `public/upcoming/redmi-15c-5g.png` | `GADGET-MOTO/redmi-15c-5g.png` | `public/upcoming/redmi-15c-5g.png` | Coming Soon | Unique SHA-256; replaced |
+| Redmi A5 | `redmi-a5` | `public/upcoming/redmi-a5.png` | `GADGET-MOTO/redmi-a5.png` | `public/upcoming/redmi-a5.png` | Coming Soon | Unique SHA-256; replaced |
+| Redmi A7 Pro | `redmi-a7-pro` | `public/upcoming/redmi-a7-pro.png` | `GADGET-MOTO/redmi-a7-pro.png` | `public/upcoming/redmi-a7-pro.png` | Coming Soon | Unique SHA-256; replaced |
+| Redmi K90 Max | `redmi-k90-max` | `public/upcoming/redmi-k90-max.png` | `GADGET-MOTO/redmi-k90-max.png` | `public/upcoming/redmi-k90-max.png` | Coming Soon | Unique SHA-256; replaced |
+| Redmi K90 Pro Max | `redmi-k90-pro-max` | `public/upcoming/redmi-k90-pro-max.png` | `GADGET-MOTO/redmi-k90-pro-max.png` | `public/upcoming/redmi-k90-pro-max.png` | Coming Soon | Unique SHA-256; replaced |
+| Redmi K90 | `redmi-k90` | `public/upcoming/redmi-k90.png` | `GADGET-MOTO/redmi-k90.png` | `public/upcoming/redmi-k90.png` | Coming Soon | Unique SHA-256; replaced |
+| Redmi Note 15 | `redmi-note-15` | `public/upcoming/redmi-note-15.png` | `GADGET-MOTO/redmi-note-15.png` | `public/upcoming/redmi-note-15.png` | Coming Soon | Unique SHA-256; replaced |
+| Redmi Note 15 Pro 5G | `redmi-note-15-pro-5g` | `public/upcoming/redmi-note-15-pro-5g.png` | `GADGET-MOTO/redmi-note-15-pro-5g.png` | `public/upcoming/redmi-note-15-pro-5g.png` | Coming Soon | Unique SHA-256; replaced |
+| Redmi Turbo 4 | `redmi-turbo-4` | `public/upcoming/redmi-turbo-4.png` | `GADGET-MOTO/redmi-turbo-4.png` | `public/upcoming/redmi-turbo-4.png` | Coming Soon | Unique SHA-256; replaced |
+| Redmi Turbo 4 Pro | `redmi-turbo-4-pro` | `public/upcoming/redmi-turbo-4-pro.png` | `GADGET-MOTO/redmi-turbo-4-pro.png` | `public/upcoming/redmi-turbo-4-pro.png` | Coming Soon | Unique SHA-256; replaced |
+| Redmi Turbo 5 Max | `redmi-turbo-5-max` | `public/upcoming/redmi-turbo-5-max.png` | `GADGET-MOTO/redmi-turbo-5-max.png` | `public/upcoming/redmi-turbo-5-max.png` | Coming Soon | Unique SHA-256; replaced |
+| Samsung Galaxy A07 LTE | `samsung-galaxy-a07-lte` | `public/upcoming/samsung-galaxy-a07-lte.png` | `GADGET-MOTO/samsung-galaxy-a07-lte.png` | `public/upcoming/samsung-galaxy-a07-lte.png` | Coming Soon | Unique SHA-256; replaced |
+| TECNO Camon 50 Ultra | `tecno-camon-50-ultra` | `public/upcoming/tecno-camon-50-ultra.png` | `GADGET-MOTO/tecno-camon-50-ultra-5g.png` | `public/upcoming/tecno-camon-50-ultra.png` | Coming Soon | Unique SHA-256; replaced |
+| TECNO Pova Curve 2 | `tecno-pova-curve-2` | `public/upcoming/tecno-pova-curve-2.png` | `GADGET-MOTO/tecno-pova-curve-2-5g.png` | `public/upcoming/tecno-pova-curve-2.png` | Coming Soon | Unique SHA-256; replaced |
+| TECNO Pova Curve | `tecno-pova-curve` | `public/upcoming/tecno-pova-curve.png` | `GADGET-MOTO/tecno-pova-curve-5g.png` | `public/upcoming/tecno-pova-curve.png` | Coming Soon | Unique SHA-256; replaced |
+| TECNO Pova 7 | `tecno-pova-7` | `public/upcoming/tecno-pova-7.png` | `GADGET-MOTO/tecno-pova-7.png` | `public/upcoming/tecno-pova-7.png` | Coming Soon | Unique SHA-256; replaced |
+| TECNO Spark 50 | `tecno-spark-50` | `public/upcoming/tecno-spark-50.png` | `GADGET-MOTO/tecno-spark-50.png` | `public/upcoming/tecno-spark-50.png` | Coming Soon | Unique SHA-256; replaced |
+| TECNO Spark Go 3 | `tecno-spark-go-3` | `public/upcoming/tecno-spark-go-3.png` | `GADGET-MOTO/tecno-spark-go-3.png` | `public/upcoming/tecno-spark-go-3.png` | Coming Soon | Unique SHA-256; replaced |
+| TECNO Spark Slim | `tecno-spark-slim` | `public/upcoming/tecno-spark-slim.png` | `GADGET-MOTO/tecno-spark-slim.png` | `public/upcoming/tecno-spark-slim.png` | Coming Soon | Unique SHA-256; replaced |
+| vivo Y05 | `vivo-y05` | `public/upcoming/vivo-y05.png` | `GADGET-MOTO/vivo-yo5-4g.png` | `public/upcoming/vivo-y05.png` | Coming Soon | Unique SHA-256; replaced |
+| vivo Y11D | `vivo-y11d` | `public/upcoming/vivo-y11d.png` | `GADGET-MOTO/vivo-y11d.png` | `public/upcoming/vivo-y11d.png` | Coming Soon | Unique SHA-256; replaced |
+| Xiaomi 17 Pro Max | `xiaomi-17-pro-max` | `public/upcoming/xiaomi-17-pro-max.png` | `GADGET-MOTO/xiaomi-17-pro-max-5g.png` | `public/upcoming/xiaomi-17-pro-max.png` | Coming Soon | Unique SHA-256; replaced |
+| Xiaomi 17 Pro | `xiaomi-17-pro` | `public/upcoming/xiaomi-17-pro.png` | `GADGET-MOTO/xiaomi-17-pro-5g.png` | `public/upcoming/xiaomi-17-pro.png` | Coming Soon | Unique SHA-256; replaced |
+| Xiaomi 17T | `xiaomi-17t` | `public/upcoming/xiaomi-17t.png` | `GADGET-MOTO/xiaomi-17t-5g.png` | `public/upcoming/xiaomi-17t.png` | Coming Soon | Unique SHA-256; replaced |
+| Xiaomi 17 | `xiaomi-17` | `public/upcoming/xiaomi-17.png` | `GADGET-MOTO/xiaomi-17.png` | `public/upcoming/xiaomi-17.png` | Coming Soon | Unique SHA-256; replaced |
+| Xiaomi 17T Pro | `xiaomi-17t-pro` | `public/upcoming/xiaomi-17t-pro.png` | `GADGET-MOTO/xiaomi-17t-pro-5g.png` | `public/upcoming/xiaomi-17t-pro.png` | Coming Soon | Unique SHA-256; replaced |
 
-| Existing product | Source | Confidence | Published primary image | Media role |
-| --- | --- | --- | --- | --- |
-| Xiaomi 17 Ultra 5G Leica Kit | `GADGET-MOTO/ChatGPT Image Jun 7, 2026, 05_15_10 PM.png` | Probable; manually matched to the exact visible product name | `public/products/xiaomi-17-ultra-5g-leica-kit/original.png` | Primary only |
-| Apple iPhone 17 | `GADGET-MOTO/IPHONE 17.PNG` | Exact product name | `public/products/apple-iphone-17/original.png` | Primary only |
-| POCO F8 Ultra | `GADGET-MOTO/POCO F8 ULTRA.PNG` | Exact product name | `public/products/poco-f8-ultra/original.png` | Primary only |
-| Redmi Note 15 Pro Plus 5G | `GADGET-MOTO/REDMI NOTE15 PRO PLUS.PNG` | Exact product family; visible poster confirms 5G model | `public/products/redmi-note-15-pro-plus-5g/original.png` | Primary only |
-| Redmi Turbo 5 | `GADGET-MOTO/REDMI TURBO 5.PNG` | Exact product name | `public/products/redmi-turbo-5/original.png` | Primary only |
-| Infinix Note 60 Pro 5G | `GADGET-MOTO/Note60PRO.PNG` | Probable; visible poster confirms the complete model | `public/products/infinix-note-60-pro-5g/original.png` | Primary only |
-| TECNO Camon 50 | `GADGET-MOTO/TECNO CAMON 50.PNG` | Exact product name | `public/products/tecno-camon-50/original.png` | Primary only |
-| POCO C85 | No suitable file discovered | Unmapped | Existing generated placeholder retained | Placeholder |
-| POCO Pad X1 | `GADGET-MOTO/POCO PAD X1.PNG` | Exact product name | `public/products/poco-pad-x1/original.png` | Primary only |
-| Xiaomi Pad 8 | `GADGET-MOTO/XIAOMI PAD 8.PNG` | Exact product name | `public/products/xiaomi-pad-8/original.png` | Primary only |
-| Redmi Pad 2 Pro 5G | `GADGET-MOTO/REDMIPAD 2 PRO.PNG` | Exact product family; visible poster confirms 5G model | `public/products/redmi-pad-2-pro-5g/original.png` | Primary only |
-| TECNO Mega Pad Pro | `GADGET-MOTO/TECNO MEGAPAD PRO.PNG` | Exact product name | `public/products/tecno-mega-pad-pro/original.png` | Primary only |
+## Catalog phones without a matching new upload
 
-The 12-product transactional catalog remains unchanged: its mapped products
-each have only one unique suitable source image, so its additional gallery
-arrays remain empty. In the separate upcoming catalog, Lenovo Legion Y70 2026
-and Redmi Turbo 4 Pro each have one primary poster and one distinct gallery
-poster. No primary path is repeated in a gallery.
+| Product | Existing state retained | Reason |
+| --- | --- | --- |
+| Redmi Note 15 Pro Plus 5G | `public/products/redmi-note-15-pro-plus-5g/original.png` | The uploaded `redmi-note-15-pro.png` visibly identifies Redmi Note 15 Pro 5G, not the distinct Pro Plus product. |
+| POCO C85 | Generated product placeholder | No POCO C85 upload exists. |
+| POCO M8 Pro 5G | `public/upcoming/poco-m8-pro-5g.png` | No POCO M8 Pro 5G replacement upload exists. |
 
-The final storefront audit confirmed that the 11 transactional and 69 upcoming
-assigned image paths remain unique within their respective media sets. Each is
-assigned only to its matching product. POCO C85 and the unresolved upcoming
-identity use safe generated placeholders. No external image hotlink, Base64
-image, fabricated product photo, or cross-product substitution was added.
+## Unassigned phone-like uploads
 
-## Source-file metadata
+| Uploaded source | Result | Reason |
+| --- | --- | --- |
+| `GADGET-MOTO/infinix-gt-50-pro.png` | Unassigned | No exact existing Infinix GT50 Pro phone record exists. |
+| `GADGET-MOTO/lenovo-legion-y70.png` | Unassigned | The existing Lenovo record is identity/category-unconfirmed and includes a 2026 qualifier; this checkpoint does not change product identity. |
+| `GADGET-MOTO/redmi-note-15-pro.png` | Unassigned | It is an additional Redmi Note 15 Pro 5G image, while that product already has the exact `redmi-note-15-pro-5g.png` replacement; it was not substituted for Redmi Note 15 Pro Plus 5G. |
 
-`Alpha` records whether the safely inspected pixel format contains an alpha
-channel. Sizes are in bytes. Candidate identity and readiness are documented in
-`docs/new-product-intake.md`.
+## Presentation and consumer coverage
 
-| Repository-relative source path | Type | Size | Dimensions | Alpha |
-| --- | --- | ---: | ---: | --- |
-| `GADGET-MOTO/ChatGPT Image Jun 7, 2026, 05_15_10 PM.png` | PNG | 2129680 | 1024×1536 | No |
-| `GADGET-MOTO/Gadgetmoto logo.jpg` | JPG | 85310 | 901×900 | No |
-| `GADGET-MOTO/HONOR 600.PNG` | PNG | 1984735 | 1024×1536 | Yes |
-| `GADGET-MOTO/HONOR WIN RT.PNG` | PNG | 1897295 | 1024×1536 | Yes |
-| `GADGET-MOTO/HONOR WIN.PNG` | PNG | 2005750 | 1024×1536 | Yes |
-| `GADGET-MOTO/HONOR X9D.PNG` | PNG | 1953298 | 1024×1536 | Yes |
-| `GADGET-MOTO/INFINIX GT30 5G.PNG` | PNG | 2090779 | 1024×1536 | Yes |
-| `GADGET-MOTO/INFINIX GT30 PRO.PNG` | PNG | 2032413 | 1024×1536 | Yes |
-| `GADGET-MOTO/INFINIX HOT 70.PNG` | PNG | 1931773 | 1024×1535 | Yes |
-| `GADGET-MOTO/INFINIX NOTE EDGE 5g.PNG` | PNG | 1923318 | 1024×1536 | Yes |
-| `GADGET-MOTO/Infinix NOTE60 ULTRA.PNG` | PNG | 2175063 | 1024×1536 | Yes |
-| `GADGET-MOTO/Infinix Smart 20.PNG` | PNG | 1970854 | 1024×1536 | Yes |
-| `GADGET-MOTO/IPAD A16 11th Gen.PNG` | PNG | 2050041 | 1024×1536 | Yes |
-| `GADGET-MOTO/IPHONE 14.PNG` | PNG | 2329959 | 1024×1536 | Yes |
-| `GADGET-MOTO/IPHONE 15.PNG` | PNG | 1774121 | 1024×1536 | No |
-| `GADGET-MOTO/IPHONE 16.PNG` | PNG | 1971486 | 1024×1536 | Yes |
-| `GADGET-MOTO/IPHONE 17.PNG` | PNG | 1946393 | 1024×1536 | Yes |
-| `GADGET-MOTO/IQOO 15 ULTRA .PNG` | PNG | 2152673 | 1024×1536 | Yes |
-| `GADGET-MOTO/IQOO 15.PNG` | PNG | 2060181 | 1024×1536 | Yes |
-| `GADGET-MOTO/IQOO Z10 TURBO PLUS.PNG` | PNG | 2080561 | 1023×1537 | Yes |
-| `GADGET-MOTO/IQOO Z10 TURBO PRO.PNG` | PNG | 2083966 | 1024×1536 | Yes |
-| `GADGET-MOTO/IQOO Z11 TURBO.PNG` | PNG | 2145899 | 1023×1537 | Yes |
-| `GADGET-MOTO/IQOO Z11.PNG` | PNG | 2038410 | 1024×1536 | Yes |
-| `GADGET-MOTO/ITEL POWER70.PNG` | PNG | 1812065 | 1024×1536 | Yes |
-| `GADGET-MOTO/ITEL S26 ULTRA.PNG` | PNG | 2476301 | 1023×1537 | Yes |
-| `GADGET-MOTO/LEGION TAB Y700 GEN5.PNG` | PNG | 2109083 | 1024×1536 | Yes |
-| `GADGET-MOTO/LEGION Y70 2026.PNG` | PNG | 2077234 | 1024×1536 | Yes |
-| `GADGET-MOTO/LENOVO LEGION TAB Y700.PNG` | PNG | 1857439 | 1024×1536 | Yes |
-| `GADGET-MOTO/Lenovo Legion Y70 2026.png` | PNG | 1995478 | 1024×1536 | Yes |
-| `GADGET-MOTO/Note60PRO.PNG` | PNG | 1962783 | 1024×1536 | Yes |
-| `GADGET-MOTO/Oneplus ace6t.PNG` | PNG | 2022075 | 1024×1536 | Yes |
-| `GADGET-MOTO/OPPO A6T.PNG` | PNG | 2077171 | 1024×1536 | Yes |
-| `GADGET-MOTO/POCO C71.PNG` | PNG | 2034120 | 1024×1536 | Yes |
-| `GADGET-MOTO/POCO C81PRO.PNG` | PNG | 2113224 | 1024×1536 | Yes |
-| `GADGET-MOTO/Poco F6.png` | PNG | 2128006 | 1024×1536 | Yes |
-| `GADGET-MOTO/POCO F7.PNG` | PNG | 2124266 | 1023×1537 | Yes |
-| `GADGET-MOTO/POCO F8 ULTRA.PNG` | PNG | 2170439 | 1023×1537 | Yes |
-| `GADGET-MOTO/POCO M8 5G.PNG` | PNG | 2052968 | 1024×1536 | Yes |
-| `GADGET-MOTO/POCO M8 PRO 5G.png` | PNG | 1935324 | 1024×1536 | No |
-| `GADGET-MOTO/POCO M8s.PNG` | PNG | 2051374 | 1024×1536 | Yes |
-| `GADGET-MOTO/POCO PAD M1.PNG` | PNG | 2083654 | 1023×1537 | Yes |
-| `GADGET-MOTO/POCO PAD X1.PNG` | PNG | 2018870 | 1024×1536 | Yes |
-| `GADGET-MOTO/POCO X7 PRO.PNG` | PNG | 1943600 | 1024×1536 | Yes |
-| `GADGET-MOTO/Poco x7pro.png` | PNG | 1939290 | 1024×1536 | No |
-| `GADGET-MOTO/POCO X8 PRO MAX.PNG` | PNG | 2191175 | 1023×1537 | Yes |
-| `GADGET-MOTO/POCO X8 PRO.PNG` | PNG | 2110342 | 1023×1537 | Yes |
-| `GADGET-MOTO/REDMI 15 5G.PNG` | PNG | 2250263 | 1024×1536 | Yes |
-| `GADGET-MOTO/REDMI 15c 5G.PNG` | PNG | 2158170 | 1024×1535 | Yes |
-| `GADGET-MOTO/REDMI A5.PNG` | PNG | 2128239 | 1024×1536 | Yes |
-| `GADGET-MOTO/REDMI A7 PRO.PNG` | PNG | 2301355 | 1024×1535 | Yes |
-| `GADGET-MOTO/REDMI K90 MAX.PNG` | PNG | 2235963 | 1023×1537 | Yes |
-| `GADGET-MOTO/REDMI K90 PRO MAX.PNG` | PNG | 2158373 | 1024×1536 | Yes |
-| `GADGET-MOTO/REDMI K90.PNG` | PNG | 2068583 | 1024×1536 | Yes |
-| `GADGET-MOTO/REDMI NOTE 15.PNG` | PNG | 2345100 | 1024×1535 | Yes |
-| `GADGET-MOTO/REDMI NOTE15 PRO 5G.PNG` | PNG | 2397149 | 1024×1535 | Yes |
-| `GADGET-MOTO/REDMI NOTE15 PRO PLUS.PNG` | PNG | 2580376 | 1024×1536 | Yes |
-| `GADGET-MOTO/REDMI PAD 2 4G.PNG` | PNG | 2115978 | 1024×1536 | Yes |
-| `GADGET-MOTO/REDMI PAD 2 SE.PNG` | PNG | 2023999 | 1024×1535 | Yes |
-| `GADGET-MOTO/REDMI TURBO 4 PRO(1).PNG` | PNG | 2131518 | 1024×1536 | Yes |
-| `GADGET-MOTO/REDMI TURBO 4 PRO.PNG` | PNG | 2140742 | 1023×1537 | Yes |
-| `GADGET-MOTO/REDMI TURBO 4.png` | PNG | 2063520 | 1024×1536 | Yes |
-| `GADGET-MOTO/REDMI TURBO 5 MAX.PNG` | PNG | 2164933 | 1024×1536 | Yes |
-| `GADGET-MOTO/REDMI TURBO 5.PNG` | PNG | 2147615 | 1023×1537 | Yes |
-| `GADGET-MOTO/REDMIPAD 2 PRO.PNG` | PNG | 2011507 | 1024×1535 | Yes |
-| `GADGET-MOTO/SAMSUNG A07 LTE.PNG` | PNG | 1871063 | 1023×1537 | Yes |
-| `GADGET-MOTO/TECNO CAMON 50 ULTRA.PNG` | PNG | 2134998 | 1023×1537 | Yes |
-| `GADGET-MOTO/TECNO CAMON 50.PNG` | PNG | 2123166 | 1023×1537 | Yes |
-| `GADGET-MOTO/TECNO MEGAPAD PRO.PNG` | PNG | 1906954 | 1023×1537 | Yes |
-| `GADGET-MOTO/TECNO POVA CURVE 2.PNG` | PNG | 2106730 | 1039×1513 | Yes |
-| `GADGET-MOTO/TECNO POVA CURVE.PNG` | PNG | 2140659 | 1022×1538 | Yes |
-| `GADGET-MOTO/TECNO POVA7.PNG` | PNG | 1962713 | 1024×1536 | Yes |
-| `GADGET-MOTO/TECNO SPARK 50.PNG` | PNG | 2096830 | 1024×1536 | Yes |
-| `GADGET-MOTO/TECNO SPARK GO3.PNG` | PNG | 2020137 | 1054×1492 | Yes |
-| `GADGET-MOTO/TECNO SPARK SLIM.PNG` | PNG | 2432396 | 1024×1536 | Yes |
-| `GADGET-MOTO/VIVO Y05.PNG` | PNG | 1814121 | 1024×1536 | Yes |
-| `GADGET-MOTO/VIVO Y11D.PNG` | PNG | 1839763 | 1024×1536 | Yes |
-| `GADGET-MOTO/XIAOMI 17 PRO MAX.PNG` | PNG | 2215204 | 1024×1536 | Yes |
-| `GADGET-MOTO/XIAOMI 17 PRO.PNG` | PNG | 2229076 | 1024×1536 | Yes |
-| `GADGET-MOTO/XIAOMI 17 T.PNG` | PNG | 2108712 | 1024×1536 | Yes |
-| `GADGET-MOTO/XIAOMI 17.PNG` | PNG | 2101126 | 1024×1536 | Yes |
-| `GADGET-MOTO/XIAOMI PAD 8.PNG` | PNG | 2241856 | 1023×1537 | Yes |
-| `GADGET-MOTO/XIAOMI17TPRO.PNG` | PNG | 2152620 | 1024×1535 | Yes |
+Transactional product media continues through the shared `ProductArtwork`
+component. Homepage sections, featured products, shop, phones, global search,
+comparison, related products, product details, cart, checkout, and admin
+previews therefore use the refreshed active image at the unchanged canonical
+path. Coming Soon cards, preview routes, and admin views use the refreshed
+`/upcoming/` paths.
 
-## Duplicate and ambiguity review
-
-- No two intake-source files share the same SHA-256 digest.
-- The 11 transactional original primary images have 11 unique SHA-256 digests.
-- The 69 assigned upcoming images have 69 unique SHA-256 digests.
-- No active image path is mapped to more than one product, and no primary image
-  is repeated in a gallery.
-- Each public image has the same SHA-256 digest as its ignored source file. The
-  11 exact-copy pairs are intentional archival/source relationships, not two
-  active mappings.
-- Manual contact-sheet review found no unnecessary near-duplicate among the
-  published primary images and no unrelated store watermark or confidential
-  information.
-- `GADGET-MOTO/LEGION Y70 2026.PNG` and
-  `GADGET-MOTO/Lenovo Legion Y70 2026.png` are different user-supplied posters
-  for the same product record. The first is primary and the second is gallery.
-- `GADGET-MOTO/REDMI TURBO 4 PRO.PNG` and
-  `GADGET-MOTO/REDMI TURBO 4 PRO(1).PNG` are different user-supplied posters for
-  the same product record. The first is primary and the second is gallery.
-- `GADGET-MOTO/Poco x7pro.png` is ambiguous: its filename says POCO X7 Pro,
-  while its visible poster content identifies an Infinix GT50 Pro. It remains
-  unassigned; the neutral **Product identity to be confirmed** record uses a
-  generated placeholder until the intended identity is confirmed.
-
-## Intentional exclusions
-
-- `GADGET-MOTO/Gadgetmoto logo.jpg` is a brand asset, not a product image. It
-  is also a different binary rendition from the already tracked
-  `public/brand/gadgetmoto-logo-original.jpg`, so the approved logo was not
-  replaced.
-- Embedded poster text is preserved in the original public assets but is not
-  treated as canonical structured product, pricing, warranty, delivery, or
-  policy data.
-- All 68 unique incomplete candidates are represented once in the
-  non-purchasable preview catalog. None is promoted to a transactional product
-  route or purchasable catalog entry.
-- POCO C85 retains the existing generated placeholder because no exact or
-  unambiguous approved local source was found. No online asset or another
-  product's image is substituted.
+Product media already renders with `object-fit: contain`,
+`object-position: center`, full available width and height, and consistent
+internal padding. Coming Soon gallery images remain distinct and unchanged.
+No product data, status, ordering, pricing, SKU, inventory, specification,
+migration, or environment configuration changed.

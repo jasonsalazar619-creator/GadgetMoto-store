@@ -39,20 +39,20 @@ export const productMediaBySlug: Readonly<
   "xiaomi-17-ultra-5g-leica-kit": media(
     "xiaomi-17-ultra-5g-leica-kit",
     "Xiaomi 17 Ultra 5G Leica Kit",
-    1024,
-    1536,
+    1122,
+    1402,
   ),
   "apple-iphone-17": media(
     "apple-iphone-17",
     "Apple iPhone 17",
-    1024,
-    1536,
+    1122,
+    1402,
   ),
   "poco-f8-ultra": media(
     "poco-f8-ultra",
     "POCO F8 Ultra",
-    1023,
-    1537,
+    1122,
+    1402,
   ),
   "redmi-note-15-pro-plus-5g": media(
     "redmi-note-15-pro-plus-5g",
@@ -63,8 +63,8 @@ export const productMediaBySlug: Readonly<
   "redmi-turbo-5": media(
     "redmi-turbo-5",
     "Redmi Turbo 5",
-    1023,
-    1537,
+    1024,
+    1536,
   ),
   "infinix-note-60-pro-5g": media(
     "infinix-note-60-pro-5g",
@@ -75,8 +75,8 @@ export const productMediaBySlug: Readonly<
   "tecno-camon-50": media(
     "tecno-camon-50",
     "TECNO Camon 50",
-    1023,
-    1537,
+    1024,
+    1536,
   ),
   "poco-c85": { primaryImage: null, images: [] },
   "poco-pad-x1": media(
