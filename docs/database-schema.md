@@ -22,13 +22,20 @@ RLS is enabled on all four Migration 4 tables with zero policies, Data API acces
 
 ## Secure order transaction migration status
 
-Migration `20260726121534_secure_order_transaction_schema.sql` was deployed successfully. Migration version `20260726121534` matches locally and remotely. Together with the later physical-RAM correction, admin-management, and Coming Soon promotion migrations, all ten deployed migrations are synchronized and remain immutable.
+Migration `20260726121534_secure_order_transaction_schema.sql` was deployed successfully. Migration version `20260726121534` matches locally and remotely. Together with the later forward-only migrations, all thirteen deployed migrations are synchronized and remain immutable.
 
 The migration adds an `order_submissions` idempotency table, an `inventory_reservations` table and reservation-status enum, optional customer email, hashed order lookup tokens, duplicate line protection, required single-location fulfillment allocation, payment-attempt idempotency fields, reservation-linked inventory movement constraints, total-integrity checks, and append-only enforcement for operational history. It also creates a non-login `gadgetmoto_order_service` privilege role with server-only RLS policies and minimum grants for trusted order creation. It creates no login role, password, browser/Data API policy, seed record, tax rule, delivery-fee rule, payment-provider action, or public write path.
 
 The separate application transaction uses the deployed schema but has not been
 called. Login credentials, store-location data, inventory data, and controlled
 database validation remain outside this documentation checkpoint.
+
+Forward-only migration `20260812143000_pending_inventory_order_submission.sql`
+is deployed and matches locally and remotely. It relaxes only the fulfillment
+location requirement for `pending_confirmation`, allowing a validated order to
+remain pending review when no approved inventory location exists. Fulfillment
+cannot advance without a location, and the migration adds no stock, location,
+reservation, public access, policy, credential, or seed record.
 
 ## Product physical-RAM correction status
 

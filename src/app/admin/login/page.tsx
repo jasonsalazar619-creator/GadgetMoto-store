@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
-import { BrandLockup } from "@/components/brand/brand-lockup";
 import { LoginForm } from "@/app/admin/login/login-form";
 import { redirectAuthenticatedAdminFromLogin } from "@/lib/admin/server/auth";
 import { getSupabasePublicConfig } from "@/lib/supabase/config";
@@ -22,17 +22,25 @@ export default async function AdminLoginPage() {
         aria-labelledby="admin-login-title"
         className="w-full max-w-lg rounded-[var(--radius-xl)] border bg-white p-6 shadow-[var(--shadow-lg)] sm:p-10"
       >
-        <BrandLockup variant="compact" />
-        <p className="mt-8 type-eyebrow text-[var(--color-action)]">
+        <Image
+          alt="GadgetMoTo"
+          className="mx-auto h-auto w-full max-w-40 rounded-[var(--radius-lg)] object-contain sm:max-w-48"
+          height={900}
+          priority
+          sizes="(max-width: 640px) 10rem, 12rem"
+          src="/brand/gadgetmoto-logo-original.jpg"
+          width={901}
+        />
+        <p className="mt-7 text-center type-eyebrow text-[var(--color-action)]">
           Secure staff access
         </p>
         <h1
-          className="mt-3 font-[family-name:var(--font-heading)] text-4xl font-bold tracking-[-0.045em] text-[var(--color-ink)]"
+          className="mt-3 text-center font-[family-name:var(--font-heading)] text-4xl font-bold tracking-[-0.045em] text-[var(--color-ink)]"
           id="admin-login-title"
         >
-          GadgetMoTo Admin
+          Admin Portal
         </h1>
-        <p className="mt-4 leading-7 text-[var(--color-muted)]">
+        <p className="mt-4 text-center leading-7 text-[var(--color-muted)]">
           Sign in with an invited staff account. Administrator authorization is
           verified against the protected staff directory.
         </p>

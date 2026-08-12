@@ -3,6 +3,7 @@
 - Hosted project name: gadgetmoto-store
 - Hosted project region: Southeast Asia (Singapore)
 - The hosted project is healthy.
+- Forward-only migration `20260812143000_pending_inventory_order_submission.sql` was dry-run as the only pending migration and deployed successfully. Its local and remote history versions match. It permits a fulfillment to remain without an assigned location only while it is pending confirmation; it creates no location, inventory, reservation, public access, or seed data.
 - The confirmed region is Southeast Asia (Singapore).
 - Secure order migration `20260726121534_secure_order_transaction_schema.sql` was deployed successfully, and migration version `20260726121534` matches locally and remotely.
 - The secure order migration created schema and a non-login privilege role only; it contains no login credential, password, environment value, record, browser policy, tax rule, delivery-fee rule, or payment-provider behavior.

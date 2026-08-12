@@ -19,6 +19,7 @@ export function StorefrontHeader() {
           <Link className="nav-link" href="/shop">Shop</Link>
           <Link className="nav-link" href="/phones">Phones</Link>
           <Link className="nav-link" href="/tablets">Tablets</Link>
+          <Link className="nav-link" href="/sale">Sale</Link>
           <Link className="nav-link" href="/coming-soon">Coming Soon</Link>
           <ComparisonCountLink />
           <Link className="nav-link" href="/#payments">Financing</Link>
@@ -35,6 +36,7 @@ export function StorefrontHeader() {
           <Link className="whitespace-nowrap" href="/shop">Shop</Link>
           <Link className="whitespace-nowrap" href="/phones">Phones</Link>
           <Link className="whitespace-nowrap" href="/tablets">Tablets</Link>
+          <Link className="whitespace-nowrap" href="/sale">Sale</Link>
           <Link className="whitespace-nowrap" href="/coming-soon">Coming Soon</Link>
           <ComparisonCountLink mobile />
           <Link className="whitespace-nowrap" href="/#payments">Ways to pay</Link>

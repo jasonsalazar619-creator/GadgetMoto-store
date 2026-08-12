@@ -9,6 +9,7 @@ export type OrderServerErrorCode =
   | "INVALID_QUANTITY"
   | "DUPLICATE_CART_ITEM"
   | "PRODUCT_NOT_AVAILABLE"
+  | "INVALID_COLOR_SELECTION"
   | "PRODUCT_PRICE_CHANGED"
   | "INSUFFICIENT_INVENTORY"
   | "INVALID_FULFILLMENT"
@@ -28,6 +29,7 @@ const orderErrorMessages: Record<OrderServerErrorCode, string> = {
   INVALID_QUANTITY: "An item quantity is invalid.",
   DUPLICATE_CART_ITEM: "The cart contains a duplicate item.",
   PRODUCT_NOT_AVAILABLE: "A requested product is unavailable.",
+  INVALID_COLOR_SELECTION: "A selected product color is unavailable.",
   PRODUCT_PRICE_CHANGED: "A product price requires review.",
   INSUFFICIENT_INVENTORY: "A requested product is unavailable.",
   INVALID_FULFILLMENT: "The fulfillment selection is invalid.",

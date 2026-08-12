@@ -10,7 +10,12 @@ export type OrderConfigurationStatus = Readonly<{
 }>;
 
 export function isOnlineOrderingEnabled(): boolean {
-  return process.env.ONLINE_ORDERING_ENABLED?.trim() === "1";
+  const configuredValue = process.env.ONLINE_ORDERING_ENABLED?.trim();
+  if (configuredValue === "0") return false;
+  if (!process.env.ORDER_DATABASE_URL?.trim()) return false;
+  if (configuredValue === "1") return true;
+
+  return isManualPaymentModeEnabled();
 }
 
 export function isPaymentGatewayEnabled(): boolean {

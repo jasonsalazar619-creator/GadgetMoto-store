@@ -16,6 +16,8 @@ const idempotencyKeyPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const productSlugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const skuPattern = /^[a-z0-9][a-z0-9-]{0,63}$/i;
+const uuidPattern =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const sensitivePaymentLabelPattern =
   /\b(?:card\s*(?:number|no)|cvv|cvc|pin|password|passcode|otp|bank(?:ing)?\s*(?:account|credential)|account\s*(?:number|no))\b/i;
@@ -192,7 +194,7 @@ export function validateCreateOrderRequest(
   const items = value.items.map((item) => {
     if (
       !isPlainObject(item) ||
-      !hasOnlyKeys(item, ["productSlug", "sku", "quantity"]) ||
+      !hasOnlyKeys(item, ["productSlug", "sku", "colorId", "quantity"]) ||
       typeof item.productSlug !== "string" ||
       typeof item.sku !== "string"
     ) {
@@ -201,12 +203,19 @@ export function validateCreateOrderRequest(
 
     const productSlug = item.productSlug.trim();
     const sku = item.sku.trim().toUpperCase();
+    const colorId =
+      typeof item.colorId === "string"
+        ? item.colorId.trim().toLowerCase()
+        : undefined;
     if (
       productSlug.length > 120 ||
       !productSlugPattern.test(productSlug) ||
       !skuPattern.test(sku)
     ) {
       throw new OrderServerError("INVALID_CHECKOUT_REQUEST");
+    }
+    if (item.colorId !== undefined && (!colorId || !uuidPattern.test(colorId))) {
+      throw new OrderServerError("INVALID_COLOR_SELECTION");
     }
     if (
       typeof item.quantity !== "number" ||
@@ -217,13 +226,18 @@ export function validateCreateOrderRequest(
       throw new OrderServerError("INVALID_QUANTITY");
     }
 
-    const itemKey = `${productSlug}::${sku.toLowerCase()}`;
+    const itemKey = `${productSlug}::${sku.toLowerCase()}::${colorId ?? "no-color"}`;
     if (itemKeys.has(itemKey)) {
       throw new OrderServerError("DUPLICATE_CART_ITEM");
     }
     itemKeys.add(itemKey);
 
-    return { productSlug, sku, quantity: item.quantity };
+    return {
+      productSlug,
+      sku,
+      ...(colorId ? { colorId } : {}),
+      quantity: item.quantity,
+    };
   });
 
   if (
@@ -305,7 +319,8 @@ export function validateCreateOrderRequest(
     items: [...items].sort(
       (left, right) =>
         left.productSlug.localeCompare(right.productSlug) ||
-        left.sku.localeCompare(right.sku),
+        left.sku.localeCompare(right.sku) ||
+        (left.colorId ?? "").localeCompare(right.colorId ?? ""),
     ),
     customer: {
       fullName,

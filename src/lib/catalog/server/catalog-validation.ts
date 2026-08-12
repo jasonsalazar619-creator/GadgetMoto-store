@@ -3,6 +3,7 @@ import "server-only";
 import {
   getAllProducts,
   type ProductCategory,
+  type ProductColor,
   type PrototypeProduct,
 } from "@/data/prototype-products";
 import { upcomingProducts } from "@/data/upcoming-products";
@@ -27,6 +28,7 @@ type ValidatedCatalogRow = Readonly<{
   srpCentavos: number | null;
   images: readonly ProductImage[];
   specifications: readonly ProductSpecification[];
+  colors: readonly ProductColor[];
 }>;
 
 const failValidation = (): never => {
@@ -137,6 +139,38 @@ function readSpecifications(
   return specifications;
 }
 
+function readColors(value: unknown): readonly ProductColor[] {
+  if (!Array.isArray(value) || value.length > 50) return failValidation();
+
+  const colors = value.map((item): ProductColor => {
+    if (
+      typeof item !== "object" ||
+      item === null ||
+      Array.isArray(item) ||
+      !("id" in item) ||
+      !("name" in item) ||
+      !("hexCode" in item) ||
+      typeof item.id !== "string" ||
+      !uuidPattern.test(item.id) ||
+      typeof item.name !== "string" ||
+      !item.name.trim() ||
+      item.name !== item.name.trim() ||
+      !(
+        item.hexCode === null ||
+        (typeof item.hexCode === "string" &&
+          /^#[0-9a-f]{6}$/i.test(item.hexCode))
+      )
+    ) {
+      return failValidation();
+    }
+    return { id: item.id, name: item.name, hexCode: item.hexCode };
+  });
+
+  assertUnique(colors.map(({ id }) => id.toLocaleLowerCase()));
+  assertUnique(colors.map(({ name }) => name.toLocaleLowerCase()));
+  return colors;
+}
+
 function validateDatabaseCatalogRows(
   rows: readonly CatalogDatabaseRow[],
 ): readonly ValidatedCatalogRow[] {
@@ -188,6 +222,7 @@ function validateDatabaseCatalogRows(
       row.srp_centavos === null ? null : readCentavos(row.srp_centavos);
     const images = readImages(row.images);
     const specifications = readSpecifications(row.specifications);
+    const colors = readColors(row.colors);
 
     if (
       srpCentavos !== null &&
@@ -206,6 +241,7 @@ function validateDatabaseCatalogRows(
       srpCentavos,
       images,
       specifications,
+      colors,
     };
   });
 
@@ -240,6 +276,7 @@ export function normalizeDatabaseCatalogRows(
         srpCentavos,
         images,
         specifications,
+        colors,
       }): PrototypeProduct => {
         const primaryImage =
           staticProduct?.primaryImage?.src === row.primary_image_path
@@ -271,6 +308,7 @@ export function normalizeDatabaseCatalogRows(
             images.filter(({ src }) => src !== primaryImage?.src),
           specifications:
             staticProduct?.specifications ?? specifications,
+          ...(colors.length ? { colors } : {}),
           ...(row.short_description
             ? { shortDescription: row.short_description }
             : {}),

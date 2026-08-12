@@ -9,6 +9,12 @@ import {
 
 export type ProductCategory = "Phone" | "Tablet";
 
+export type ProductColor = Readonly<{
+  id: string;
+  name: string;
+  hexCode: string | null;
+}>;
+
 export type PrototypeProduct = {
   id: string;
   slug: string;
@@ -31,6 +37,7 @@ export type PrototypeProduct = {
   specifications: readonly ProductSpecification[];
   shortDescription?: string;
   fullDescription?: string;
+  colors?: readonly ProductColor[];
 };
 
 const products: readonly PrototypeProduct[] = [

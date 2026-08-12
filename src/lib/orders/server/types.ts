@@ -48,6 +48,7 @@ export type SupportedPaymentMethod =
 export type CheckoutOrderItemInput = Readonly<{
   productSlug: string;
   sku: string;
+  colorId?: string;
   quantity: number;
 }>;
 

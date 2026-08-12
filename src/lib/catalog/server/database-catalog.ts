@@ -28,6 +28,7 @@ export type CatalogDatabaseRow = {
   extended_ram_gb: number | null;
   specifications: unknown;
   images: unknown;
+  colors: unknown;
 };
 
 export async function loadDatabaseCatalogRows(): Promise<
@@ -60,8 +61,23 @@ export async function loadDatabaseCatalogRows(): Promise<
         primary_image_alt,
         extended_ram_gb,
         specifications,
-        images
-      from storefront.catalog_products
+        images,
+        coalesce(
+          (
+            select jsonb_agg(
+              jsonb_build_object(
+                'id', colors.color_id,
+                'name', colors.color_name,
+                'hexCode', colors.hex_code
+              )
+              order by colors.sort_order asc, colors.color_id asc
+            )
+            from storefront.product_colors as colors
+            where colors.product_id = catalog_products.product_id
+          ),
+          '[]'::jsonb
+        ) as colors
+      from storefront.catalog_products as catalog_products
       order by product_sort_order asc, product_slug asc, sku asc
     `;
 

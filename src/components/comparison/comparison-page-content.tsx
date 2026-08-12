@@ -28,7 +28,7 @@ export function ComparisonPageContent() {
     ["Savings", (product) => product.srp ? peso.format(product.srp - product.currentPrice) : "Not available"],
     ["Condition", (product) => product.condition],
     ["Availability", () => "Contact us to confirm availability."],
-    ["Promotion", (product) => product.badge === "sale" ? "Sale" : product.badge === "new" ? "New" : "None"],
+    ["Promotion", (product) => product.badge === "new" ? "New" : "None"],
     ["Financing", (product) => product.financingAvailable ? "Available through the sales team" : "Not available"],
     ["Store payment options", () => paymentMethods],
     ["Store delivery options", () => deliveryOptions],

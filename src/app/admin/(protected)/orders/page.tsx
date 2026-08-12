@@ -152,6 +152,49 @@ export default async function AdminOrdersPage({
                   </div>
                 </dl>
 
+                <div className="mt-6 grid gap-5 border-t border-[var(--color-border)] pt-5 lg:grid-cols-[0.8fr_1.2fr]">
+                  <section aria-label="Delivery details">
+                    <h3 className="font-bold">Delivery details</h3>
+                    <p className="mt-2 text-sm leading-6 text-[var(--color-muted)]">
+                      {review.deliveryMethod.replaceAll("_", " ")}
+                      {review.address ? (
+                        <>
+                          <br />
+                          {review.address.streetAddress}
+                          <br />
+                          {review.address.barangay}, {review.address.cityMunicipality}
+                          <br />
+                          {review.address.province} {review.address.postalCode}
+                        </>
+                      ) : (
+                        <>
+                          <br />No delivery address is attached to this order.
+                        </>
+                      )}
+                    </p>
+                  </section>
+                  <section aria-label="Ordered products">
+                    <h3 className="font-bold">Products</h3>
+                    <div className="mt-2 grid gap-3">
+                      {review.items.map((item) => (
+                        <article className="rounded-[var(--radius-sm)] bg-[var(--color-ice)] p-3 text-sm" key={item.orderItemId}>
+                          <div className="flex flex-wrap justify-between gap-2">
+                            <strong>{item.productName}</strong>
+                            <strong>{formatMoney(item.lineTotalCentavos)}</strong>
+                          </div>
+                          <p className="mt-1 leading-6 text-[var(--color-muted)]">
+                            {item.variantName}
+                            {item.colorName ? ` · ${item.colorName}` : ""}
+                            {item.ramGb ? ` · ${item.ramGb}GB RAM` : ""}
+                            {item.storageGb ? ` · ${item.storageGb}GB storage` : ""}
+                            {` · Qty ${item.quantity} · ${formatMoney(item.unitPriceCentavos)} each`}
+                          </p>
+                        </article>
+                      ))}
+                    </div>
+                  </section>
+                </div>
+
                 <p className="mt-5 text-sm text-[var(--color-muted)]">
                   Order status: <strong className="text-[var(--color-ink)]">{review.orderStatus.replaceAll("_", " ")}</strong>
                 </p>

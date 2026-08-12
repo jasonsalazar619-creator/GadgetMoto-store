@@ -6,8 +6,9 @@
 - The server-only `PAYMENT_GATEWAY_ENABLED` flag enables gateway-facing checkout choices only when its value is exactly `1`.
 - The flag is intentionally not public and must never use a `NEXT_PUBLIC_` prefix.
 - No payment-gateway API client, checkout-session creator, redirect flow, capture call, or webhook confirmation exists in the current application.
-- Customer order submission continues through the existing secured order endpoint when `ONLINE_ORDERING_ENABLED` is exactly `1`.
+- Customer order submission continues through the existing secured order endpoint when the server has order-database configuration and manual payment mode is available. `ONLINE_ORDERING_ENABLED=0` remains an explicit emergency disable, while `ONLINE_ORDERING_ENABLED=1` remains an explicit enable for controlled environments.
 - A customer submission never marks an order or payment as paid.
+- Manual order submission and automated payment-gateway processing are independent feature decisions.
 
 ## Manual payment workflow
 
@@ -29,6 +30,12 @@ The forward-only migration `20260812113000_manual_payment_approval.sql` adds two
 - an audited manual status transition limited to `paid` or `failed`.
 
 The migration does not add a table, enum, payment method, public policy, seed record, or customer write path. It must be reviewed and deployed manually before the administrator payment queue can be used. No SQL is executed by the application checkpoint.
+
+The deployed forward-only migration `20260812143000_pending_inventory_order_submission.sql` allows a new fulfillment to remain without an assigned store location only while its status is `pending_confirmation`. The linked dry run listed only this migration, deployment completed successfully, and local and remote migration histories now match. The non-blocking Docker catalog-cache warning did not prevent the remote migration.
+
+This permits a validated manual order to enter review when no inventory or store-location records have been configured, without claiming stock, creating a reservation, or confirming availability. Once inventory configuration exists for a requested variant, the existing availability and reservation checks remain authoritative.
+
+The order endpoint validates canonical products, SKUs, active colors, quantities, and prices against PostgreSQL, recalculates merchandise totals in the transaction, and records delivery and customer details. Manual orders begin as `pending_review`; their payment records begin as `instructions_pending`. VAT, delivery fees, the final payable amount, inventory confirmation, and payment approval remain pending administrator review.
 
 ## Restoring automated payments later
 

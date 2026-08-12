@@ -16,6 +16,7 @@ type SafeErrorResponse = Readonly<{
 const conflictCodes: readonly OrderServerErrorCode[] = [
   "DUPLICATE_CART_ITEM",
   "PRODUCT_NOT_AVAILABLE",
+  "INVALID_COLOR_SELECTION",
   "PRODUCT_PRICE_CHANGED",
   "INSUFFICIENT_INVENTORY",
   "DUPLICATE_SUBMISSION",
@@ -36,6 +37,8 @@ const customerMessages: Record<OrderServerErrorCode, string> = {
     "The cart contains a duplicate product. Review it and try again.",
   PRODUCT_NOT_AVAILABLE:
     "One or more products are currently unavailable.",
+  INVALID_COLOR_SELECTION:
+    "One or more selected product colors are unavailable.",
   PRODUCT_PRICE_CHANGED:
     "A product price has changed and requires another review.",
   INSUFFICIENT_INVENTORY:

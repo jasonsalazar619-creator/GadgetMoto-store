@@ -1,6 +1,6 @@
 # GadgetMoTo Storefront
 
-GadgetMoTo is a production-oriented Next.js storefront for phones and tablets. The customer-facing website includes a responsive homepage, catalog and category pages, 12 product-detail routes, a separate 68-item Coming Soon preview catalog, product search, comparison, cart, checkout, and contact-based ordering through Facebook Messenger.
+GadgetMoTo is a production-oriented Next.js storefront for phones and tablets. The customer-facing website includes a responsive homepage, catalog and category pages, a price-derived Sale page, 12 product-detail routes, a separate 68-item Coming Soon preview catalog, product search, comparison, cart, and validated manual-order checkout. Facebook Messenger remains a secondary support channel.
 
 ## Current catalog architecture
 
@@ -11,7 +11,7 @@ GadgetMoTo is a production-oriented Next.js storefront for phones and tablets. T
 - Canonical static catalog remains the default source, complete fallback, build-safe route-slug source, and placeholder-presentation source
 - A least-privilege PostgreSQL read model is prepared and previously verified; production database configuration remains intentionally absent
 
-Live online submission is disabled by default. No environment file, database credential, configured order-database connection, public catalog API, or live payment flow is included in the repository.
+Manual order submission activates only when secure server-side order-database configuration is present and has an explicit emergency-disable flag. Automated payment processing remains disabled. No environment file, database credential, public catalog API, or live payment flow is included in the repository.
 
 ## Local development
 
@@ -38,6 +38,7 @@ git diff --check
 - `/shop`
 - `/phones`
 - `/tablets`
+- `/sale`
 - `/coming-soon` for all 68 non-purchasable folder candidates
 - `/coming-soon/[slug]` for 68 non-purchasable product previews and available
   image galleries
@@ -60,7 +61,8 @@ git diff --check
 - Homepage, shop, phones, tablets, product-detail, contact, metadata, sitemap, robots, and related-product catalog integration
 - Shared client catalog provider
 - Global search, comparison, cart, and catalog-driven checkout integration
-- Contact-first checkout fallback that preserves cart contents and never fabricates order success
+- Database-backed manual-order submission with server-authoritative products, variants, colors, quantities, prices, pending fulfillment, and pending payment review
+- Contact-first checkout fallback when secure order-database configuration is unavailable
 - Product media for 11 products plus the approved POCO C85 placeholder
 - 69 exact-copy preview images assigned across 67 identified products, plus one
   safe placeholder for an ambiguous filename/poster conflict
@@ -78,8 +80,7 @@ git diff --check
 
 ## Still pending
 
-- Secure production database configuration and controlled live-order activation
-- Controlled database testing of the order-creation transaction
+- Secure production order-database configuration in each hosting environment
 - Reservation release, expiry-job, and conversion workflows
 - Controlled database and endpoint testing with inventory and location readiness
 - Store-location and inventory readiness for order allocation
@@ -91,14 +92,14 @@ git diff --check
 - Approved POCO C85 imagery
 - Final business-supplied privacy, terms, warranty, cancellation, and refund wording
 
-`ONLINE_ORDERING_ENABLED` is the server-side activation gate. It is disabled unless explicitly set to `1`. While disabled, checkout does not call `POST /api/orders`; customers can review their cart and deliberately continue through Messenger. The endpoint also returns a safe unavailable response before parsing or creating an order. No order or payment was created during storefront completion.
+`ONLINE_ORDERING_ENABLED=0` is the server-side emergency disable. Manual order submission otherwise activates when `ORDER_DATABASE_URL` is securely configured and automated payment remains disabled. While order submission is unavailable, checkout does not call `POST /api/orders`; customers can review their cart and continue through Messenger. The endpoint returns a safe unavailable response before parsing or creating an order.
 
 ## Current implementation status
 
 - Storefront catalog integration: complete
 - Checkout interface, validation, review flow, contact handoff, and delivery-only request contract: complete
-- Secure server-side order service and endpoint: implemented but uncalled
-- Live online-order submission: disabled pending controlled configuration and business readiness
+- Secure server-side order service and endpoint: implemented for manual-order review
+- Manual order submission: enabled when secure server configuration is present
 - Maya and other live payment integration: pending
 - Secure staff authentication and protected admin shell: implemented
 - Validated admin product CRUD, autosave, archival, guarded draft deletion,

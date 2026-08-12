@@ -54,6 +54,9 @@ type AuthoritativeProductRow = {
   product_active: boolean;
   product_published: boolean;
   variant_active: boolean;
+  selected_color_id: string | null;
+  selected_color_name: string | null;
+  has_active_colors: boolean;
 };
 
 type LocationRow = {
@@ -66,6 +69,10 @@ type InventoryLevelRow = {
   location_id: string;
   quantity_on_hand: number;
   quantity_reserved: number;
+};
+
+type InventoryCoverageRow = {
+  level_count: number;
 };
 
 type IdentifierRow = {
@@ -84,6 +91,8 @@ type PreparedOrderItem = Readonly<{
   variantId: string;
   sku: string;
   variantName: string;
+  colorId: string | null;
+  colorName: string | null;
   quantity: number;
   unitPriceCentavos: bigint;
   lineTotalCentavos: bigint;
@@ -236,13 +245,21 @@ async function loadAuthoritativeProducts(
   request: CreateOrderRequest,
 ): Promise<readonly PreparedOrderItem[]> {
   const productRows = await sql<AuthoritativeProductRow[]>`
-    with requested(product_slug, sku, requested_order) as (
-      select input.product_slug, input.sku, input.requested_order
+    with requested(product_slug, sku, color_id, requested_order) as (
+      select
+        input.product_slug,
+        input.sku,
+        nullif(
+          input.color_id,
+          '00000000-0000-0000-0000-000000000000'::uuid
+        ),
+        input.requested_order
       from unnest(
         ${sql.array(request.items.map((item) => item.productSlug))}::text[],
         ${sql.array(request.items.map((item) => item.sku))}::text[],
+        ${sql.array(request.items.map((item) => item.colorId ?? "00000000-0000-0000-0000-000000000000"))}::uuid[],
         ${sql.array(request.items.map((_, index) => index))}::integer[]
-      ) as input(product_slug, sku, requested_order)
+      ) as input(product_slug, sku, color_id, requested_order)
     )
     select
       requested.requested_order,
@@ -261,7 +278,15 @@ async function loadAuthoritativeProducts(
           and products.published_at <= current_timestamp,
         false
       ) as product_published,
-      variants.is_active as variant_active
+      variants.is_active as variant_active,
+      colors.id as selected_color_id,
+      colors.name as selected_color_name,
+      exists (
+        select 1
+        from public.product_color_variants as available_colors
+        where available_colors.product_id = products.id
+          and available_colors.is_active is true
+      ) as has_active_colors
     from requested
     inner join public.products as products
       on products.slug = requested.product_slug
@@ -270,6 +295,10 @@ async function loadAuthoritativeProducts(
     inner join public.product_variants as variants
       on variants.product_id = products.id
       and lower(variants.sku) = lower(requested.sku)
+    left join public.product_color_variants as colors
+      on colors.id = requested.color_id
+      and colors.product_id = products.id
+      and colors.is_active is true
     order by requested.requested_order asc
   `;
 
@@ -291,6 +320,15 @@ async function loadAuthoritativeProducts(
     ) {
       throw new OrderServerError("PRODUCT_NOT_AVAILABLE");
     }
+    if (
+      (row.has_active_colors &&
+        (!requested.colorId ||
+          row.selected_color_id !== requested.colorId ||
+          !row.selected_color_name)) ||
+      (!row.has_active_colors && requested.colorId !== undefined)
+    ) {
+      throw new OrderServerError("INVALID_COLOR_SELECTION");
+    }
 
     const unitPriceCentavos = readDatabaseBigint(
       row.current_price_centavos,
@@ -309,6 +347,8 @@ async function loadAuthoritativeProducts(
       variantId: row.variant_id,
       sku: row.sku,
       variantName: row.variant_name,
+      colorId: row.selected_color_id,
+      colorName: row.selected_color_name,
       quantity: requested.quantity,
       unitPriceCentavos,
       lineTotalCentavos,
@@ -320,7 +360,7 @@ async function resolveFulfillmentLocation(
   sql: OrderTransaction,
   request: CreateOrderRequest,
   items: readonly PreparedOrderItem[],
-): Promise<LocationRow> {
+): Promise<LocationRow | null> {
   if (request.fulfillment.method === "store_pickup") {
     const rows = await sql<LocationRow[]>`
       select
@@ -339,11 +379,12 @@ async function resolveFulfillmentLocation(
 
   const rows = await sql<LocationRow[]>`
     with requested(variant_id, quantity) as (
-      select input.variant_id, input.quantity
+      select input.variant_id, sum(input.quantity)::integer
       from unnest(
         ${sql.array(items.map((item) => item.variantId))}::uuid[],
         ${sql.array(items.map((item) => item.quantity))}::integer[]
       ) as input(variant_id, quantity)
+      group by input.variant_id
     )
     select
       levels.location_id,
@@ -358,15 +399,26 @@ async function resolveFulfillmentLocation(
         levels.quantity_on_hand - levels.quantity_reserved
       ) >= requested.quantity
     group by levels.location_id, locations.slug
-    having count(*) = ${items.length}
+    having count(*) = ${new Set(items.map((item) => item.variantId)).size}
     order by locations.slug asc, levels.location_id asc
     limit 1
   `;
 
-  if (!rows[0]) {
-    throw new OrderServerError("INSUFFICIENT_INVENTORY");
-  }
-  return rows[0];
+  if (rows[0]) return rows[0];
+
+  const coverageRows = await sql<InventoryCoverageRow[]>`
+    select count(*)::integer as level_count
+    from public.inventory_levels as levels
+    inner join public.store_locations as locations
+      on locations.id = levels.location_id
+    where locations.is_active is true
+      and levels.variant_id = any(
+        ${sql.array(items.map((item) => item.variantId))}::uuid[]
+      )
+  `;
+
+  if (coverageRows[0]?.level_count === 0) return null;
+  throw new OrderServerError("INSUFFICIENT_INVENTORY");
 }
 
 async function lockAndValidateInventory(
@@ -389,15 +441,23 @@ async function lockAndValidateInventory(
     for update
   `;
 
-  if (rows.length !== items.length) {
+  const quantitiesByVariant = new Map<string, number>();
+  for (const item of items) {
+    quantitiesByVariant.set(
+      item.variantId,
+      (quantitiesByVariant.get(item.variantId) ?? 0) + item.quantity,
+    );
+  }
+
+  if (rows.length !== quantitiesByVariant.size) {
     throw new OrderServerError("INSUFFICIENT_INVENTORY");
   }
 
   const inventoryByVariant = new Map(
     rows.map((row) => [row.variant_id, row]),
   );
-  for (const item of items) {
-    const level = inventoryByVariant.get(item.variantId);
+  for (const [variantId, quantity] of quantitiesByVariant) {
+    const level = inventoryByVariant.get(variantId);
     if (
       !level ||
       level.location_id !== location.location_id ||
@@ -405,7 +465,7 @@ async function lockAndValidateInventory(
       !Number.isSafeInteger(level.quantity_reserved) ||
       level.quantity_on_hand < 0 ||
       level.quantity_reserved < 0 ||
-      level.quantity_on_hand - level.quantity_reserved < item.quantity
+      level.quantity_on_hand - level.quantity_reserved < quantity
     ) {
       throw new OrderServerError("INSUFFICIENT_INVENTORY");
     }
@@ -421,7 +481,9 @@ async function createNewOrder(
 ): Promise<CreateOrderSuccessResponse> {
   const items = await loadAuthoritativeProducts(sql, request);
   const location = await resolveFulfillmentLocation(sql, request, items);
-  await lockAndValidateInventory(sql, location, items);
+  if (location) {
+    await lockAndValidateInventory(sql, location, items);
+  }
 
   const subtotalCentavos = items.reduce(
     (subtotal, item) => subtotal + item.lineTotalCentavos,
@@ -528,16 +590,18 @@ async function createNewOrder(
     `;
   }
 
-  const orderItemIds = new Map<string, string>();
+  const orderItemIds = new Map<PreparedOrderItem, string>();
   for (const item of items) {
     const itemRows = await sql<IdentifierRow[]>`
       insert into public.order_items (
         order_id,
         product_id,
         variant_id,
+        color_variant_id,
         product_name_snapshot,
         brand_name_snapshot,
         variant_snapshot,
+        color_name_snapshot,
         sku_snapshot,
         unit_price_centavos,
         quantity,
@@ -547,9 +611,11 @@ async function createNewOrder(
         ${orderId},
         ${item.productId},
         ${item.variantId},
+        ${item.colorId},
         ${item.productName},
         ${item.brandName},
         ${item.variantName},
+        ${item.colorName},
         ${item.sku},
         ${item.unitPriceCentavos.toString()},
         ${item.quantity},
@@ -561,7 +627,7 @@ async function createNewOrder(
     if (!orderItemId) {
       throw new OrderServerError("ORDER_CREATION_FAILED");
     }
-    orderItemIds.set(item.variantId, orderItemId);
+    orderItemIds.set(item, orderItemId);
   }
 
   await sql`
@@ -573,14 +639,15 @@ async function createNewOrder(
     values (
       ${orderId},
       'pending_confirmation'::public.fulfillment_status,
-      ${location.location_id}
+      ${location?.location_id ?? null}
     )
   `;
 
-  for (const item of [...items].sort((left, right) =>
-    left.variantId.localeCompare(right.variantId),
-  )) {
-    const orderItemId = orderItemIds.get(item.variantId);
+  if (location) {
+    for (const item of [...items].sort((left, right) =>
+      left.variantId.localeCompare(right.variantId),
+    )) {
+    const orderItemId = orderItemIds.get(item);
     if (!orderItemId) {
       throw new OrderServerError("ORDER_CREATION_FAILED");
     }
@@ -645,6 +712,7 @@ async function createNewOrder(
         ${reservationId}
       )
     `;
+    }
   }
 
   await sql`

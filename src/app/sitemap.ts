@@ -9,6 +9,7 @@ const storefrontRoutes = [
   "/shop",
   "/phones",
   "/tablets",
+  "/sale",
   "/coming-soon",
   "/compare",
   "/cart",

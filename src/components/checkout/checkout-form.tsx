@@ -49,10 +49,14 @@ type OrderResult = Readonly<{
     address: string;
   }>;
   paymentLabel: string;
+  paymentStatus: "instructions_pending";
   items: readonly Readonly<{
     lineId: string;
     productName: string;
     variant: string;
+    ramGb: number | null;
+    storageGb: number;
+    colorName: string | null;
     quantity: number;
     unitPrice: number;
     lineTotal: number;
@@ -178,6 +182,7 @@ const getCustomerError = (
   if (
     status === 409 ||
     code === "PRODUCT_NOT_AVAILABLE" ||
+    code === "INVALID_COLOR_SELECTION" ||
     code === "INSUFFICIENT_INVENTORY"
   ) {
     return "One or more products are no longer available. Your cart has been kept so you can review it.";
@@ -223,7 +228,7 @@ export function CheckoutForm({
   const cartSignature = items
     .map(
       (item) =>
-        `${item.productSlug}:${item.product.sku}:${item.quantity}`,
+        `${item.productSlug}:${item.product.sku}:${item.color?.id ?? "no-color"}:${item.quantity}`,
     )
     .join("|");
 
@@ -414,6 +419,7 @@ export function CheckoutForm({
         {
           productSlug: product.slug,
           sku: product.sku,
+          ...(item.color ? { colorId: item.color.id } : {}),
           quantity: item.quantity,
         },
       ];
@@ -488,7 +494,9 @@ export function CheckoutForm({
         typeof responseBody.publicOrderNumber !== "string" ||
         !responseBody.publicOrderNumber ||
         !("wasReplay" in responseBody) ||
-        typeof responseBody.wasReplay !== "boolean"
+        typeof responseBody.wasReplay !== "boolean" ||
+        !("paymentStatus" in responseBody) ||
+        responseBody.paymentStatus !== "instructions_pending"
       ) {
         setSubmissionError(
           "We could not confirm that your order was received. Please try again.",
@@ -509,10 +517,14 @@ export function CheckoutForm({
           address: `${values.street}, ${values.barangay}, ${values.city}, ${values.province} ${values.postal}`,
         },
         paymentLabel: paymentLabels[values.payment],
+        paymentStatus: responseBody.paymentStatus,
         items: items.map((item) => ({
           lineId: item.lineId,
           productName: item.product.name,
           variant: item.variant,
+          ramGb: item.product.ramGb ?? null,
+          storageGb: item.product.storageGb,
+          colorName: item.color?.name ?? null,
           quantity: item.quantity,
           unitPrice: item.product.currentPrice,
           lineTotal: item.lineTotal,
@@ -546,7 +558,7 @@ export function CheckoutForm({
     "GadgetMoTo order inquiry",
     ...items.map(
       (item) =>
-        `${item.product.name} — ${item.variant} — Qty ${item.quantity}`,
+        `${item.product.name} — ${item.variant}${item.color ? ` — ${item.color.name}` : ""} — Qty ${item.quantity}`,
     ),
     `Estimated merchandise subtotal: ${money.format(subtotal)}`,
     `Delivery preference: ${deliveryLabels[values.delivery]}`,
@@ -628,14 +640,22 @@ export function CheckoutForm({
           </section>
           <section>
             <h3>Payment preference</h3>
-            <p>{orderResult.paymentLabel}</p>
+            <p>
+              {orderResult.paymentLabel}
+              <br />
+              Status: {orderResult.paymentStatus.replaceAll("_", " ")}
+            </p>
           </section>
           <section>
             <h3>Products</h3>
             {orderResult.items.map((item) => (
               <p key={item.lineId}>
-                {item.productName} · {item.variant} · Qty {item.quantity} ·{" "}
+                {item.productName} · {item.variant}
+                {item.colorName ? ` · ${item.colorName}` : ""} · Qty {item.quantity} ·{" "}
                 {money.format(item.lineTotal)}
+                <br />
+                {item.ramGb ? `${item.ramGb}GB RAM · ` : ""}
+                {item.storageGb}GB storage
               </p>
             ))}
           </section>
@@ -1027,7 +1047,8 @@ export function CheckoutForm({
                 <small>{item.product.brand}</small>
                 <strong>{item.product.name}</strong>
                 <small>
-                  {item.variant} · Qty {item.quantity}
+                  {item.variant}
+                  {item.color ? ` · ${item.color.name}` : ""} · Qty {item.quantity}
                 </small>
               </span>
               <span>
@@ -1113,7 +1134,8 @@ export function CheckoutForm({
               <h3>Items</h3>
               {items.map((item) => (
                 <p key={item.lineId}>
-                  {item.product.name} · {item.variant} · Qty{" "}
+                  {item.product.name} · {item.variant}
+                  {item.color ? ` · ${item.color.name}` : ""} · Qty{" "}
                   {item.quantity} · {money.format(item.lineTotal)}
                 </p>
               ))}

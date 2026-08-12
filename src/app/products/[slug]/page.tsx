@@ -88,7 +88,12 @@ export default async function ProductPage({ params }: ProductPageProps) {
             <p className="mt-3 text-sm leading-relaxed text-[var(--color-muted)]">VAT is calculated separately. The applicable VAT rate is pending confirmation.</p>
             <p className="mt-4 font-semibold text-[var(--color-action)]">{product.financingMessage}</p>
             <div className="product-actions mt-8">
-              <AddToCartButton name={product.name} slug={product.slug} variant={product.variant} />
+              <AddToCartButton
+                colors={product.colors ?? []}
+                name={product.name}
+                slug={product.slug}
+                variant={product.variant}
+              />
               <a className="button-link product-message-link" href={messengerUrl} rel="noopener noreferrer" target="_blank">Message Us</a>
               <ComparisonButton className="button-link button-link--secondary" name={product.name} slug={product.slug} />
             </div>

@@ -10,7 +10,7 @@ export type PriceFilter =
   | "10-20"
   | "20-40"
   | "40-plus";
-type PromotionFilter = "all" | "sale" | "new";
+type PromotionFilter = "all" | "new";
 type SortOption = "featured" | "price-asc" | "price-desc" | "name" | "brand";
 type CatalogExplorerProps = {
   products: readonly PrototypeProduct[];
@@ -95,7 +95,7 @@ export function CatalogExplorer({
     ...(price !== "all" ? [{ key: "price", label: priceOptions.find(([key]) => key === price)?.[1] ?? price, remove: () => setPrice("all") }] : []),
     ...(ram !== "all" ? [{ key: "ram", label: `RAM: ${ram}GB`, remove: () => setRam("all") }] : []),
     ...(storage !== "all" ? [{ key: "storage", label: `Storage: ${storage}GB`, remove: () => setStorage("all") }] : []),
-    ...(promotion !== "all" ? [{ key: "promotion", label: promotion === "sale" ? "On Sale" : "New Arrivals", remove: () => setPromotion("all") }] : []),
+    ...(promotion !== "all" ? [{ key: "promotion", label: "New Arrivals", remove: () => setPromotion("all") }] : []),
     ...(financingOnly ? [{ key: "financing", label: "Financing available", remove: () => setFinancingOnly(false) }] : []),
   ];
   const noun = visibleProducts.length === 1 ? fixedCategory === "Phone" ? "phone" : fixedCategory === "Tablet" ? "tablet" : "product" : fixedCategory === "Phone" ? "phones" : fixedCategory === "Tablet" ? "tablets" : "products";
@@ -114,7 +114,7 @@ export function CatalogExplorer({
         <SelectField id="catalog-price" label="Price range" onChange={(value) => setPrice(value as PriceFilter)} value={price}>{priceOptions.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</SelectField>
         <SelectField id="catalog-ram" label="RAM" onChange={setRam} value={ram}><option value="all">All confirmed RAM</option>{ramValues.map((value) => <option key={value} value={value}>{value}GB</option>)}</SelectField>
         <SelectField id="catalog-storage" label="Storage" onChange={setStorage} value={storage}><option value="all">All storage</option>{storageValues.map((value) => <option key={value} value={value}>{value}GB</option>)}</SelectField>
-        <SelectField id="catalog-promotion" label="Promotion" onChange={(value) => setPromotion(value as PromotionFilter)} value={promotion}><option value="all">All promotions</option><option value="sale">On Sale</option><option value="new">New Arrivals</option></SelectField>
+        <SelectField id="catalog-promotion" label="Promotion" onChange={(value) => setPromotion(value as PromotionFilter)} value={promotion}><option value="all">All products</option><option value="new">New Arrivals</option></SelectField>
         <label className="catalog-checkbox"><input checked={financingOnly} onChange={(event) => setFinancingOnly(event.target.checked)} type="checkbox" /><span>Financing available</span></label>
         <label className="catalog-field catalog-field--disabled"><span>Network</span><select disabled><option>Coming after verification</option></select></label>
       </div>

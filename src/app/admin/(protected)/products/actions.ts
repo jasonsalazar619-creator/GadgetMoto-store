@@ -182,6 +182,7 @@ function revalidateStorefront(oldSlug: string, newSlug = oldSlug): void {
   revalidatePath("/shop");
   revalidatePath("/phones");
   revalidatePath("/tablets");
+  revalidatePath("/sale");
   revalidatePath("/coming-soon");
   revalidatePath("/compare");
   revalidatePath("/cart");
