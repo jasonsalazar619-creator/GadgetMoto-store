@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import type { KeyboardEvent } from "react";
 import { useState } from "react";
@@ -138,7 +139,16 @@ export function UpgradePathSection() {
               <div className="upgrade-path__orbit upgrade-path__orbit--one" />
               <div className="upgrade-path__orbit upgrade-path__orbit--two" />
               <div className="upgrade-path__scan" />
-              <div className="upgrade-path__device upgrade-path__device--primary" />
+              <div className="upgrade-path__device upgrade-path__device--primary">
+                <Image
+                  alt=""
+                  className="upgrade-path__device-logo"
+                  height={900}
+                  sizes="(max-width: 639px) 6rem, 10rem"
+                  src="/brand/gadgetmoto-admin-logo.jpg"
+                  width={901}
+                />
+              </div>
               <div className="upgrade-path__device upgrade-path__device--secondary" />
               <div className="upgrade-path__sale-signal">PRICE ↓</div>
               <div className="upgrade-path__status">

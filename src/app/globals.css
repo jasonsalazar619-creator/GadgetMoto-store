@@ -845,9 +845,13 @@ footer a:hover {
 }
 
 .upgrade-path__device {
+  align-items: center;
   background: linear-gradient(145deg, #eff9ff 0%, #72bce8 48%, #176bc8 100%);
   border: 0.45rem solid #283848;
   box-shadow: 0 2rem 4rem rgb(0 0 0 / 0.4), inset 0 0 2rem rgb(255 255 255 / 0.28);
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
   position: absolute;
   transition: border-radius 500ms var(--ease-standard), height 500ms var(--ease-standard), left 500ms var(--ease-standard), opacity 350ms, top 500ms var(--ease-standard), transform 500ms var(--ease-standard), width 500ms var(--ease-standard);
 }
@@ -858,6 +862,18 @@ footer a:hover {
   content: "";
   inset: 0;
   position: absolute;
+  z-index: 2;
+}
+
+.upgrade-path__device-logo {
+  filter: contrast(1.08) saturate(1.04);
+  height: auto;
+  mix-blend-mode: multiply;
+  opacity: 0.92;
+  position: relative;
+  transition: width 500ms var(--ease-standard);
+  width: 72%;
+  z-index: 1;
 }
 
 .upgrade-path__device--primary {
@@ -889,6 +905,7 @@ footer a:hover {
 }
 
 .upgrade-path__visual[data-path="tablets"] .upgrade-path__device--secondary { opacity: 0; transform: scale(0.75); }
+.upgrade-path__visual[data-path="tablets"] .upgrade-path__device-logo { width: 34%; }
 .upgrade-path__visual[data-path="compare"] .upgrade-path__device--primary { height: 63%; left: 21%; top: 16%; transform: rotate(-7deg); width: 29%; }
 .upgrade-path__visual[data-path="compare"] .upgrade-path__device--secondary { height: 63%; left: 51%; opacity: 0.88; top: 16%; transform: rotate(7deg); width: 29%; }
 .upgrade-path__visual[data-path="sale"] .upgrade-path__device--primary { height: 67%; left: 25%; top: 14%; transform: rotate(-8deg); width: 31%; }
@@ -954,6 +971,7 @@ footer a:hover {
 @media (prefers-reduced-motion: reduce) {
   .upgrade-path__scan { animation: none; }
   .upgrade-path__device,
+  .upgrade-path__device-logo,
   .upgrade-path__sale-signal,
   .upgrade-path__tab::after { transition: none; }
 }
