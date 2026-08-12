@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { BrandGrid } from "@/components/storefront/brand-grid";
 import { BrandLogoCarousel } from "@/components/storefront/brand-logo-carousel";
 import { BudgetGrid } from "@/components/storefront/budget-grid";
 import { ComparePromo } from "@/components/storefront/compare-promo";
@@ -13,6 +12,7 @@ import { ProductCard } from "@/components/storefront/product-card";
 import { SectionHeading } from "@/components/storefront/section-heading";
 import { StorefrontFooter } from "@/components/storefront/storefront-footer";
 import { StorefrontHeader } from "@/components/storefront/storefront-header";
+import { UpgradePathSection } from "@/components/storefront/upgrade-path-section";
 import { Container } from "@/components/ui/container";
 import { getCatalogProducts } from "@/lib/catalog/server/catalog";
 
@@ -55,12 +55,7 @@ export default async function Home() {
           </Container>
         </section>
 
-        <section className="bg-[var(--color-ice)] py-[var(--space-section)]">
-          <Container className="storefront-container">
-            <SectionHeading align="center" eyebrow="Browse by brand" title="Find your familiar favorites." />
-            <div className="mt-12"><BrandGrid /></div>
-          </Container>
-        </section>
+        <UpgradePathSection />
 
         <section className="upcoming-home-promo">
           <Container className="storefront-container">
