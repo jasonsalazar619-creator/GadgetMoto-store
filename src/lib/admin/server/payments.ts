@@ -3,6 +3,10 @@ import "server-only";
 import { getAuthenticatedAdmin } from "@/lib/admin/server/auth";
 import { createClient } from "@/lib/supabase/server";
 import { getOrderDatabaseClient } from "@/lib/orders/server/postgres-client";
+import {
+  logManualPaymentDatabaseFailure,
+  logManualPaymentReadinessCode,
+} from "@/lib/orders/server/database-diagnostics";
 import type {
   OrderStatus,
   PaymentMethod,
@@ -73,15 +77,39 @@ export async function getAdminPaymentReviews(): Promise<
   readonly AdminPaymentReview[] | null
 > {
   const authorization = await getAuthenticatedAdmin();
-  if (!authorization.ok) return null;
+  if (!authorization.ok) {
+    logManualPaymentReadinessCode(
+      "admin_authorization",
+      authorization.code,
+    );
+    return null;
+  }
 
   const supabase = await createClient();
-  if (!supabase) return null;
+  if (!supabase) {
+    logManualPaymentReadinessCode(
+      "payment_review_rpc",
+      "AUTH_CONFIGURATION_MISSING",
+    );
+    return null;
+  }
 
   const { data, error } = await supabase.rpc(
     "get_manual_payment_reviews",
   );
-  if (error || !data) return null;
+  if (error) {
+    logManualPaymentDatabaseFailure("payment_review_rpc", error);
+    return null;
+  }
+  if (!data) {
+    logManualPaymentReadinessCode(
+      "payment_review_result",
+      "INVALID_DATABASE_RESULT",
+    );
+    return null;
+  }
+
+  if (data.length === 0) return [];
 
   let details: readonly OrderDetailRow[];
   try {
@@ -117,7 +145,8 @@ export async function getAdminPaymentReviews(): Promise<
       )
       order by payments.created_at desc, items.created_at asc, items.id asc
     `;
-  } catch {
+  } catch (error) {
+    logManualPaymentDatabaseFailure("payment_review_details", error);
     return null;
   }
 
@@ -149,6 +178,10 @@ export async function getAdminPaymentReviews(): Promise<
           item.lineTotalCentavos === null,
       )
     ) {
+      logManualPaymentReadinessCode(
+        "payment_review_result",
+        "INVALID_DATABASE_RESULT",
+      );
       return null;
     }
     const firstDetail = orderDetails[0];
@@ -190,7 +223,6 @@ export async function getAdminPaymentReviews(): Promise<
     };
   });
 
-  return reviews.every((review) => review !== null)
-    ? reviews
-    : null;
+  if (!reviews.every((review) => review !== null)) return null;
+  return reviews;
 }

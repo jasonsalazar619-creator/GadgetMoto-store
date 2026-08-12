@@ -4,6 +4,7 @@ import { createHash } from "node:crypto";
 import type postgres from "postgres";
 
 import { getOrderDatabaseClient } from "./postgres-client";
+import { logManualPaymentDatabaseFailure } from "./database-diagnostics";
 import {
   OrderServerError,
   sanitizeOrderServerError,
@@ -824,6 +825,10 @@ export async function createOrder(
       );
     });
   } catch (error) {
-    throw sanitizeOrderServerError(error);
+    const sanitizedError = sanitizeOrderServerError(error);
+    if (sanitizedError.code === "ORDER_CREATION_FAILED") {
+      logManualPaymentDatabaseFailure("order_creation", error);
+    }
+    throw sanitizedError;
   }
 }

@@ -85,9 +85,9 @@ export default async function AdminOrdersPage({
 
       {reviews === null ? (
         <div className="mt-8 rounded-[var(--radius-lg)] border bg-white p-6 shadow-[var(--shadow-sm)]">
-          <h2 className="text-xl font-bold">Payment review unavailable</h2>
+          <h2 className="text-xl font-bold">Payment review is temporarily unavailable.</h2>
           <p className="mt-2 leading-7 text-[var(--color-muted)]">
-            The secure manual-payment database update must be deployed before this queue can be used.
+            The manual-payment database connection could not be verified. Check the server configuration or database permissions.
           </p>
         </div>
       ) : reviews.length === 0 ? (
