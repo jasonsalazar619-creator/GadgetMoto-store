@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import { Container } from "@/components/ui/container";
 import { StorefrontPageShell } from "@/components/storefront/storefront-page-shell";
 import { CheckoutForm } from "@/components/checkout/checkout-form";
-import { isOnlineOrderingEnabled } from "@/lib/orders/server/config";
+import {
+  isOnlineOrderingEnabled,
+  isPaymentGatewayEnabled,
+} from "@/lib/orders/server/config";
 
 export const metadata: Metadata = {
   title: "Checkout | GadgetMoTo",
@@ -17,6 +20,7 @@ export default function CheckoutPage() {
       <Container className="storefront-container py-[var(--space-section)]">
         <CheckoutForm
           onlineOrderingEnabled={isOnlineOrderingEnabled()}
+          paymentGatewayEnabled={isPaymentGatewayEnabled()}
         />
       </Container>
     </StorefrontPageShell>

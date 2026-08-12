@@ -21,6 +21,33 @@ export type ProductCondition =
   | "open_box"
   | "refurbished";
 export type ProductBadge = "new" | "sale";
+export type OrderStatus =
+  | "draft"
+  | "pending_review"
+  | "confirmed"
+  | "awaiting_payment"
+  | "paid"
+  | "processing"
+  | "ready_for_pickup"
+  | "shipped"
+  | "completed"
+  | "cancelled";
+export type PaymentStatus =
+  | "pending"
+  | "instructions_pending"
+  | "awaiting_payment"
+  | "processing"
+  | "paid"
+  | "failed"
+  | "cancelled"
+  | "refunded"
+  | "partially_refunded";
+export type PaymentMethod =
+  | "maya_online"
+  | "maya_manual"
+  | "gcash"
+  | "bank_transfer"
+  | "cash_on_pickup";
 
 export type Database = {
   public: {
@@ -264,6 +291,30 @@ export type Database = {
           | "DUPLICATE_SLUG"
           | "DUPLICATE_SKU";
       };
+      get_manual_payment_reviews: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          payment_id: string;
+          public_order_number: string;
+          customer_full_name: string;
+          customer_mobile: string;
+          customer_email: string | null;
+          order_status: OrderStatus;
+          payment_method: PaymentMethod;
+          payment_status: PaymentStatus;
+          merchandise_subtotal_centavos: number;
+          final_total_centavos: number | null;
+          payment_amount_centavos: number | null;
+          created_at: string;
+        }[];
+      };
+      set_manual_payment_status: {
+        Args: {
+          target_payment_id: string;
+          target_status: PaymentStatus;
+        };
+        Returns: boolean;
+      };
     };
     Enums: {
       staff_role: StaffRole;
@@ -271,6 +322,9 @@ export type Database = {
       product_category: ProductCategory;
       product_condition: ProductCondition;
       product_badge: ProductBadge;
+      order_status: OrderStatus;
+      payment_status: PaymentStatus;
+      payment_method: PaymentMethod;
     };
     CompositeTypes: Record<string, never>;
   };

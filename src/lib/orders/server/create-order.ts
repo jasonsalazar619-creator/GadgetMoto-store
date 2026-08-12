@@ -431,8 +431,9 @@ async function createNewOrder(
     throw new OrderServerError("ORDER_CREATION_FAILED");
   }
 
-  // Delivery fee and VAT rules remain unresolved. The final total and initial
-  // payment attempt therefore remain absent and the order awaits review.
+  // Delivery fee and VAT rules remain unresolved, so the final total remains
+  // absent. Manual methods begin in instructions_pending and can never be
+  // treated as paid by this customer-facing order service.
   const publicLookupTokenHash = sha256(confirmationToken);
   const orderRows = await sql<InsertedOrderRow[]>`
     insert into public.orders (
@@ -481,6 +482,28 @@ async function createNewOrder(
   const publicOrderNumber = orderRows[0]?.public_order_number;
   if (!orderId || !publicOrderNumber) {
     throw new OrderServerError("ORDER_CREATION_FAILED");
+  }
+
+  const manualPaymentPending = request.paymentMethod !== "maya_online";
+  if (manualPaymentPending) {
+    const paymentRows = await sql<IdentifierRow[]>`
+      insert into public.payments (
+        order_id,
+        method,
+        status,
+        amount_centavos
+      )
+      values (
+        ${orderId},
+        ${request.paymentMethod}::public.payment_method,
+        'instructions_pending'::public.payment_status,
+        null
+      )
+      returning id
+    `;
+    if (!paymentRows[0]) {
+      throw new OrderServerError("ORDER_CREATION_FAILED");
+    }
   }
 
   if (request.fulfillment.method !== "store_pickup") {
@@ -657,7 +680,9 @@ async function createNewOrder(
     wasReplay: false,
     publicOrderNumber,
     orderStatus: "pending_review",
-    paymentStatus: "not_created",
+    paymentStatus: manualPaymentPending
+      ? "instructions_pending"
+      : "not_created",
     fulfillmentMethod: request.fulfillment.method,
     confirmedSubtotalCentavos: subtotalCentavos.toString(),
     confirmedDeliveryFeeCentavos: null,

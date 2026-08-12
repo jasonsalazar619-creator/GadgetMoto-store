@@ -39,6 +39,25 @@ type FieldName = keyof Values;
 type OrderResult = Readonly<{
   publicOrderNumber: string;
   wasReplay: boolean;
+  customer: Readonly<{
+    fullName: string;
+    mobile: string;
+    email: string;
+  }>;
+  delivery: Readonly<{
+    method: string;
+    address: string;
+  }>;
+  paymentLabel: string;
+  items: readonly Readonly<{
+    lineId: string;
+    productName: string;
+    variant: string;
+    quantity: number;
+    unitPrice: number;
+    lineTotal: number;
+  }>[];
+  subtotal: number;
 }>;
 
 const initialValues: Values = {
@@ -177,8 +196,10 @@ const getCustomerError = (
 
 export function CheckoutForm({
   onlineOrderingEnabled,
+  paymentGatewayEnabled,
 }: {
   onlineOrderingEnabled: boolean;
+  paymentGatewayEnabled: boolean;
 }) {
   const { items, subtotal, clearCart } = useCart();
   const { productBySlug } = useCatalog();
@@ -478,6 +499,25 @@ export function CheckoutForm({
       setOrderResult({
         publicOrderNumber: responseBody.publicOrderNumber,
         wasReplay: responseBody.wasReplay,
+        customer: {
+          fullName: values.fullName,
+          mobile: values.mobile,
+          email: values.email,
+        },
+        delivery: {
+          method: deliveryLabels[values.delivery],
+          address: `${values.street}, ${values.barangay}, ${values.city}, ${values.province} ${values.postal}`,
+        },
+        paymentLabel: paymentLabels[values.payment],
+        items: items.map((item) => ({
+          lineId: item.lineId,
+          productName: item.product.name,
+          variant: item.variant,
+          quantity: item.quantity,
+          unitPrice: item.product.currentPrice,
+          lineTotal: item.lineTotal,
+        })),
+        subtotal,
       });
       setReviewed(false);
       try {
@@ -534,12 +574,14 @@ export function CheckoutForm({
         id="checkout-order-result"
         tabIndex={-1}
       >
-        <p className="type-eyebrow">ORDER RECEIVED</p>
-        <h2>Order received</h2>
+        <p className="type-eyebrow">PAYMENT VERIFICATION PENDING</p>
+        <h2>Order Submitted</h2>
         <strong>
-          Your order has been received for availability and final-total
-          review. No payment has been processed.
+          Thank you! Your order has been received. Payment verification
+          will be handled manually by GadgetMoTo. We will confirm your
+          order once your payment has been verified.
         </strong>
+        <p>Your order has been submitted and is awaiting payment verification.</p>
         <p className="checkout-order-number">
           <span>Public order number</span>
           {orderResult.publicOrderNumber}
@@ -550,6 +592,64 @@ export function CheckoutForm({
             was created.
           </p>
         ) : null}
+        <section className="checkout-contact-summary">
+          <h3>Manual Payment</h3>
+          <p>
+            Please complete your payment using the payment instructions
+            provided and wait for confirmation from GadgetMoTo.
+          </p>
+          <p>
+            Payment instructions will be provided by GadgetMoTo after
+            your order is submitted.
+          </p>
+        </section>
+        <div className="checkout-review-grid">
+          <section>
+            <h3>Customer</h3>
+            <p>
+              {orderResult.customer.fullName}
+              <br />
+              {orderResult.customer.mobile}
+              {orderResult.customer.email ? (
+                <>
+                  <br />
+                  {orderResult.customer.email}
+                </>
+              ) : null}
+            </p>
+          </section>
+          <section>
+            <h3>Delivery</h3>
+            <p>
+              {orderResult.delivery.method}
+              <br />
+              {orderResult.delivery.address}
+            </p>
+          </section>
+          <section>
+            <h3>Payment preference</h3>
+            <p>{orderResult.paymentLabel}</p>
+          </section>
+          <section>
+            <h3>Products</h3>
+            {orderResult.items.map((item) => (
+              <p key={item.lineId}>
+                {item.productName} · {item.variant} · Qty {item.quantity} ·{" "}
+                {money.format(item.lineTotal)}
+              </p>
+            ))}
+          </section>
+        </div>
+        <dl>
+          <div>
+            <dt>Merchandise subtotal</dt>
+            <dd>{money.format(orderResult.subtotal)}</dd>
+          </div>
+          <div>
+            <dt>Final payable amount</dt>
+            <dd>Pending VAT, delivery, availability, and payment review</dd>
+          </div>
+        </dl>
         <p>
           Keep this complete order number. GadgetMoTo will confirm
           availability, delivery fees, VAT treatment, final payable
@@ -598,8 +698,8 @@ export function CheckoutForm({
         </p>
         <h1>Review your GadgetMoTo order.</h1>
         <p>
-          Provide delivery details and review your cart before contacting
-          our sales team.
+          Provide delivery details, choose a manual payment preference,
+          and review your cart before submitting your order.
         </p>
       </div>
       {!onlineOrderingEnabled ? (
@@ -770,15 +870,33 @@ export function CheckoutForm({
 
           <section className="checkout-section">
             <fieldset>
-              <legend>4. Payment Method</legend>
+              <legend>4. Manual Payment Approval</legend>
+              <div className="checkout-contact-summary">
+                <h3>Manual Payment</h3>
+                <p>
+                  Please complete your payment using the payment
+                  instructions provided and wait for confirmation from
+                  GadgetMoTo.
+                </p>
+                <p>
+                  Payment instructions will be provided by GadgetMoTo
+                  after your order is submitted.
+                </p>
+              </div>
               <div className="checkout-options">
                 {(
-                  [
-                    "maya-online",
-                    "maya-transfer",
-                    "gcash",
-                    "bank",
-                  ] as Exclude<Payment, "">[]
+                  paymentGatewayEnabled
+                    ? ([
+                        "maya-online",
+                        "maya-transfer",
+                        "gcash",
+                        "bank",
+                      ] as Exclude<Payment, "">[])
+                    : ([
+                        "maya-transfer",
+                        "gcash",
+                        "bank",
+                      ] as Exclude<Payment, "">[])
                 ).map((method) => (
                   <label key={method}>
                     <input
@@ -792,8 +910,8 @@ export function CheckoutForm({
                       <strong>{paymentLabels[method]}</strong>
                       <small>
                         {method === "maya-online"
-                          ? "Informational only. Maya payment integration remains pending, and no payment will be processed."
-                          : "Informational only. Payment instructions are provided after availability and delivery are confirmed."}
+                          ? "Automated Maya checkout is available only when the server-side gateway feature is enabled."
+                          : "Payment instructions are provided after the order is submitted and reviewed."}
                       </small>
                     </span>
                   </label>

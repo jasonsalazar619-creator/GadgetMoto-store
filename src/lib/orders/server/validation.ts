@@ -1,5 +1,6 @@
 import "server-only";
 
+import { isPaymentGatewayEnabled } from "./config";
 import { OrderServerError } from "./order-error";
 import {
   fulfillmentMethods,
@@ -145,6 +146,9 @@ const readPaymentMethod = (value: unknown): SupportedPaymentMethod => {
     typeof value !== "string" ||
     !isSupportedPaymentMethod(value)
   ) {
+    throw new OrderServerError("UNSUPPORTED_PAYMENT_METHOD");
+  }
+  if (value === "maya_online" && !isPaymentGatewayEnabled()) {
     throw new OrderServerError("UNSUPPORTED_PAYMENT_METHOD");
   }
   return value;

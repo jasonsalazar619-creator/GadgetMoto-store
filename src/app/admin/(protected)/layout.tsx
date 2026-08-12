@@ -38,6 +38,12 @@ export default async function ProtectedAdminLayout({
           </Link>
           <Link
             className="rounded-[var(--radius-sm)] px-4 py-3 font-bold hover:bg-white/10"
+            href="/admin/orders"
+          >
+            Orders &amp; payments
+          </Link>
+          <Link
+            className="rounded-[var(--radius-sm)] px-4 py-3 font-bold hover:bg-white/10"
             href="/admin/products/new"
           >
             Add product
@@ -87,6 +93,12 @@ export default async function ProtectedAdminLayout({
               href="/admin/products"
             >
               Products
+            </Link>
+            <Link
+              className="min-h-11 shrink-0 rounded-[var(--radius-round)] border bg-white px-5 py-2.5 font-bold text-[var(--color-action)]"
+              href="/admin/orders"
+            >
+              Orders &amp; payments
             </Link>
             <Link
               className="min-h-11 shrink-0 rounded-[var(--radius-round)] border bg-white px-5 py-2.5 font-bold text-[var(--color-action)]"
