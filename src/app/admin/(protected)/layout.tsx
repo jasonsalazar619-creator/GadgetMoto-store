@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
-import { BrandLockup } from "@/components/brand/brand-lockup";
 import { signOutAction } from "@/app/admin/(protected)/actions";
 import { requireAuthenticatedAdmin } from "@/lib/admin/server/auth";
 
@@ -19,8 +19,16 @@ export default async function ProtectedAdminLayout({
   return (
     <div className="min-h-screen bg-[var(--color-ice)] lg:grid lg:grid-cols-[18rem_minmax(0,1fr)]">
       <aside className="hidden min-h-screen flex-col bg-[var(--color-ink)] p-6 text-white lg:flex">
-        <div className="rounded-[var(--radius-md)] bg-white p-4">
-          <BrandLockup variant="compact" />
+        <div className="rounded-[var(--radius-md)] bg-white p-3">
+          <Image
+            alt="GadgetMoTo"
+            className="mx-auto h-auto w-full max-w-36 object-contain"
+            height={900}
+            priority
+            sizes="9rem"
+            src="/brand/gadgetmoto-admin-logo.jpg"
+            width={901}
+          />
         </div>
         <p className="mt-5 type-eyebrow text-sky-300">Admin workspace</p>
         <nav aria-label="Admin navigation" className="mt-8 grid gap-2">
@@ -68,7 +76,15 @@ export default async function ProtectedAdminLayout({
       <div className="min-w-0">
         <header className="border-b bg-white px-[var(--space-page)] py-4 lg:hidden">
           <div className="flex flex-wrap items-center justify-between gap-4">
-            <BrandLockup variant="compact" />
+            <Image
+              alt="GadgetMoTo"
+              className="h-auto w-20 object-contain"
+              height={900}
+              priority
+              sizes="5rem"
+              src="/brand/gadgetmoto-admin-logo.jpg"
+              width={901}
+            />
             <form action={signOutAction}>
               <button
                 className="min-h-11 rounded-[var(--radius-round)] border px-4 text-sm font-bold text-[var(--color-action)]"

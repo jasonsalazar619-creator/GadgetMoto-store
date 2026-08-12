@@ -28,7 +28,7 @@ export default async function AdminLoginPage() {
           height={900}
           priority
           sizes="(max-width: 640px) 10rem, 12rem"
-          src="/brand/gadgetmoto-logo-original.jpg"
+          src="/brand/gadgetmoto-admin-logo.jpg"
           width={901}
         />
         <p className="mt-7 text-center type-eyebrow text-[var(--color-action)]">
