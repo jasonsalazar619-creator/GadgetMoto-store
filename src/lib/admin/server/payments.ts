@@ -73,6 +73,9 @@ const readCentavos = (value: string | number): number | null => {
   return Number.isSafeInteger(parsed) && parsed >= 0 ? parsed : null;
 };
 
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 export async function getAdminPaymentReviews(): Promise<
   readonly AdminPaymentReview[] | null
 > {
@@ -111,6 +114,15 @@ export async function getAdminPaymentReviews(): Promise<
 
   if (data.length === 0) return [];
 
+  const paymentIds = data.map((row) => row.payment_id);
+  if (!paymentIds.every((paymentId) => UUID_PATTERN.test(paymentId))) {
+    logManualPaymentReadinessCode(
+      "payment_review_result",
+      "INVALID_DATABASE_RESULT",
+    );
+    return null;
+  }
+
   let details: readonly OrderDetailRow[];
   try {
     const database = getOrderDatabaseClient();
@@ -141,7 +153,7 @@ export async function getAdminPaymentReviews(): Promise<
       left join public.product_variants as variants
         on variants.id = items.variant_id
       where payments.id = any(
-        ${database.array(data.map((row) => row.payment_id))}::uuid[]
+        ${database.array(paymentIds, 2950)}
       )
       order by payments.created_at desc, items.created_at asc, items.id asc
     `;
