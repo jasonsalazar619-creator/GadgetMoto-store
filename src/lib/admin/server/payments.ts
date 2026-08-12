@@ -152,8 +152,8 @@ export async function getAdminPaymentReviews(): Promise<
         on addresses.order_id = orders.id
       left join public.product_variants as variants
         on variants.id = items.variant_id
-      where payments.id = any(
-        ${database.array(paymentIds, 2950)}
+      where payments.id::text = any(
+        ${database.array(paymentIds)}::text[]
       )
       order by payments.created_at desc, items.created_at asc, items.id asc
     `;
