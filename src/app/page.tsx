@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { BrandGrid } from "@/components/storefront/brand-grid";
+import { BrandLogoCarousel } from "@/components/storefront/brand-logo-carousel";
 import { BudgetGrid } from "@/components/storefront/budget-grid";
 import { ComparePromo } from "@/components/storefront/compare-promo";
 import { ContactOrderSection } from "@/components/storefront/contact-order-section";
@@ -43,6 +44,7 @@ export default async function Home() {
       <StorefrontHeader />
       <main className="storefront-main">
         <HeroSection />
+        <BrandLogoCarousel />
 
         <section className="py-[var(--space-section)]" id="new-arrivals">
           <Container className="storefront-container">
