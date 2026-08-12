@@ -10,7 +10,7 @@ Checkout collects full name, Philippine mobile number, email, conditional street
 
 ## Delivery and payment behavior
 
-Nationwide and same-day delivery require address fields. Store pickup preserves typed address state while hiding it as unnecessary. Delivery, timing, courier, fees, exact pickup location, and schedule remain pending confirmation. Payment choices are Maya online preview, Maya manual transfer, GCash, bank transfer, and pickup-only cash. Switching from pickup to delivery clears incompatible cash-on-pickup state and provides guidance. No payment credentials or proof are collected.
+Nationwide and same-day delivery require address fields. Store pickup preserves typed address state while hiding it as unnecessary. Delivery, timing, courier, fees, exact pickup location, and schedule remain pending confirmation. Payment choices include Maya online when enabled, Maya manual transfer, GCash, and bank transfer. A financing-inquiry option is available only when every cart item is marked financing-eligible. It does not create an order or financing application: after explicit acknowledgement, the browser prepares and copies the entered customer, address, product, variant, color, quantity, current cash-price, subtotal, and delivery-preference details, then opens the official GadgetMoTo Messenger conversation for the customer to review, paste, and send. No personal details are placed in the Messenger URL, and no financing provider, installment amount, term, fee, eligibility, or approval is assumed. No payment credentials or proof are collected.
 
 ## Confirmations and review-only flow
 

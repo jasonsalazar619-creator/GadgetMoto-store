@@ -18,6 +18,7 @@ type Payment =
   | "maya-transfer"
   | "gcash"
   | "bank"
+  | "financing"
   | "";
 type Values = {
   fullName: string;
@@ -34,6 +35,7 @@ type Values = {
   privacy: boolean;
   terms: boolean;
   confirmation: boolean;
+  financingConsent: boolean;
 };
 type FieldName = keyof Values;
 type OrderResult = Readonly<{
@@ -79,6 +81,7 @@ const initialValues: Values = {
   privacy: false,
   terms: false,
   confirmation: false,
+  financingConsent: false,
 };
 const money = new Intl.NumberFormat("en-PH", {
   style: "currency",
@@ -87,6 +90,7 @@ const money = new Intl.NumberFormat("en-PH", {
 });
 const messengerUrl =
   "https://www.facebook.com/profile.php?id=100063905416187";
+const messengerConversationUrl = "https://m.me/100063905416187";
 const idempotencyStorageKey = "gadgetmoto:checkout:idempotency:v1";
 const uuidV4Pattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -102,9 +106,10 @@ const paymentLabels: Record<Exclude<Payment, "">, string> = {
   "maya-transfer": "Maya Manual Transfer",
   gcash: "GCash",
   bank: "Bank Transfer",
+  financing: "Financing Inquiry via Messenger",
 };
 const paymentMethods: Record<
-  Exclude<Payment, "">,
+  Exclude<Payment, "" | "financing">,
   "maya_online" | "maya_manual" | "gcash" | "bank_transfer"
 > = {
   "maya-online": "maya_online",
@@ -231,6 +236,9 @@ export function CheckoutForm({
         `${item.productSlug}:${item.product.sku}:${item.color?.id ?? "no-color"}:${item.quantity}`,
     )
     .join("|");
+  const financingEligible =
+    items.length > 0 &&
+    items.every((item) => item.product.financingAvailable);
 
   const ensureIdempotencyKey = useCallback((): string => {
     if (
@@ -341,6 +349,14 @@ export function CheckoutForm({
       next.postal = "Enter a valid four-digit postal code.";
     }
     if (!values.payment) next.payment = "Choose a payment method.";
+    if (values.payment === "financing" && !financingEligible) {
+      next.payment =
+        "Financing inquiries are unavailable for one or more cart items.";
+    }
+    if (values.payment === "financing" && !values.financingConsent) {
+      next.financingConsent =
+        "Confirm that you will review the copied details before sending them through Messenger.";
+    }
     if (!values.privacy) {
       next.privacy = "Privacy Policy agreement is required.";
     }
@@ -385,6 +401,12 @@ export function CheckoutForm({
   };
 
   const submitOrder = async () => {
+    if (values.payment === "financing") {
+      setSubmissionError(
+        "Financing inquiries continue through Messenger and are not submitted as online orders.",
+      );
+      return;
+    }
     if (!onlineOrderingEnabled) {
       setSubmissionError(
         "Online order submission is currently unavailable. Please contact us to complete your order.",
@@ -565,6 +587,30 @@ export function CheckoutForm({
     "Please confirm product availability, delivery charges, and payment instructions.",
   ].join("\n");
 
+  const financingSummary = [
+    "GadgetMoTo financing inquiry",
+    "",
+    `NAME: ${values.fullName.trim()}`,
+    `ADDRESS: ${values.street.trim()}, ${values.barangay.trim()}, ${values.city.trim()}, ${values.province.trim()} ${values.postal.trim()}`,
+    `CONTACT: ${values.mobile.trim()}`,
+    `EMAIL: ${values.email.trim() || "Not provided"}`,
+    "",
+    "PRODUCT DETAILS:",
+    ...items.flatMap((item, index) => [
+      `${index + 1}. UNIT: ${item.product.name}`,
+      `   VARIANT: ${item.variant}`,
+      ...(item.color ? [`   COLOR: ${item.color.name}`] : []),
+      `   QUANTITY: ${item.quantity}`,
+      `   CURRENT CASH PRICE: ${money.format(item.product.currentPrice)} each`,
+    ]),
+    "",
+    `CURRENT MERCHANDISE SUBTOTAL: ${money.format(subtotal)}`,
+    `DELIVERY PREFERENCE: ${deliveryLabels[values.delivery]}`,
+    "",
+    "Please confirm the available financing provider, eligibility requirements, installment price, term, down payment, fees, and approval process.",
+    "No financing application or payment has been submitted through the website.",
+  ].join("\n");
+
   const copyContactSummary = async () => {
     try {
       await navigator.clipboard.writeText(contactSummary);
@@ -574,6 +620,19 @@ export function CheckoutForm({
     } catch {
       setGuidance(
         "Messenger is opening. The same order summary remains visible below for you to copy.",
+      );
+    }
+  };
+
+  const copyFinancingSummary = async () => {
+    try {
+      await navigator.clipboard.writeText(financingSummary);
+      setGuidance(
+        "Financing inquiry copied. Messenger is opening—paste, review, and send the details when you are ready.",
+      );
+    } catch {
+      setGuidance(
+        "Messenger is opening. Copy the financing inquiry shown below, then review it before sending.",
       );
     }
   };
@@ -718,8 +777,8 @@ export function CheckoutForm({
         </p>
         <h1>Review your GadgetMoTo order.</h1>
         <p>
-          Provide delivery details, choose a manual payment preference,
-          and review your cart before submitting your order.
+          Provide delivery details, choose a payment or financing
+          preference, and review your cart before continuing.
         </p>
       </div>
       {!onlineOrderingEnabled ? (
@@ -890,9 +949,9 @@ export function CheckoutForm({
 
           <section className="checkout-section">
             <fieldset>
-              <legend>4. Manual Payment Approval</legend>
+              <legend>4. Payment or Financing Preference</legend>
               <div className="checkout-contact-summary">
-                <h3>Manual Payment</h3>
+                <h3>Payment preference</h3>
                 <p>
                   Please complete your payment using the payment
                   instructions provided and wait for confirmation from
@@ -917,10 +976,16 @@ export function CheckoutForm({
                         "gcash",
                         "bank",
                       ] as Exclude<Payment, "">[])
-                ).map((method) => (
+                )
+                  .concat("financing")
+                  .map((method) => {
+                  const financingUnavailable =
+                    method === "financing" && !financingEligible;
+                  return (
                   <label key={method}>
                     <input
                       checked={values.payment === method}
+                      disabled={financingUnavailable}
                       name="payment"
                       onChange={() => update("payment", method)}
                       type="radio"
@@ -931,12 +996,45 @@ export function CheckoutForm({
                       <small>
                         {method === "maya-online"
                           ? "Automated Maya checkout is available only when the server-side gateway feature is enabled."
+                          : method === "financing"
+                            ? financingUnavailable
+                              ? "One or more cart items are not currently marked as financing-eligible."
+                              : "Prepare your checkout details, then continue through GadgetMoTo Messenger. Provider, terms, fees, and approval remain subject to confirmation."
                           : "Payment instructions are provided after the order is submitted and reviewed."}
                       </small>
                     </span>
                   </label>
-                ))}
+                  );
+                })}
               </div>
+              {values.payment === "financing" ? (
+                <div className="checkout-financing-notice">
+                  <strong>Financing inquiry only</strong>
+                  <p>
+                    The website will not submit a financing application or
+                    calculate installment amounts. Your entered contact,
+                    address, and product details will be copied locally for
+                    you to review before sending them to GadgetMoTo through
+                    Facebook Messenger.
+                  </p>
+                  <label>
+                    <input
+                      aria-invalid={!!errors.financingConsent}
+                      checked={values.financingConsent}
+                      onChange={(event) =>
+                        update("financingConsent", event.target.checked)
+                      }
+                      type="checkbox"
+                    />
+                    I agree to prepare these checkout details for sharing
+                    with GadgetMoTo through Facebook Messenger, and I will
+                    review them before sending.
+                  </label>
+                  {errors.financingConsent ? (
+                    <small>{errors.financingConsent}</small>
+                  ) : null}
+                </div>
+              ) : null}
               {errors.payment ? (
                 <small className="checkout-group-error">
                   {errors.payment}
@@ -1092,12 +1190,16 @@ export function CheckoutForm({
         >
           <p className="type-eyebrow">ORDER REVIEW READY</p>
           <h2>
-            {onlineOrderingEnabled
+            {values.payment === "financing"
+              ? "Review your financing inquiry before contacting us."
+              : onlineOrderingEnabled
               ? "Review your details before submitting."
               : "Review your details before contacting us."}
           </h2>
           <strong>
-            {onlineOrderingEnabled
+            {values.payment === "financing"
+              ? "Your details will be copied locally for you to review, paste, and send through GadgetMoTo Messenger. No financing application or order is submitted by this action."
+              : onlineOrderingEnabled
               ? "Submitting receives the order for review. It does not process a payment or mark the order as paid."
               : "Online submission is unavailable. Use the contact action below to continue deliberately through Messenger."}
           </strong>
@@ -1127,7 +1229,9 @@ export function CheckoutForm({
                   ? paymentLabels[values.payment]
                   : "Not selected"}
                 <br />
-                No payment has been authorized or processed.
+                {values.payment === "financing"
+                  ? "No financing application, approval, or payment has occurred."
+                  : "No payment has been authorized or processed."}
               </p>
             </section>
             <section>
@@ -1162,7 +1266,24 @@ export function CheckoutForm({
               </dd>
             </div>
           </dl>
-          {!onlineOrderingEnabled ? (
+          {values.payment === "financing" ? (
+            <section
+              aria-labelledby="checkout-financing-summary-title"
+              className="checkout-contact-summary checkout-financing-summary"
+            >
+              <h3 id="checkout-financing-summary-title">
+                Financing inquiry for Messenger
+              </h3>
+              <pre>{financingSummary}</pre>
+              <p>
+                This contains the personal and delivery details you entered.
+                It stays in this browser until you choose the action below;
+                review the copied message before sending it through Facebook
+                Messenger. Never add passwords, PINs, OTPs, card numbers, or
+                banking credentials.
+              </p>
+            </section>
+          ) : !onlineOrderingEnabled ? (
             <section
               aria-labelledby="checkout-contact-summary-title"
               className="checkout-contact-summary"
@@ -1190,7 +1311,19 @@ export function CheckoutForm({
             >
               Edit Checkout Details
             </button>
-            {onlineOrderingEnabled ? (
+            {values.payment === "financing" ? (
+              <a
+                className="checkout-submit-order"
+                href={messengerConversationUrl}
+                onClick={() => {
+                  void copyFinancingSummary();
+                }}
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                Copy details &amp; open Messenger
+              </a>
+            ) : onlineOrderingEnabled ? (
               <button
                 className="checkout-submit-order"
                 disabled={submitting}
