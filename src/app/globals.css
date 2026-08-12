@@ -395,6 +395,19 @@ footer a:hover {
   z-index: 2;
 }
 
+.hero-phone__logo {
+  filter: contrast(1.08) saturate(1.04);
+  height: auto;
+  left: 50%;
+  mix-blend-mode: multiply;
+  opacity: 0.92;
+  position: absolute;
+  top: 52%;
+  transform: translate(-50%, -50%);
+  width: 78%;
+  z-index: 1;
+}
+
 .hero-float-card {
   backdrop-filter: blur(12px);
   background: rgb(255 255 255 / 0.82);

@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { Container } from "@/components/ui/container";
 import { HeroMotion } from "./hero-motion";
 
@@ -19,7 +20,18 @@ function HeroDevice({ type }: { type: "phone" | "tablet" }) {
       <div className="hero-motion-layer" data-hero-device-ambient={type}>
         <div className="hero-motion-layer" data-hero-device-pointer={type}>
           <div className={`hero-${type}`} data-hero-device-visual={type}>
-            <span />
+            <span>
+              {type === "phone" ? (
+                <Image
+                  alt=""
+                  className="hero-phone__logo"
+                  height={900}
+                  sizes="(max-width: 767px) 7rem, 10rem"
+                  src="/brand/gadgetmoto-admin-logo.jpg"
+                  width={901}
+                />
+              ) : null}
+            </span>
             {type === "phone" ? <i /> : null}
           </div>
         </div>
