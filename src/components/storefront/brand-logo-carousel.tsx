@@ -16,7 +16,6 @@ const brands = [
 export function BrandLogoCarousel() {
   const trackRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [paused, setPaused] = useState(false);
   const [interacting, setInteracting] = useState(false);
 
   const scrollToBrand = useCallback((index: number) => {
@@ -33,14 +32,14 @@ export function BrandLogoCarousel() {
 
   useEffect(() => {
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    if (paused || interacting || reducedMotion.matches) return;
+    if (interacting || reducedMotion.matches) return;
 
     const timer = window.setInterval(() => {
       scrollToBrand(activeIndex + 1);
     }, 3200);
 
     return () => window.clearInterval(timer);
-  }, [activeIndex, interacting, paused, scrollToBrand]);
+  }, [activeIndex, interacting, scrollToBrand]);
 
   const syncActiveBrand = () => {
     const track = trackRef.current;
@@ -70,36 +69,10 @@ export function BrandLogoCarousel() {
     >
       <Container className="storefront-container">
         <div className="brand-carousel__heading">
-          <div>
-            <p className="type-eyebrow text-[var(--color-action)]">Explore by brand</p>
-            <h2 className="brand-carousel__title" id="brand-carousel-title">
-              The names behind your next upgrade.
-            </h2>
-          </div>
-          <div aria-label="Brand carousel controls" className="brand-carousel__controls">
-            <button
-              aria-label="Previous brand"
-              onClick={() => scrollToBrand(activeIndex - 1)}
-              type="button"
-            >
-              <span aria-hidden="true">←</span>
-            </button>
-            <button
-              aria-label={paused ? "Play brand carousel" : "Pause brand carousel"}
-              aria-pressed={paused}
-              onClick={() => setPaused((current) => !current)}
-              type="button"
-            >
-              <span aria-hidden="true">{paused ? "▶" : "Ⅱ"}</span>
-            </button>
-            <button
-              aria-label="Next brand"
-              onClick={() => scrollToBrand(activeIndex + 1)}
-              type="button"
-            >
-              <span aria-hidden="true">→</span>
-            </button>
-          </div>
+          <p className="type-eyebrow text-[var(--color-action)]">Explore by brand</p>
+          <h2 className="brand-carousel__title" id="brand-carousel-title">
+            The names behind your next upgrade.
+          </h2>
         </div>
 
         <div className="brand-carousel__frame">

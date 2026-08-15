@@ -438,10 +438,6 @@ footer a:hover {
 }
 
 .brand-carousel__heading {
-  align-items: end;
-  display: flex;
-  gap: 2rem;
-  justify-content: space-between;
   margin-bottom: clamp(1.5rem, 3vw, 2.25rem);
 }
 
@@ -456,35 +452,6 @@ footer a:hover {
   max-width: 18ch;
 }
 
-.brand-carousel__controls {
-  display: flex;
-  flex: 0 0 auto;
-  gap: 0.5rem;
-}
-
-.brand-carousel__controls button {
-  align-items: center;
-  background: white;
-  border: 1px solid var(--color-border-strong);
-  border-radius: 999px;
-  color: var(--color-ink);
-  display: inline-flex;
-  font-size: 1rem;
-  font-weight: 800;
-  height: 2.9rem;
-  justify-content: center;
-  transition: background var(--duration-fast), border-color var(--duration-fast), color var(--duration-fast), transform var(--duration-fast);
-  width: 2.9rem;
-}
-
-.brand-carousel__controls button:hover {
-  background: var(--color-action);
-  border-color: var(--color-action);
-  color: white;
-  transform: translateY(-2px);
-}
-
-.brand-carousel__controls button:focus-visible,
 .brand-carousel__track:focus-visible,
 .brand-carousel__slide:focus-visible {
   outline: 3px solid rgb(36 127 229 / 0.28);
@@ -621,16 +588,13 @@ footer a:hover {
 .brand-carousel__slide--tecno { --brand-accent: #247fe5; --brand-glow: rgb(36 127 229 / 0.18); }
 
 @media (max-width: 639px) {
-  .brand-carousel__heading { align-items: flex-start; flex-direction: column; gap: 1rem; }
   .brand-carousel__title { font-size: 1.75rem; }
-  .brand-carousel__controls button { height: 2.65rem; width: 2.65rem; }
   .brand-carousel__track { --brand-slide-size: min(78vw, 18rem); }
   .brand-carousel__slide { min-height: 10.5rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .brand-carousel__track { scroll-behavior: auto; }
-  .brand-carousel__controls button,
   .brand-carousel__slide,
   .brand-carousel__slide::before { transition: none; }
 }
