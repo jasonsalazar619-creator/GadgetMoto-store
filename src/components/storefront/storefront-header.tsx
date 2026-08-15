@@ -22,7 +22,7 @@ export function StorefrontHeader() {
           <Link className="nav-link" href="/sale">Sale</Link>
           <Link className="nav-link" href="/coming-soon">Coming Soon</Link>
           <ComparisonCountLink />
-          <Link className="nav-link" href="/#payments">Financing</Link>
+          <Link className="nav-link" href="/checkout">Financing</Link>
           <Link className="nav-link" href="/contact">Contact</Link>
         </nav>
         <div className="flex items-center gap-2">
@@ -39,7 +39,7 @@ export function StorefrontHeader() {
           <Link className="whitespace-nowrap" href="/sale">Sale</Link>
           <Link className="whitespace-nowrap" href="/coming-soon">Coming Soon</Link>
           <ComparisonCountLink mobile />
-          <Link className="whitespace-nowrap" href="/#payments">Ways to pay</Link>
+          <Link className="whitespace-nowrap" href="/checkout">Ways to pay</Link>
           <Link className="whitespace-nowrap" href="/contact">Contact</Link>
           <a className="whitespace-nowrap text-[var(--color-action)]" href={messengerUrl} rel="noopener noreferrer" target="_blank">Messenger</a>
         </Container>

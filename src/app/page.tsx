@@ -1,13 +1,10 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 
 import { BrandLogoCarousel } from "@/components/storefront/brand-logo-carousel";
 import { BudgetGrid } from "@/components/storefront/budget-grid";
-import { ComparePromo } from "@/components/storefront/compare-promo";
 import { ContactOrderSection } from "@/components/storefront/contact-order-section";
 import { DeliveryOptions } from "@/components/storefront/delivery-options";
 import { HeroSection } from "@/components/storefront/hero-section";
-import { PaymentOptions } from "@/components/storefront/payment-options";
 import { ProductCard } from "@/components/storefront/product-card";
 import { SectionHeading } from "@/components/storefront/section-heading";
 import { StorefrontFooter } from "@/components/storefront/storefront-footer";
@@ -57,22 +54,6 @@ export default async function Home() {
 
         <UpgradePathSection />
 
-        <section className="upcoming-home-promo">
-          <Container className="storefront-container">
-            <div>
-              <p className="type-eyebrow text-[var(--color-action)]">Coming soon</p>
-              <h2>See what could be your next upgrade.</h2>
-              <p>
-                Browse 68 new product previews while GadgetMoTo confirms their
-                exact variants, pricing, and availability.
-              </p>
-            </div>
-            <Link className="button-link button-link--primary" href="/coming-soon">
-              Explore product previews
-            </Link>
-          </Container>
-        </section>
-
         <section className="py-[var(--space-section)]">
           <Container className="storefront-container">
             <SectionHeading eyebrow="Shop by budget" title="Start with what feels right." description="Choose a price range to open the matching catalog selection." />
@@ -89,8 +70,6 @@ export default async function Home() {
           </Container>
         </section>
 
-        <ComparePromo />
-        <PaymentOptions />
         <DeliveryOptions />
 
         <section className="bg-white py-[var(--space-section)]">
