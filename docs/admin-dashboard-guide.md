@@ -161,6 +161,23 @@ summaries. The server-only active and Coming Soon read models now supply
 approved database edits when database catalog mode is enabled. Static mode
 remains the build-safe and controlled fallback.
 
+## Orders and manual-payment workflow
+
+The protected orders page displays a database-paginated summary table instead
+of expanding every order. PostgreSQL returns exactly ten summaries per page
+with an exact total count. Previous, Next, and numbered controls replace only
+the table data, preserve the page in the URL, support browser Back and Forward,
+cancel stale requests, and recover invalid page numbers to the last valid page.
+
+Customer contact, delivery address, products, and payment controls load only
+after an administrator selects an order. The protected no-store endpoint and
+every mutation recheck active-administrator authorization. Paid approval
+requires confirmed delivery fee, VAT rate, VAT amount, and received-payment
+amount values; no rate or fee is defaulted or inferred. The database calculates
+the final total, requires the received amount to match, updates the order and
+payment atomically, and appends minimized payment-event and audit records.
+Rejection remains a separate audited status transition.
+
 ## Product colors and pagination boundary
 
 Migration 11, `20260802103548_product_color_variant_schema.sql`, is local and
@@ -182,7 +199,6 @@ interface work from those later phases is included in this checkpoint.
 - 10-record protected AJAX pagination for top-level admin data tables
 - product-image upload, replace, reorder, publication, and deletion
 - inventory-level and movement management
-- order-management tools
 
 ## Troubleshooting
 

@@ -315,6 +315,16 @@ export type Database = {
         };
         Returns: boolean;
       };
+      approve_manual_payment_with_confirmed_amounts: {
+        Args: {
+          target_payment_id: string;
+          target_delivery_fee_centavos: number;
+          target_vat_rate_bps: number;
+          target_vat_amount_centavos: number;
+          target_payment_amount_centavos: number;
+        };
+        Returns: boolean;
+      };
     };
     Enums: {
       staff_role: StaffRole;

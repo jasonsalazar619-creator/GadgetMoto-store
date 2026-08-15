@@ -2,6 +2,10 @@ import "server-only";
 
 type ManualPaymentDatabaseOperation =
   | "admin_authorization"
+  | "payment_approval"
+  | "payment_rejection"
+  | "payment_review_page"
+  | "payment_review_detail"
   | "payment_review_rpc"
   | "payment_review_details"
   | "payment_review_result"

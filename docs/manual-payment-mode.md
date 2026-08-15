@@ -17,8 +17,9 @@
 3. A payment record is created as `instructions_pending`, without a provider identifier or automatic payment request.
 4. GadgetMoTo supplies approved payment instructions separately; no account number, recipient, QR code, or transfer destination is stored in this repository.
 5. An authenticated active administrator reviews the order and payment.
-6. Paid approval is allowed only after the trusted final order total and recorded payment amount both exist and match.
-7. Every administrator payment decision creates an append-only payment event and audit-log entry.
+6. The administrator records the confirmed delivery fee, VAT rate, VAT amount, and received payment amount. The database calculates the final order total from the authoritative merchandise subtotal plus those confirmed components.
+7. Paid approval is allowed only when the recorded payment amount matches that calculated final total.
+8. Every administrator payment decision creates an append-only payment event and audit-log entry.
 
 Customers have no payment-status mutation route. The administrator UI calls only the reviewed database function, which repeats authentication and active-administrator authorization inside the database. Direct browser access to private order and payment tables remains closed by RLS and revoked privileges.
 
@@ -32,6 +33,10 @@ The forward-only migration `20260812113000_manual_payment_approval.sql` adds two
 The migration does not add a table, enum, payment method, public policy, seed record, or customer write path. It must be reviewed and deployed manually before the administrator payment queue can be used. No SQL is executed by the application checkpoint.
 
 The deployed forward-only migration `20260812143000_pending_inventory_order_submission.sql` allows a new fulfillment to remain without an assigned store location only while its status is `pending_confirmation`. The linked dry run listed only this migration, deployment completed successfully, and local and remote migration histories now match. The non-blocking Docker catalog-cache warning did not prevent the remote migration.
+
+The deployed forward-only migration `20260815115315_admin_payment_confirmation.sql` adds one narrowly scoped administrator function. It atomically records confirmed delivery and VAT components, calculates the final total, requires the recorded manual payment to match, transitions the order and payment to paid, and appends both payment-event and audit evidence. Authentication and active-administrator authorization are repeated inside the database. No public table privilege, policy, seed record, payment-provider behavior, or customer mutation path was added.
+
+The administrator orders screen queries exactly ten summary records per page from PostgreSQL, loads one selected order's private details on demand, and updates numbered pagination through a protected no-store endpoint without reloading the page. Browser Back and Forward restore the page query, and stale page or detail requests are cancelled.
 
 This permits a validated manual order to enter review when no inventory or store-location records have been configured, without claiming stock, creating a reservation, or confirming availability. Once inventory configuration exists for a requested variant, the existing availability and reservation checks remain authoritative.
 
