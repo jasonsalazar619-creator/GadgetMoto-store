@@ -492,15 +492,18 @@ footer a:hover {
 }
 
 .brand-carousel__slide {
-  background: rgb(255 255 255 / 0.88);
+  background:
+    linear-gradient(145deg, rgb(255 255 255 / 0.98), rgb(247 251 255 / 0.92));
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
   color: var(--color-ink);
+  display: flex;
   flex: 0 0 var(--brand-slide-size);
-  min-height: 11rem;
+  flex-direction: column;
+  min-height: 13rem;
   overflow: hidden;
-  padding: 1.4rem;
+  padding: 1.1rem;
   position: relative;
   scroll-snap-align: start;
   transition: border-color var(--duration-base), box-shadow var(--duration-base), transform var(--duration-base);
@@ -527,62 +530,94 @@ footer a:hover {
 
 .brand-carousel__slide:hover::before { transform: scale(1.35); }
 
-.brand-carousel__logo {
+.brand-carousel__meta {
   align-items: center;
   display: flex;
-  gap: 0.9rem;
+  font-size: 0.68rem;
+  font-weight: 800;
+  justify-content: space-between;
+  letter-spacing: 0.12em;
+  padding-inline: 0.2rem;
   position: relative;
+  text-transform: uppercase;
   z-index: 1;
 }
 
-.brand-carousel__logo strong {
-  font-family: var(--font-heading);
-  font-size: clamp(1.45rem, 2.4vw, 2rem);
-  font-weight: 800;
-  letter-spacing: -0.045em;
+.brand-carousel__meta span:first-child {
+  color: var(--brand-accent, var(--color-action));
 }
 
-.brand-carousel__mark {
+.brand-carousel__meta span:last-child {
+  color: rgb(23 26 32 / 0.38);
+}
+
+.brand-carousel__logo-stage {
   align-items: center;
-  background: var(--brand-accent, var(--color-action));
-  border-radius: 1rem;
-  color: white;
-  display: inline-flex;
-  flex: 0 0 auto;
-  font-family: var(--font-heading);
-  font-size: 1rem;
-  font-weight: 900;
-  height: 3rem;
+  background:
+    radial-gradient(circle at 50% 50%, var(--brand-glow), transparent 72%),
+    rgb(255 255 255 / 0.78);
+  border: 1px solid rgb(76 145 200 / 0.14);
+  border-radius: calc(var(--radius-lg) - 0.4rem);
+  display: flex;
+  flex: 1 1 auto;
+  margin-top: 0.8rem;
+  min-height: 6.3rem;
   justify-content: center;
-  letter-spacing: -0.05em;
-  text-transform: uppercase;
-  width: 3rem;
+  overflow: hidden;
+  padding: 1.25rem;
+  position: relative;
+  transition: background var(--duration-base), border-color var(--duration-base);
+  z-index: 1;
+}
+
+.brand-carousel__slide:hover .brand-carousel__logo-stage {
+  background:
+    radial-gradient(circle at 50% 50%, var(--brand-glow), transparent 78%),
+    white;
+  border-color: color-mix(in srgb, var(--brand-accent) 34%, white);
+}
+
+.brand-carousel__image {
+  height: auto;
+  max-height: 3.2rem;
+  max-width: 78%;
+  object-fit: contain;
+  position: relative;
+  transition: transform var(--duration-slow);
+  width: auto;
+  z-index: 1;
+}
+
+.brand-carousel__slide:hover .brand-carousel__image {
+  transform: scale(1.06);
+}
+
+.brand-carousel__image--symbol {
+  max-height: 3.7rem;
+  max-width: 3.7rem;
+}
+
+.brand-carousel__image--compact {
+  max-height: 3.6rem;
+  max-width: 6.4rem;
 }
 
 .brand-carousel__link {
-  bottom: 1.35rem;
   color: var(--color-action);
-  font-size: 0.78rem;
+  display: inline-flex;
+  font-size: 0.8rem;
   font-weight: 800;
-  left: 1.4rem;
-  position: absolute;
-}
-
-.brand-carousel__number {
-  bottom: 1rem;
-  color: rgb(23 26 32 / 0.08);
-  font-family: var(--font-heading);
-  font-size: 3.25rem;
-  font-weight: 900;
-  line-height: 1;
-  position: absolute;
-  right: 1.25rem;
+  justify-content: space-between;
+  margin-top: 0.9rem;
+  padding: 0.1rem 0.2rem;
+  position: relative;
+  width: 100%;
+  z-index: 1;
 }
 
 .brand-carousel__slide--xiaomi { --brand-accent: #ff6900; --brand-glow: rgb(255 105 0 / 0.18); }
 .brand-carousel__slide--apple { --brand-accent: #171a20; --brand-glow: rgb(23 26 32 / 0.13); }
 .brand-carousel__slide--poco { --brand-accent: #f1cf00; --brand-glow: rgb(241 207 0 / 0.2); }
-.brand-carousel__slide--poco .brand-carousel__mark { color: #171a20; }
 .brand-carousel__slide--redmi { --brand-accent: #ff4b3e; --brand-glow: rgb(255 75 62 / 0.16); }
 .brand-carousel__slide--infinix { --brand-accent: #6a46ff; --brand-glow: rgb(106 70 255 / 0.16); }
 .brand-carousel__slide--tecno { --brand-accent: #247fe5; --brand-glow: rgb(36 127 229 / 0.18); }
@@ -590,13 +625,14 @@ footer a:hover {
 @media (max-width: 639px) {
   .brand-carousel__title { font-size: 1.75rem; }
   .brand-carousel__track { --brand-slide-size: min(78vw, 18rem); }
-  .brand-carousel__slide { min-height: 10.5rem; }
+  .brand-carousel__slide { min-height: 12.25rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .brand-carousel__track { scroll-behavior: auto; }
   .brand-carousel__slide,
-  .brand-carousel__slide::before { transition: none; }
+  .brand-carousel__slide::before,
+  .brand-carousel__image { transition: none; }
 }
 
 .upgrade-path {

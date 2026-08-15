@@ -1,16 +1,59 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Container } from "@/components/ui/container";
 
 const brands = [
-  { name: "Xiaomi", mark: "mi", tone: "xiaomi" },
-  { name: "Apple", mark: "A", tone: "apple" },
-  { name: "POCO", mark: "P", tone: "poco" },
-  { name: "Redmi", mark: "R", tone: "redmi" },
-  { name: "Infinix", mark: "I", tone: "infinix" },
-  { name: "TECNO", mark: "T", tone: "tecno" },
+  {
+    name: "Xiaomi",
+    logo: "/brands/xiaomi.svg",
+    logoHeight: 512,
+    logoWidth: 512,
+    logoKind: "symbol",
+    tone: "xiaomi",
+  },
+  {
+    name: "Apple",
+    logo: "/brands/apple.svg",
+    logoHeight: 1000,
+    logoWidth: 814,
+    logoKind: "symbol",
+    tone: "apple",
+  },
+  {
+    name: "POCO",
+    logo: "/brands/poco.svg",
+    logoHeight: 60,
+    logoWidth: 106,
+    logoKind: "compact",
+    tone: "poco",
+  },
+  {
+    name: "Redmi",
+    logo: "/brands/redmi.svg",
+    logoHeight: 119,
+    logoWidth: 512,
+    logoKind: "wordmark",
+    tone: "redmi",
+  },
+  {
+    name: "Infinix",
+    logo: "/brands/infinix.svg",
+    logoHeight: 111,
+    logoWidth: 512,
+    logoKind: "wordmark",
+    tone: "infinix",
+  },
+  {
+    name: "TECNO",
+    logo: "/brands/tecno.svg",
+    logoHeight: 103,
+    logoWidth: 512,
+    logoKind: "wordmark",
+    tone: "tecno",
+  },
 ] as const;
 
 export function BrandLogoCarousel() {
@@ -96,17 +139,22 @@ export function BrandLogoCarousel() {
                 href={`/shop?brand=${encodeURIComponent(brand.name)}`}
                 key={brand.name}
               >
-                <span className="brand-carousel__logo">
-                  <span aria-hidden="true" className="brand-carousel__mark">
-                    {brand.mark}
-                  </span>
-                  <strong>{brand.name}</strong>
+                <span className="brand-carousel__meta" aria-hidden="true">
+                  <span>Featured brand</span>
+                  <span>{String(index + 1).padStart(2, "0")}</span>
+                </span>
+                <span className="brand-carousel__logo-stage">
+                  <Image
+                    alt={`${brand.name} logo`}
+                    className={`brand-carousel__image brand-carousel__image--${brand.logoKind}`}
+                    height={brand.logoHeight}
+                    src={brand.logo}
+                    unoptimized
+                    width={brand.logoWidth}
+                  />
                 </span>
                 <span className="brand-carousel__link">
-                  Shop brand <span aria-hidden="true">↗</span>
-                </span>
-                <span aria-hidden="true" className="brand-carousel__number">
-                  {String(index + 1).padStart(2, "0")}
+                  Shop {brand.name} <span aria-hidden="true">↗</span>
                 </span>
               </Link>
             ))}
