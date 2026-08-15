@@ -173,6 +173,19 @@ The bucket is not an arbitrary public-write area. Repository image paths are
 backfilled as catalog metadata; future managed uploads use the product-scoped
 Storage convention.
 
+The per-product gallery workflow is now implemented. Administrators can add a
+validated JPEG, PNG, WebP, or AVIF file, preview it before upload, and remove
+any non-primary gallery assignment. Uploads use generated product-scoped
+object names, an 8 MB application and bucket limit, and a 20-image limit that
+matches the storefront read contract. The primary image is preserved by the
+gallery-removal action, and a product may have zero gallery images.
+
+Migration `20260816113000_admin_product_gallery_storage.sql` adds the missing
+authenticated-administrator read policy for managed objects in the existing
+private bucket. Public Storage reads remain limited to published media owned
+by visible active or Coming Soon products. Product-image insert and delete
+events continue through the existing trigger-enforced audit log.
+
 ## Storefront read models
 
 `storefront.catalog_products` remains the reviewed server-only purchasable

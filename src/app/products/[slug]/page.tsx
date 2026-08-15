@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Container } from "@/components/ui/container";
 import { PriceDisplay } from "@/components/ui/price-display";
-import { ProductArtwork } from "@/components/storefront/product-artwork";
+import { ProductGallery } from "@/components/storefront/product-gallery";
 import { ProductCard } from "@/components/storefront/product-card";
 import { StorefrontPageShell } from "@/components/storefront/storefront-page-shell";
 import { formatProductTitle, getAllProducts } from "@/data/prototype-products";
@@ -67,14 +67,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
       </Container>
       <section className="pb-[var(--space-section)]">
         <Container className="storefront-container product-detail-grid">
-          <div className="product-gallery">
-            <div className={`product-gallery__main product-art--${product.artSeed}`}><ProductArtwork loading="eager" product={product} sizes="(max-width: 1023px) 100vw, 55vw" /></div>
-            <p className="mt-4 text-xs text-[var(--color-muted)]">
-              {product.primaryImage
-                ? "Product appearance may vary by color or regional configuration."
-                : "Product imagery is being prepared. The catalog details remain available below."}
-            </p>
-          </div>
+          <ProductGallery product={product} />
           <div className="product-detail-info">
             <p className="type-eyebrow text-[var(--color-action)]">{product.brand} · {product.category}</p>
             <h1 className="type-h1 mt-5">{product.name}</h1>

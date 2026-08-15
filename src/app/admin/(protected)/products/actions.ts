@@ -13,6 +13,7 @@ import {
 } from "@/lib/admin/server/product-validation";
 import type {
   AdminProductEditorData,
+  ProductImageMutationResult,
   ProductMutationCode,
   ProductMutationResult,
   ProductPromotionResult,
@@ -25,6 +26,7 @@ type ProductUpdate = Database["public"]["Tables"]["products"]["Update"];
 type VariantRow = Database["public"]["Tables"]["product_variants"]["Row"];
 type VariantUpdate =
   Database["public"]["Tables"]["product_variants"]["Update"];
+type ImageRow = Database["public"]["Tables"]["product_images"]["Row"];
 type AuthorizedContext = {
   supabase: SupabaseClient<Database>;
   administratorId: string;
@@ -201,6 +203,263 @@ async function reloadEditor(
   productId: string,
 ): Promise<AdminProductEditorData | null> {
   return adminProductInternals.loadEditorData(supabase, productId);
+}
+
+const imageBucket = "product-images";
+const maximumImageBytes = 8_388_608;
+const maximumImagesPerProduct = 20;
+const imageExtensions = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+  "image/avif": "avif",
+} as const;
+
+function imageFailure(message: string): ProductImageMutationResult {
+  return { ok: false, message };
+}
+
+async function hasMatchingImageSignature(file: File): Promise<boolean> {
+  const bytes = new Uint8Array(await file.slice(0, 16).arrayBuffer());
+  if (file.type === "image/jpeg") {
+    return bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff;
+  }
+  if (file.type === "image/png") {
+    return [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a].every(
+      (value, index) => bytes[index] === value,
+    );
+  }
+  if (file.type === "image/webp") {
+    return (
+      String.fromCharCode(...bytes.slice(0, 4)) === "RIFF" &&
+      String.fromCharCode(...bytes.slice(8, 12)) === "WEBP"
+    );
+  }
+  if (file.type === "image/avif") {
+    const brand = String.fromCharCode(...bytes.slice(8, 12));
+    return (
+      String.fromCharCode(...bytes.slice(4, 8)) === "ftyp" &&
+      ["avif", "avis", "mif1", "msf1"].includes(brand)
+    );
+  }
+  return false;
+}
+
+async function loadProductImages(
+  supabase: SupabaseClient<Database>,
+  productId: string,
+) {
+  const product = await reloadEditor(supabase, productId);
+  return product?.images ?? null;
+}
+
+export async function uploadProductGalleryImageAction(
+  formData: FormData,
+): Promise<ProductImageMutationResult> {
+  const fields = [...formData.keys()].filter(
+    (key) => !key.startsWith("$ACTION_"),
+  );
+  if (
+    fields.length !== 3 ||
+    new Set(fields).size !== 3 ||
+    fields.some((field) => !["productId", "altText", "image"].includes(field))
+  ) {
+    return imageFailure("Invalid image upload request.");
+  }
+
+  const productId = formData.get("productId");
+  const altTextValue = formData.get("altText");
+  const image = formData.get("image");
+  const altText =
+    typeof altTextValue === "string" ? altTextValue.trim() : "";
+
+  if (
+    typeof productId !== "string" ||
+    !isValidUuid(productId) ||
+    !(image instanceof File) ||
+    image.size === 0 ||
+    image.size > maximumImageBytes ||
+    !(image.type in imageExtensions) ||
+    !altText ||
+    altText.length > 300
+  ) {
+    return imageFailure(
+      "Choose a valid JPEG, PNG, WebP, or AVIF image up to 8 MB and include its description.",
+    );
+  }
+
+  if (!(await hasMatchingImageSignature(image))) {
+    return imageFailure("The selected file does not match its image format.");
+  }
+
+  const context = await authorizeMutation();
+  if (!isAuthorizedContext(context)) return imageFailure(context.message);
+
+  const [productResult, imageResult] = await Promise.all([
+    context.supabase
+      .from("products")
+      .select("id, slug")
+      .eq("id", productId)
+      .maybeSingle(),
+    context.supabase
+      .from("product_images")
+      .select("id, sort_order")
+      .eq("product_id", productId)
+      .order("sort_order", { ascending: false }),
+  ]);
+
+  if (productResult.error || !productResult.data) {
+    return imageFailure("The product no longer exists.");
+  }
+  if (imageResult.error || !imageResult.data) {
+    return imageFailure("Product images could not be loaded safely.");
+  }
+  if (imageResult.data.length >= maximumImagesPerProduct) {
+    return imageFailure("This product already has the maximum of 20 images.");
+  }
+
+  const extension = imageExtensions[image.type as keyof typeof imageExtensions];
+  const storagePath = `products/${productId}/${crypto.randomUUID()}.${extension}`;
+  const { error: uploadError } = await context.supabase.storage
+    .from(imageBucket)
+    .upload(storagePath, image, {
+      cacheControl: "31536000",
+      contentType: image.type,
+      upsert: false,
+    });
+
+  if (uploadError) {
+    return imageFailure("The image could not be uploaded safely.");
+  }
+
+  const nextSortOrder =
+    (imageResult.data[0]?.sort_order ?? -1) + 1;
+  const { error: insertError } = await context.supabase
+    .from("product_images")
+    .insert({
+      product_id: productId,
+      variant_id: null,
+      storage_path: storagePath,
+      alt_text: altText,
+      media_type: "image",
+      sort_order: nextSortOrder,
+      is_primary: false,
+      is_published: true,
+    });
+
+  if (insertError) {
+    await context.supabase.storage.from(imageBucket).remove([storagePath]);
+    return imageFailure("The image assignment could not be saved safely.");
+  }
+
+  const images = await loadProductImages(context.supabase, productId);
+  if (!images) {
+    return imageFailure("The updated gallery could not be loaded safely.");
+  }
+
+  revalidateStorefront(productResult.data.slug);
+  revalidatePath("/admin");
+  revalidatePath("/admin/products");
+  revalidatePath(`/admin/products/${productId}`);
+
+  return { ok: true, message: "Gallery image added.", images };
+}
+
+export async function deleteProductGalleryImageAction(
+  input: unknown,
+): Promise<ProductImageMutationResult> {
+  if (
+    typeof input !== "object" ||
+    input === null ||
+    Object.keys(input).length !== 2 ||
+    !("productId" in input) ||
+    !("imageId" in input) ||
+    typeof input.productId !== "string" ||
+    typeof input.imageId !== "string" ||
+    !isValidUuid(input.productId) ||
+    !isValidUuid(input.imageId)
+  ) {
+    return imageFailure("Invalid image removal request.");
+  }
+
+  const context = await authorizeMutation();
+  if (!isAuthorizedContext(context)) return imageFailure(context.message);
+
+  const [productResult, imageResult] = await Promise.all([
+    context.supabase
+      .from("products")
+      .select("id, slug")
+      .eq("id", input.productId)
+      .maybeSingle(),
+    context.supabase
+      .from("product_images")
+      .select("*")
+      .eq("id", input.imageId)
+      .eq("product_id", input.productId)
+      .maybeSingle(),
+  ]);
+
+  if (productResult.error || !productResult.data || imageResult.error) {
+    return imageFailure("The gallery image could not be loaded safely.");
+  }
+  if (!imageResult.data) {
+    return imageFailure("The gallery image no longer exists.");
+  }
+  if (imageResult.data.is_primary) {
+    return imageFailure("The primary image cannot be removed as a gallery image.");
+  }
+
+  const imageRow: ImageRow = imageResult.data;
+  let storageBackup: Blob | null = null;
+  if (!imageRow.storage_path.startsWith("/")) {
+    const downloadResult = await context.supabase.storage
+      .from(imageBucket)
+      .download(imageRow.storage_path);
+    if (downloadResult.error || !downloadResult.data) {
+      return imageFailure("The stored image could not be verified for removal.");
+    }
+    storageBackup = downloadResult.data;
+
+    const removeResult = await context.supabase.storage
+      .from(imageBucket)
+      .remove([imageRow.storage_path]);
+    if (removeResult.error) {
+      return imageFailure("The stored image could not be removed safely.");
+    }
+  }
+
+  const { data: deleted, error: deleteError } = await context.supabase
+    .from("product_images")
+    .delete()
+    .eq("id", imageRow.id)
+    .eq("product_id", input.productId)
+    .eq("is_primary", false)
+    .select("id")
+    .maybeSingle();
+
+  if (deleteError || deleted?.id !== imageRow.id) {
+    if (storageBackup) {
+      await context.supabase.storage
+        .from(imageBucket)
+        .upload(imageRow.storage_path, storageBackup, {
+          contentType: storageBackup.type,
+          upsert: false,
+        });
+    }
+    return imageFailure("The gallery image could not be removed safely.");
+  }
+
+  const images = await loadProductImages(context.supabase, input.productId);
+  if (!images) {
+    return imageFailure("The updated gallery could not be loaded safely.");
+  }
+
+  revalidateStorefront(productResult.data.slug);
+  revalidatePath("/admin");
+  revalidatePath("/admin/products");
+  revalidatePath(`/admin/products/${input.productId}`);
+
+  return { ok: true, message: "Gallery image removed.", images };
 }
 
 export async function saveProductAction(

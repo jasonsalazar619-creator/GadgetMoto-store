@@ -139,6 +139,17 @@ export type ProductMutationResult =
       fieldErrors?: Record<string, string>;
     };
 
+export type ProductImageMutationResult =
+  | {
+      ok: true;
+      message: string;
+      images: AdminProductImage[];
+    }
+  | {
+      ok: false;
+      message: string;
+    };
+
 export type ProductPromotionResult =
   | {
       ok: true;

@@ -123,5 +123,12 @@
   credential, staff account, or populated environment file was added.
 - `/admin/login`, the protected `/admin` shell, the protected products
   placeholder, and POST-based logout are implemented.
-- Product CRUD, image uploads, autosave, and the first manual administrator
-  account remain pending.
+- Product CRUD and autosave are active for authenticated administrators.
+- Product gallery migration `20260816113000_admin_product_gallery_storage.sql`
+  is deployed and matches local and remote migration history.
+- The additive policy lets active administrators read product-scoped objects
+  in the existing private `product-images` bucket for secure previews and
+  deletion. It adds no public write path, bucket, table, record, credential, or
+  environment value.
+- Managed product gallery upload and removal use the existing administrator
+  policies and trigger-enforced product-image audit log.

@@ -237,8 +237,30 @@ export type Database = {
           created_at: string;
           updated_at: string;
         };
-        Insert: never;
-        Update: never;
+        Insert: {
+          id?: string;
+          product_id?: string | null;
+          variant_id?: string | null;
+          storage_path: string;
+          alt_text: string;
+          media_type?: "image" | "video";
+          sort_order?: number;
+          is_primary?: boolean;
+          is_published?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          product_id?: string | null;
+          variant_id?: string | null;
+          storage_path?: string;
+          alt_text?: string;
+          media_type?: "image" | "video";
+          sort_order?: number;
+          is_primary?: boolean;
+          is_published?: boolean;
+          updated_at?: string;
+        };
         Relationships: [];
       };
       audit_logs: {

@@ -74,7 +74,7 @@ export default async function AdminDashboardPage() {
         {[
           ["Authentication", "Server-verified administrator access is active."],
           ["Product management", "Validated product CRUD and autosave are active."],
-          ["Image workflow", "Secure Storage uploads and gallery controls remain pending."],
+          ["Image workflow", "Secure per-product gallery uploads and removal controls are active."],
         ].map(([title, description]) => (
           <article
             className="rounded-[var(--radius-lg)] border bg-white p-6"

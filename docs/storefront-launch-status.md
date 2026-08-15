@@ -109,7 +109,8 @@ connection, query, SQL command, or Supabase command occurred.
 - Approved automatic delivery-fee rules
 - Approved VAT rules and rate
 - Maya merchant credentials, server initialization, and verified webhooks
-- Admin product-image uploads and gallery controls
+- Primary-image replacement and gallery reordering (optional per-product
+  gallery upload, preview, storefront display, and removal are active)
 - Admin order and inventory tools
 - Approved POCO C85 product image
 - Final privacy, terms, warranty, cancellation, refund, and retention policies

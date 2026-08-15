@@ -8,6 +8,7 @@ import {
 } from "@/data/upcoming-products";
 import { CatalogServerError } from "./catalog-error";
 import type { UpcomingDatabaseRow } from "./database-upcoming-catalog";
+import { resolveProductImage } from "@/lib/catalog/product-image-source";
 
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const fail = (): never => {
@@ -71,13 +72,20 @@ function readImages(value: unknown): UpcomingProductImage[] {
       item === null ||
       Array.isArray(item) ||
       !("storagePath" in item) ||
-      typeof item.storagePath !== "string"
+      typeof item.storagePath !== "string" ||
+      !("altText" in item) ||
+      typeof item.altText !== "string" ||
+      !item.altText.trim()
     ) {
       return fail();
     }
 
-    const known = imageByPath.get(item.storagePath);
-    return known ? [known] : [];
+    const image = resolveProductImage(
+      item.storagePath,
+      item.altText,
+      imageByPath.get(item.storagePath),
+    );
+    return image ? [image] : [];
   });
 }
 

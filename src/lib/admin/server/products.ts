@@ -14,6 +14,10 @@ import type {
 } from "@/lib/admin/products/types";
 import { createClient } from "@/lib/supabase/server";
 import type { Database, Json } from "@/lib/supabase/database.types";
+import {
+  getManagedProductImageSource,
+  isManagedProductImagePath,
+} from "@/lib/catalog/product-image-source";
 
 type ProductRow = Database["public"]["Tables"]["products"]["Row"];
 type VariantRow = Database["public"]["Tables"]["product_variants"]["Row"];
@@ -130,10 +134,15 @@ function toBrand(row: Database["public"]["Tables"]["brands"]["Row"]): AdminBrand
 }
 
 function toImage(row: ImageRow): AdminProductImage | null {
-  if (!row.storage_path.startsWith("/")) return null;
+  const src = row.storage_path.startsWith("/")
+    ? row.storage_path
+    : isManagedProductImagePath(row.storage_path)
+      ? getManagedProductImageSource(row.storage_path)
+      : null;
+  if (!src) return null;
   return {
     id: row.id,
-    src: row.storage_path,
+    src,
     alt: row.alt_text,
     isPrimary: row.is_primary,
     isPublished: row.is_published,
@@ -494,4 +503,5 @@ export const adminProductInternals = {
   lifecycleFromRow,
   loadEditorData,
   readCommerceDraft,
+  toImage,
 };

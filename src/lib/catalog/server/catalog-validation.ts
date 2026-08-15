@@ -9,6 +9,7 @@ import {
 import { upcomingProducts } from "@/data/upcoming-products";
 import type { ProductImage } from "@/data/product-images";
 import type { ProductSpecification } from "@/data/product-specifications";
+import { resolveProductImage } from "@/lib/catalog/product-image-source";
 import { CatalogServerError } from "./catalog-error";
 import type { CatalogDatabaseRow } from "./database-catalog";
 
@@ -98,11 +99,18 @@ function readImages(value: unknown): readonly ProductImage[] {
       item === null ||
       Array.isArray(item) ||
       !("storagePath" in item) ||
-      typeof item.storagePath !== "string"
+      typeof item.storagePath !== "string" ||
+      !("altText" in item) ||
+      typeof item.altText !== "string" ||
+      !item.altText.trim()
     ) {
       return failValidation();
     }
-    const image = imageByPath.get(item.storagePath);
+    const image = resolveProductImage(
+      item.storagePath,
+      item.altText,
+      imageByPath.get(item.storagePath),
+    );
     return image ? [image] : [];
   });
 
@@ -278,10 +286,13 @@ export function normalizeDatabaseCatalogRows(
         specifications,
         colors,
       }): PrototypeProduct => {
-        const primaryImage =
-          staticProduct?.primaryImage?.src === row.primary_image_path
-            ? staticProduct.primaryImage
-            : images.find(({ src }) => src === row.primary_image_path) ?? null;
+        const primaryImage = row.primary_image_path
+          ? resolveProductImage(
+              row.primary_image_path,
+              row.primary_image_alt ?? "",
+              imageByPath.get(row.primary_image_path),
+            )
+          : null;
 
         return {
           id: staticProduct?.id ?? row.product_slug,
@@ -303,9 +314,7 @@ export function normalizeDatabaseCatalogRows(
             staticProduct?.artSeed ??
             (category === "Tablet" ? "wide-orbit" : "orbit-blue"),
           primaryImage,
-          images:
-            staticProduct?.images ??
-            images.filter(({ src }) => src !== primaryImage?.src),
+          images: images.filter(({ src }) => src !== primaryImage?.src),
           specifications:
             staticProduct?.specifications ?? specifications,
           ...(colors.length ? { colors } : {}),

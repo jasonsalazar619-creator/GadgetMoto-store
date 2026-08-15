@@ -465,3 +465,13 @@ The 12 live canonical product slugs, SKUs, and integer-centavo prices remain
 unchanged. The migration creates no staff account, credential, order, payment,
 inventory quantity, public catalog write path, or seed outside the reviewed
 catalog backfill. See `docs/admin-product-management-schema.md`.
+
+## Admin product-gallery Storage policy
+
+Migration `20260816113000_admin_product_gallery_storage.sql` is deployed and
+matches local and remote migration history. It adds one authenticated active-
+administrator `SELECT` policy on the existing private `product-images` Storage
+bucket so managed images can be previewed and safely removed. Existing public
+reads remain restricted to published media owned by visible products, and no
+public write policy, application table, product record, seed, credential, or
+environment value was added.

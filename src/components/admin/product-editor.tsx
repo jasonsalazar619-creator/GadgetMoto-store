@@ -7,10 +7,10 @@ import {
   useState,
   useTransition,
 } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { MakeOfficialButton } from "@/components/admin/make-official-button";
+import { ProductImageManager } from "@/components/admin/product-image-manager";
 import {
   archiveProductAction,
   deleteDraftProductAction,
@@ -1073,42 +1073,15 @@ export function ProductEditor({
           </button>
         </Section>
 
-        <Section title="Product Images">
-          {baseline.images.length ? (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {baseline.images.map((image) => (
-                <figure
-                  className="overflow-hidden rounded-[var(--radius-md)] border bg-[var(--color-ice)]"
-                  key={image.id}
-                >
-                  <div className="relative aspect-[4/5] bg-[radial-gradient(circle_at_50%_25%,white_0_38%,var(--color-ice)_78%)]">
-                    <Image
-                      alt={image.alt}
-                      className="object-contain p-1"
-                      fill
-                      sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 33vw"
-                      src={image.src}
-                    />
-                  </div>
-                  <figcaption className="p-4 text-sm">
-                    <strong>{image.isPrimary ? "Primary image" : "Gallery image"}</strong>
-                    <span className="mt-1 block text-[var(--color-muted)]">
-                      {image.isPublished ? "Approved for storefront use" : "Not published"}
-                    </span>
-                  </figcaption>
-                </figure>
-              ))}
-            </div>
-          ) : (
-            <div className="rounded-[var(--radius-md)] bg-[var(--color-ice)] p-5">
-              <p className="font-bold">No assigned image is available.</p>
-            </div>
-          )}
-          <p className="mt-4 text-sm leading-6 text-[var(--color-muted)]">
-            Existing assignments are preserved. Upload, reorder, replacement,
-            and deletion controls remain deferred to the product-image
-            checkpoint.
-          </p>
+        <Section
+          description="Keep the primary image, or add and remove optional gallery images for this product only."
+          title="Product Images"
+        >
+          <ProductImageManager
+            initialImages={baseline.images}
+            productId={baseline.id}
+            productName={form.name || baseline.name}
+          />
         </Section>
 
         {baseline.lifecycle === "coming_soon" ? (
