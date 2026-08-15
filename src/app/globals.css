@@ -438,6 +438,10 @@ footer a:hover {
 }
 
 .brand-carousel__heading {
+  align-items: end;
+  display: flex;
+  gap: 2rem;
+  justify-content: space-between;
   margin-bottom: clamp(1.5rem, 3vw, 2.25rem);
 }
 
@@ -450,6 +454,43 @@ footer a:hover {
   line-height: 1.05;
   margin-top: 0.65rem;
   max-width: 18ch;
+}
+
+.brand-carousel__progress {
+  flex: 0 0 min(19rem, 30vw);
+  padding-bottom: 0.35rem;
+}
+
+.brand-carousel__progress-label {
+  align-items: center;
+  color: var(--color-muted);
+  display: flex;
+  font-size: 0.72rem;
+  font-weight: 800;
+  justify-content: space-between;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.brand-carousel__progress-label strong {
+  color: var(--color-action);
+}
+
+.brand-carousel__progress-track {
+  background: rgb(76 145 200 / 0.16);
+  border-radius: var(--radius-round);
+  display: block;
+  height: 0.25rem;
+  margin-top: 0.75rem;
+  overflow: hidden;
+}
+
+.brand-carousel__progress-value {
+  background: linear-gradient(90deg, var(--color-brand), var(--color-action));
+  border-radius: inherit;
+  display: block;
+  height: 100%;
+  transition: width 180ms ease-out;
 }
 
 .brand-carousel__track:focus-visible,
@@ -486,6 +527,10 @@ footer a:hover {
 }
 
 .brand-carousel__track::-webkit-scrollbar { display: none; }
+.brand-carousel__track--scroll-driven {
+  scroll-behavior: auto;
+  scroll-snap-type: none;
+}
 .brand-carousel__track::after {
   content: "";
   flex: 0 0 max(0px, calc(100% - var(--brand-slide-size) - 1rem));
@@ -524,6 +569,12 @@ footer a:hover {
 
 .brand-carousel__slide:hover {
   border-color: var(--color-brand);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-4px);
+}
+
+.brand-carousel__slide[data-active="true"] {
+  border-color: color-mix(in srgb, var(--brand-accent) 48%, white);
   box-shadow: var(--shadow-md);
   transform: translateY(-4px);
 }
@@ -623,6 +674,15 @@ footer a:hover {
 .brand-carousel__slide--tecno { --brand-accent: #247fe5; --brand-glow: rgb(36 127 229 / 0.18); }
 
 @media (max-width: 639px) {
+  .brand-carousel__heading {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+  .brand-carousel__progress {
+    flex-basis: auto;
+    width: min(100%, 18rem);
+  }
   .brand-carousel__title { font-size: 1.75rem; }
   .brand-carousel__track { --brand-slide-size: min(78vw, 18rem); }
   .brand-carousel__slide { min-height: 12.25rem; }
@@ -632,7 +692,8 @@ footer a:hover {
   .brand-carousel__track { scroll-behavior: auto; }
   .brand-carousel__slide,
   .brand-carousel__slide::before,
-  .brand-carousel__image { transition: none; }
+  .brand-carousel__image,
+  .brand-carousel__progress-value { transition: none; }
 }
 
 .upgrade-path {
