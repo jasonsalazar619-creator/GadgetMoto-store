@@ -387,6 +387,7 @@ export function AdminOrdersReview({ initialPage }: AdminOrdersReviewProps) {
   const [error, setError] = useState("");
   const pageAbort = useRef<AbortController | null>(null);
   const detailAbort = useRef<AbortController | null>(null);
+  const detailPanel = useRef<HTMLDivElement | null>(null);
 
   const updatePageUrl = useCallback((targetPage: number, replace = false) => {
     const url = new URL(window.location.href);
@@ -507,6 +508,16 @@ export function AdminOrdersReview({ initialPage }: AdminOrdersReviewProps) {
       detailAbort.current?.abort();
     };
   }, [loadPage]);
+
+  useEffect(() => {
+    if (loadingDetail || !selectedReview) return;
+
+    const behavior = window.matchMedia("(prefers-reduced-motion: reduce)")
+      .matches
+      ? "auto"
+      : "smooth";
+    detailPanel.current?.scrollIntoView({ behavior, block: "start" });
+  }, [loadingDetail, selectedReview]);
 
   const firstVisible =
     page.totalCount === 0 ? 0 : (page.currentPage - 1) * page.pageSize + 1;
@@ -672,25 +683,27 @@ export function AdminOrdersReview({ initialPage }: AdminOrdersReviewProps) {
         </>
       )}
 
-      {loadingDetail ? (
-        <div
-          className="mt-6 rounded-[var(--radius-lg)] border bg-white p-6 shadow-[var(--shadow-sm)]"
-          role="status"
-        >
-          Loading selected order details…
-        </div>
-      ) : selectedReview ? (
-        <PaymentDetail
-          key={selectedReview.paymentId}
-          onUpdated={refreshAfterAction}
-          review={selectedReview}
-        />
-      ) : page.totalCount > 0 ? (
-        <div className="mt-6 rounded-[var(--radius-lg)] border border-dashed bg-white p-6 text-center text-[var(--color-muted)]">
-          Select an order to review its customer, delivery, products, and
-          payment details.
-        </div>
-      ) : null}
+      <div className="scroll-mt-6" ref={detailPanel}>
+        {loadingDetail ? (
+          <div
+            className="mt-6 rounded-[var(--radius-lg)] border bg-white p-6 shadow-[var(--shadow-sm)]"
+            role="status"
+          >
+            Loading selected order details…
+          </div>
+        ) : selectedReview ? (
+          <PaymentDetail
+            key={selectedReview.paymentId}
+            onUpdated={refreshAfterAction}
+            review={selectedReview}
+          />
+        ) : page.totalCount > 0 ? (
+          <div className="mt-6 rounded-[var(--radius-lg)] border border-dashed bg-white p-6 text-center text-[var(--color-muted)]">
+            Select an order to review its customer, delivery, products, and
+            payment details.
+          </div>
+        ) : null}
+      </div>
     </div>
   );
 }
