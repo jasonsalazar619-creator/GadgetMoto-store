@@ -190,7 +190,7 @@ Primary direct-PostgreSQL configuration, without values:
 - `CATALOG_SOURCE`
 - `STOREFRONT_DATABASE_URL`
 
-`CATALOG_SOURCE` supports `static`, `database`, and `database-with-static-fallback`, and defaults to `static` when absent. `STOREFRONT_DATABASE_URL` is read only when database access is requested. The database URL is a privileged server-only secret that must be supplied by the deployment environment and never committed, logged, serialized, or returned to a client. No environment value or environment file was created.
+`CATALOG_SOURCE` supports `static`, `database`, and `database-with-static-fallback`, and defaults to `static` when absent. `STOREFRONT_DATABASE_URL` is read only when database access is requested. The database URL is a privileged server-only secret that must be supplied by the deployment environment and never committed, logged, serialized, or returned to a client. The production deployment uses `database-with-static-fallback` and a separately managed, least-privilege storefront login. The Postgres.js client disables prepared statements and limits each serverless instance to one connection for compatibility with the hosted transaction pooler. No environment value or environment file is stored in the repository.
 
 If the Data API fallback is separately approved, proposed server-only names are:
 

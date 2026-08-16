@@ -86,10 +86,10 @@
 - Effective `USAGE` on the `storefront` schema and `SELECT` on `storefront.catalog_products` were verified.
 - Direct `SELECT` on `public.products` and `public.orders` remains unavailable.
 - The credential was not committed or documented.
-- Environment configuration and application connectivity remain pending.
+- Production catalog configuration uses `database-with-static-fallback` with a server-only, least-privilege storefront connection managed outside Git.
 - Data API and browser access remain unchanged.
 - Postgres.js `3.4.9` is installed for future server-only database access.
-- The repository expects `CATALOG_SOURCE` and `STOREFRONT_DATABASE_URL`, but contains no values.
+- The repository expects `CATALOG_SOURCE` and `STOREFRONT_DATABASE_URL`, but contains no secret values.
 - No environment file or connection string was created.
 - No connection attempt or query occurred during adapter implementation.
 - The server adapter now targets only `storefront.catalog_products`.
@@ -101,7 +101,7 @@
 - No connection string or password was saved in the repository.
 - The temporary verification API route was deleted, and no permanent diagnostic endpoint remains.
 - Hosted database records, roles, privileges, and migrations remain unchanged.
-- Future environments must supply `CATALOG_SOURCE` and `STOREFRONT_DATABASE_URL` securely outside Git.
+- Future environments must supply `CATALOG_SOURCE` and `STOREFRONT_DATABASE_URL` securely outside Git. The transaction-pooler client disables prepared statements and uses a one-connection-per-instance ceiling.
 - `static` remains the default catalog source.
 - Hosted database configuration and records remain unchanged by the adapter checkpoint.
 - Project references and credentials remain excluded.
