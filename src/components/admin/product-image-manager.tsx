@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useEffect, useRef, useState, useTransition } from "react";
 import {
   deleteProductGalleryImageAction,
+  setProductPrimaryImageAction,
   uploadProductGalleryImageAction,
 } from "@/app/admin/(protected)/products/actions";
 import type { AdminProductImage } from "@/lib/admin/products/types";
@@ -12,10 +13,12 @@ const acceptedTypes = "image/jpeg,image/png,image/webp,image/avif";
 
 export function ProductImageManager({
   initialImages,
+  onImagesChanged,
   productId,
   productName,
 }: {
   initialImages: AdminProductImage[];
+  onImagesChanged: (images: AdminProductImage[]) => void;
   productId: string;
   productName: string;
 }) {
@@ -25,6 +28,9 @@ export function ProductImageManager({
   const [altText, setAltText] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [pendingImageId, setPendingImageId] = useState<string | null>(null);
+  const [pendingAction, setPendingAction] = useState<
+    "primary" | "remove" | null
+  >(null);
   const [isPending, startTransition] = useTransition();
   const inputRef = useRef<HTMLInputElement>(null);
   const previewUrlRef = useRef<string | null>(null);
@@ -77,19 +83,24 @@ export function ProductImageManager({
       setMessage(result.message);
       if (!result.ok) return;
       setImages(result.images);
+      onImagesChanged(result.images);
       clearSelection();
     });
   }
 
   function removeImage(image: AdminProductImage) {
-    if (
-      image.isPrimary ||
-      !window.confirm("Remove this image from this product gallery?")
-    ) {
+    const confirmation = image.isPrimary
+      ? images.length > 1
+        ? "Remove the current primary image? The next published image will become primary."
+        : "Remove the only product image? This product will have no storefront image."
+      : "Remove this image from this product gallery?";
+
+    if (!window.confirm(confirmation)) {
       return;
     }
 
     setPendingImageId(image.id);
+    setPendingAction("remove");
     setMessage(null);
     startTransition(async () => {
       const result = await deleteProductGalleryImageAction({
@@ -97,8 +108,31 @@ export function ProductImageManager({
         imageId: image.id,
       });
       setMessage(result.message);
-      if (result.ok) setImages(result.images);
+      if (result.ok) {
+        setImages(result.images);
+        onImagesChanged(result.images);
+      }
       setPendingImageId(null);
+      setPendingAction(null);
+    });
+  }
+
+  function makePrimary(image: AdminProductImage) {
+    setPendingImageId(image.id);
+    setPendingAction("primary");
+    setMessage(null);
+    startTransition(async () => {
+      const result = await setProductPrimaryImageAction({
+        productId,
+        imageId: image.id,
+      });
+      setMessage(result.message);
+      if (result.ok) {
+        setImages(result.images);
+        onImagesChanged(result.images);
+      }
+      setPendingImageId(null);
+      setPendingAction(null);
     });
   }
 
@@ -208,16 +242,31 @@ export function ProductImageManager({
                       : "Not published"}
                   </span>
                 </span>
-                {!image.isPrimary ? (
+                <div className="flex flex-wrap gap-2">
+                  {!image.isPrimary ? (
+                    <button
+                      className="min-h-10 rounded-[var(--radius-round)] bg-[var(--color-action)] px-4 font-bold text-white disabled:opacity-50"
+                      disabled={isPending}
+                      onClick={() => makePrimary(image)}
+                      type="button"
+                    >
+                      {pendingImageId === image.id &&
+                      pendingAction === "primary"
+                        ? "Updating…"
+                        : "Use as primary"}
+                    </button>
+                  ) : null}
                   <button
-                    className="min-h-10 justify-self-start rounded-[var(--radius-round)] border border-[var(--color-error)] px-4 font-bold text-[var(--color-error)] disabled:opacity-50"
+                    className="min-h-10 rounded-[var(--radius-round)] border border-[var(--color-error)] px-4 font-bold text-[var(--color-error)] disabled:opacity-50"
                     disabled={isPending}
                     onClick={() => removeImage(image)}
                     type="button"
                   >
-                    {pendingImageId === image.id ? "Removing…" : "Remove"}
+                    {pendingImageId === image.id && pendingAction === "remove"
+                      ? "Removing…"
+                      : "Remove"}
                   </button>
-                ) : null}
+                </div>
               </figcaption>
             </figure>
           ))}
@@ -235,7 +284,8 @@ export function ProductImageManager({
       ) : null}
       <p className="mt-4 text-xs leading-5 text-[var(--color-muted)]">
         JPEG, PNG, WebP, or AVIF · 8 MB maximum · up to 20 images including
-        the primary image.
+        the primary image. The first uploaded image becomes primary
+        automatically; uploading an image does not publish the product.
       </p>
     </div>
   );

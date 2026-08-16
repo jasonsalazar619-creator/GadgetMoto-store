@@ -403,6 +403,28 @@ export function ProductEditor({
     }));
   }
 
+  function updateProductImages(images: AdminProductEditorData["images"]) {
+    setBaseline((current) => {
+      const hasPublishedPrimaryImage = images.some(
+        (image) => image.isPrimary && image.isPublished,
+      );
+      const readinessItems = current.readiness.items.map((item) =>
+        item.key === "primaryImage"
+          ? { ...item, complete: hasPublishedPrimaryImage }
+          : item,
+      );
+
+      return {
+        ...current,
+        images,
+        readiness: {
+          items: readinessItems,
+          isReady: readinessItems.every((item) => item.complete),
+        },
+      };
+    });
+  }
+
   function archive() {
     const confirmed = window.confirm(
       `Archive “${baseline.name}”? It will leave public listings, while catalog and historical records remain preserved.`,
@@ -743,6 +765,13 @@ export function ProductEditor({
                 ) : null}
               </select>
               <FieldError errors={fieldErrors} field="lifecycle" />
+              <p className="text-sm leading-6 text-[var(--color-muted)]">
+                {form.lifecycle === "draft"
+                  ? "Draft products are private and do not appear on the website. Choose Coming Soon and save when the preview is ready."
+                  : form.lifecycle === "coming_soon"
+                    ? "This appears only in Coming Soon. Complete every checklist item, then use Make Official below to add it to the live shop."
+                    : "This product is visible in the live storefront catalog."}
+              </p>
             </div>
           )}
         </Section>
@@ -1074,11 +1103,12 @@ export function ProductEditor({
         </Section>
 
         <Section
-          description="Keep the primary image, or add and remove optional gallery images for this product only."
+          description="Add optional images, choose the primary storefront image, or remove any image from this product only."
           title="Product Images"
         >
           <ProductImageManager
             initialImages={baseline.images}
+            onImagesChanged={updateProductImages}
             productId={baseline.id}
             productName={form.name || baseline.name}
           />

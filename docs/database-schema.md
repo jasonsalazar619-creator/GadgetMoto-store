@@ -475,3 +475,13 @@ bucket so managed images can be previewed and safely removed. Existing public
 reads remain restricted to published media owned by visible products, and no
 public write policy, application table, product record, seed, credential, or
 environment value was added.
+
+## Admin primary-image management
+
+Migration `20260816153000_admin_product_primary_image_management.sql` adds
+administrator-only, transaction-safe functions for selecting a published
+product image as primary and deleting an image. When the removed image is
+primary, the next published image is promoted when available. The functions
+use the existing authenticated-administrator RLS policies and grants, and the
+existing product-image audit trigger records the row changes. No public image
+write path, product record, seed, credential, or environment value is added.

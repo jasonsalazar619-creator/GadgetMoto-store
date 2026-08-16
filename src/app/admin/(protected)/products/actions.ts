@@ -334,6 +334,7 @@ export async function uploadProductGalleryImageAction(
 
   const nextSortOrder =
     (imageResult.data[0]?.sort_order ?? -1) + 1;
+  const isFirstImage = imageResult.data.length === 0;
   const { error: insertError } = await context.supabase
     .from("product_images")
     .insert({
@@ -343,7 +344,7 @@ export async function uploadProductGalleryImageAction(
       alt_text: altText,
       media_type: "image",
       sort_order: nextSortOrder,
-      is_primary: false,
+      is_primary: isFirstImage,
       is_published: true,
     });
 
@@ -362,7 +363,74 @@ export async function uploadProductGalleryImageAction(
   revalidatePath("/admin/products");
   revalidatePath(`/admin/products/${productId}`);
 
-  return { ok: true, message: "Gallery image added.", images };
+  return {
+    ok: true,
+    message: isFirstImage
+      ? "Primary storefront image added."
+      : "Gallery image added.",
+    images,
+  };
+}
+
+export async function setProductPrimaryImageAction(
+  input: unknown,
+): Promise<ProductImageMutationResult> {
+  if (
+    typeof input !== "object" ||
+    input === null ||
+    Object.keys(input).length !== 2 ||
+    !("productId" in input) ||
+    !("imageId" in input) ||
+    typeof input.productId !== "string" ||
+    typeof input.imageId !== "string" ||
+    !isValidUuid(input.productId) ||
+    !isValidUuid(input.imageId)
+  ) {
+    return imageFailure("Invalid primary-image request.");
+  }
+
+  const context = await authorizeMutation();
+  if (!isAuthorizedContext(context)) return imageFailure(context.message);
+
+  const productResult = await context.supabase
+    .from("products")
+    .select("id, slug")
+    .eq("id", input.productId)
+    .maybeSingle();
+
+  if (productResult.error || !productResult.data) {
+    return imageFailure("The product no longer exists.");
+  }
+
+  const { data: result, error } = await context.supabase.rpc(
+    "set_product_primary_image",
+    {
+      target_product_id: input.productId,
+      target_image_id: input.imageId,
+    },
+  );
+
+  if (error || result !== "UPDATED") {
+    return imageFailure(
+      result === "NOT_PUBLISHED"
+        ? "Only a published product image can be used as the primary image."
+        : result === "NOT_FOUND"
+          ? "The selected image no longer belongs to this product."
+          : "The primary image could not be changed safely.",
+    );
+  }
+
+  const images = await loadProductImages(context.supabase, input.productId);
+  if (!images) {
+    return imageFailure("The updated product images could not be loaded safely.");
+  }
+
+  revalidateStorefront(productResult.data.slug);
+  revalidatePath("/admin");
+  revalidatePath("/admin/products");
+  revalidatePath(`/admin/products/${input.productId}`);
+
+  return { ok: true, message: "Primary storefront image updated.", images };
 }
 
 export async function deleteProductGalleryImageAction(
@@ -405,10 +473,6 @@ export async function deleteProductGalleryImageAction(
   if (!imageResult.data) {
     return imageFailure("The gallery image no longer exists.");
   }
-  if (imageResult.data.is_primary) {
-    return imageFailure("The primary image cannot be removed as a gallery image.");
-  }
-
   const imageRow: ImageRow = imageResult.data;
   let storageBackup: Blob | null = null;
   if (!imageRow.storage_path.startsWith("/")) {
@@ -428,16 +492,15 @@ export async function deleteProductGalleryImageAction(
     }
   }
 
-  const { data: deleted, error: deleteError } = await context.supabase
-    .from("product_images")
-    .delete()
-    .eq("id", imageRow.id)
-    .eq("product_id", input.productId)
-    .eq("is_primary", false)
-    .select("id")
-    .maybeSingle();
+  const { data: deleteResult, error: deleteError } = await context.supabase.rpc(
+    "delete_product_image_with_replacement",
+    {
+      target_product_id: input.productId,
+      target_image_id: imageRow.id,
+    },
+  );
 
-  if (deleteError || deleted?.id !== imageRow.id) {
+  if (deleteError || deleteResult !== "DELETED") {
     if (storageBackup) {
       await context.supabase.storage
         .from(imageBucket)
@@ -459,7 +522,15 @@ export async function deleteProductGalleryImageAction(
   revalidatePath("/admin/products");
   revalidatePath(`/admin/products/${input.productId}`);
 
-  return { ok: true, message: "Gallery image removed.", images };
+  return {
+    ok: true,
+    message: imageRow.is_primary
+      ? images.some((image) => image.isPrimary)
+        ? "Primary image removed. The next image is now primary."
+        : "Primary image removed. This product currently has no storefront image."
+      : "Gallery image removed.",
+    images,
+  };
 }
 
 export async function saveProductAction(

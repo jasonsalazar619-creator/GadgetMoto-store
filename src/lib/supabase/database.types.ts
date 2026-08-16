@@ -302,6 +302,13 @@ export type Database = {
         Args: { target_variant_id: string };
         Returns: boolean;
       };
+      delete_product_image_with_replacement: {
+        Args: {
+          target_product_id: string;
+          target_image_id: string;
+        };
+        Returns: "DELETED" | "FORBIDDEN" | "NOT_FOUND";
+      };
       promote_coming_soon_product: {
         Args: { target_product_id: string };
         Returns:
@@ -312,6 +319,13 @@ export type Database = {
           | "NOT_READY"
           | "DUPLICATE_SLUG"
           | "DUPLICATE_SKU";
+      };
+      set_product_primary_image: {
+        Args: {
+          target_product_id: string;
+          target_image_id: string;
+        };
+        Returns: "UPDATED" | "FORBIDDEN" | "NOT_FOUND" | "NOT_PUBLISHED";
       };
       get_manual_payment_reviews: {
         Args: Record<PropertyKey, never>;

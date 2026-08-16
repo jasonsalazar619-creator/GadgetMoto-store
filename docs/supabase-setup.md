@@ -132,3 +132,6 @@
   environment value.
 - Managed product gallery upload and removal use the existing administrator
   policies and trigger-enforced product-image audit log.
+- Primary-image selection and deletion-with-replacement use migration
+  `20260816153000_admin_product_primary_image_management.sql`; the existing
+  administrator authorization and image audit boundaries remain unchanged.
