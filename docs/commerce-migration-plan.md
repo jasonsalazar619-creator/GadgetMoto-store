@@ -281,7 +281,7 @@ No speculative index is planned without an expected query.
 - Inventory reservation-expiry duration
 - Preorder and negative-stock behavior
 - Whether split fulfillment will be required
-- Exact Cavite City pickup address and schedule
+- Pickup schedule and operating instructions for the approved Barangay Sabang, Dasmariñas location
 - Courier providers
 - Maya Checkout and webhook requirements
 - Manual payment-proof upload workflow

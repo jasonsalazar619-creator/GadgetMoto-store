@@ -31,6 +31,12 @@ export function ProductCard({ loading, product }: ProductCardProps) {
           <p className="type-eyebrow text-[var(--color-action)]">{product.brand} · {product.category}</p>
           <h3 className="mt-3 min-h-[3.5rem] font-[family-name:var(--font-heading)] text-xl font-bold leading-snug tracking-tight text-[var(--color-ink)]"><Link className="product-card__link" href={`/products/${product.slug}`}>{product.name}</Link></h3>
           <p className="mt-2 text-[0.95rem] text-[var(--color-muted)]">{product.variant}</p>
+          {product.variants.length > 1 || product.colors?.length ? (
+            <p className="product-card__configuration-summary">
+              {product.variants.length} configuration{product.variants.length === 1 ? "" : "s"}
+              {product.colors?.length ? ` · ${product.colors.length} color${product.colors.length === 1 ? "" : "s"}` : ""}
+            </p>
+          ) : null}
           <p className="product-availability mt-3">
             Contact us to confirm availability.
           </p>

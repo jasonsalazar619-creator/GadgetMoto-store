@@ -46,8 +46,8 @@ export function CatalogExplorer({
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   const brands = useMemo(() => [...new Set(products.map((product) => product.brand))].sort(), [products]);
-  const ramValues = useMemo(() => [...new Set(products.flatMap((product) => product.ramGb === undefined ? [] : [product.ramGb]))].sort((a, b) => a - b), [products]);
-  const storageValues = useMemo(() => [...new Set(products.map((product) => product.storageGb))].sort((a, b) => a - b), [products]);
+  const ramValues = useMemo(() => [...new Set(products.flatMap((product) => product.variants.flatMap((variant) => variant.ramGb === undefined ? [] : [variant.ramGb])))].sort((a, b) => a - b), [products]);
+  const storageValues = useMemo(() => [...new Set(products.flatMap((product) => product.variants.map((variant) => variant.storageGb)))].sort((a, b) => a - b), [products]);
 
   useEffect(() => {
     if (!showCategoryFilter) return;
@@ -81,8 +81,9 @@ export function CatalogExplorer({
     const normalizedQuery = query.trim().toLocaleLowerCase();
     const matchesPrice = (product: PrototypeProduct) => price === "all" || (price === "under-10" && product.currentPrice < 10000) || (price === "10-20" && product.currentPrice >= 10000 && product.currentPrice < 20000) || (price === "20-40" && product.currentPrice >= 20000 && product.currentPrice < 40000) || (price === "40-plus" && product.currentPrice >= 40000);
     const filtered = products.filter((product) => {
-      const searchable = `${product.name} ${product.brand} ${product.variant} ${product.category}`.toLocaleLowerCase();
-      return (!normalizedQuery || searchable.includes(normalizedQuery)) && (category === "All" || product.category === category) && (brand === "all" || product.brand === brand) && matchesPrice(product) && (ram === "all" || product.ramGb === Number(ram)) && (storage === "all" || product.storageGb === Number(storage)) && (promotion === "all" || product.badge === promotion) && (!financingOnly || product.financingAvailable);
+      const searchable = `${product.name} ${product.brand} ${product.category} ${product.variants.map((variant) => `${variant.name} ${variant.ramGb ?? ""}GB ${variant.storageGb}GB ${variant.sku ?? ""}`).join(" ")}`.toLocaleLowerCase();
+      const activeVariants = product.variants.filter((variant) => variant.isActive);
+      return (!normalizedQuery || searchable.includes(normalizedQuery)) && (category === "All" || product.category === category) && (brand === "all" || product.brand === brand) && matchesPrice(product) && (ram === "all" || activeVariants.some((variant) => variant.ramGb === Number(ram))) && (storage === "all" || activeVariants.some((variant) => variant.storageGb === Number(storage))) && (promotion === "all" || product.badge === promotion) && (!financingOnly || activeVariants.some((variant) => variant.financingAvailable));
     });
     return [...filtered].sort((a, b) => sort === "price-asc" ? a.currentPrice - b.currentPrice : sort === "price-desc" ? b.currentPrice - a.currentPrice : sort === "name" ? a.name.localeCompare(b.name) : sort === "brand" ? a.brand.localeCompare(b.brand) || a.name.localeCompare(b.name) : products.indexOf(a) - products.indexOf(b));
   }, [brand, category, financingOnly, price, products, promotion, query, ram, sort, storage]);

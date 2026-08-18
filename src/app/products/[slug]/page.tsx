@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Container } from "@/components/ui/container";
-import { PriceDisplay } from "@/components/ui/price-display";
 import { ProductGallery } from "@/components/storefront/product-gallery";
 import { ProductCard } from "@/components/storefront/product-card";
 import { StorefrontPageShell } from "@/components/storefront/storefront-page-shell";
@@ -76,17 +75,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 {product.shortDescription}
               </p>
             ) : null}
-            <dl className="product-facts mt-7"><div><dt>Variant</dt><dd>{product.variant}</dd></div><div><dt>Condition</dt><dd>{product.condition}</dd></div><div><dt>Availability</dt><dd>Contact us to confirm availability.</dd></div></dl>
-            <PriceDisplay className="mt-8" currentPrice={product.currentPrice} originalPrice={product.srp} />
             <p className="mt-3 text-sm leading-relaxed text-[var(--color-muted)]">VAT is calculated separately. The applicable VAT rate is pending confirmation.</p>
-            <p className="mt-4 font-semibold text-[var(--color-action)]">{product.financingMessage}</p>
             <div className="product-actions mt-8">
-              <AddToCartButton
-                colors={product.colors ?? []}
-                name={product.name}
-                slug={product.slug}
-                variant={product.variant}
-              />
+              <AddToCartButton product={product} />
               <a className="button-link product-message-link" href={messengerUrl} rel="noopener noreferrer" target="_blank">Message Us</a>
               <ComparisonButton className="button-link button-link--secondary" name={product.name} slug={product.slug} />
             </div>
@@ -115,7 +106,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
             </dl>
           </article>
           <article className="detail-summary"><p className="type-eyebrow text-[var(--color-action)]">Ways to pay</p><h2 className="type-h3 mt-4">Payment options</h2><ul><li>Maya online payment · coming later</li><li>Manual bank or e-wallet transfer after confirmation</li><li>Financing options are informational only</li><li>No cash on delivery</li></ul><p>Payment instructions and financing availability require sales-team confirmation.</p></article>
-          <article className="detail-summary"><p className="type-eyebrow text-[var(--color-action)]">Getting your order</p><h2 className="type-h3 mt-4">Delivery and pickup</h2><ul><li>Nationwide delivery</li><li>Same-day delivery where available</li><li>Store pickup currently unavailable</li></ul><p>Contact us to confirm availability, delivery charges, and timing.</p></article>
+          <article className="detail-summary"><p className="type-eyebrow text-[var(--color-action)]">Getting your order</p><h2 className="type-h3 mt-4">Delivery and pickup</h2><ul><li>Nationwide delivery</li><li>Same-day delivery where available</li><li>Store pickup in Barangay Sabang, Dasmariñas</li></ul><p>Contact us to confirm product availability, delivery charges, and pickup timing.</p></article>
         </Container>
       </section>
       <section className="py-[var(--space-section)]">

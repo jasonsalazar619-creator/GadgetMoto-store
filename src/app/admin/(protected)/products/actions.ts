@@ -17,6 +17,10 @@ import type {
   ProductMutationCode,
   ProductMutationResult,
   ProductPromotionResult,
+  ProductColorEditorSubmission,
+  ProductColorMutationResult,
+  ProductVariantEditorSubmission,
+  ProductVariantMutationResult,
 } from "@/lib/admin/products/types";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
@@ -1208,4 +1212,340 @@ export async function createDraftProductAction(
   revalidatePath("/admin");
   revalidatePath("/admin/products");
   redirect(`/admin/products/${data.id}`);
+}
+
+function readVariantInteger(value: string): number | null | undefined {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  if (!/^\d+$/.test(trimmed)) return undefined;
+  const parsed = Number(trimmed);
+  return Number.isSafeInteger(parsed) && parsed > 0 ? parsed : undefined;
+}
+
+function readVariantCentavos(value: string): number | null | undefined {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  if (!/^(?:0|[1-9]\d*)(?:\.\d{1,2})?$/.test(trimmed)) return undefined;
+  const [pesos, cents = ""] = trimmed.split(".");
+  const result = Number(pesos) * 100 + Number(cents.padEnd(2, "0"));
+  return Number.isSafeInteger(result) && result >= 0 ? result : undefined;
+}
+
+export async function saveProductVariant(
+  input: ProductVariantEditorSubmission,
+): Promise<ProductVariantMutationResult> {
+  if (
+    !isValidUuid(input.productId) ||
+    (input.variantId !== undefined && !isValidUuid(input.variantId))
+  ) {
+    return { ok: false, message: invalidProductMessage };
+  }
+  const sku = input.sku.trim().toUpperCase();
+  const variantName = input.variantName.trim();
+  const ramGb = input.ramNotApplicable ? null : readVariantInteger(input.ramGb);
+  const extendedRamGb = readVariantInteger(input.extendedRamGb);
+  const storageGb = readVariantInteger(input.storageGb);
+  const currentPriceCentavos = readVariantCentavos(input.currentPricePesos);
+  const srpCentavos = readVariantCentavos(input.srpPesos);
+  const fieldErrors: Record<string, string> = {};
+
+  if (!/^[A-Z0-9][A-Z0-9-]{2,79}$/.test(sku)) {
+    fieldErrors.sku = "Use 3–80 uppercase letters, numbers, or hyphens.";
+  }
+  if (!variantName || variantName.length > 120) {
+    fieldErrors.variantName = "Enter a variant name using 120 characters or fewer.";
+  }
+  if (ramGb === undefined || (!input.ramNotApplicable && ramGb === null)) {
+    fieldErrors.ramGb = "Enter positive physical RAM or mark RAM not applicable.";
+  }
+  if (extendedRamGb === undefined) {
+    fieldErrors.extendedRamGb = "Extended RAM must be a positive whole number when supplied.";
+  }
+  if (storageGb === null || storageGb === undefined) {
+    fieldErrors.storageGb = "Enter positive storage in GB.";
+  }
+  if (currentPriceCentavos === null || currentPriceCentavos === undefined) {
+    fieldErrors.currentPricePesos = "Enter the exact GadgetMoTo selling price.";
+  }
+  if (srpCentavos === undefined) {
+    fieldErrors.srpPesos = "Enter a valid SRP or leave it blank.";
+  } else if (
+    srpCentavos !== null &&
+    currentPriceCentavos !== null &&
+    currentPriceCentavos !== undefined &&
+    srpCentavos < currentPriceCentavos
+  ) {
+    fieldErrors.srpPesos = "SRP cannot be below the selling price.";
+  }
+  if (Object.keys(fieldErrors).length) {
+    return { ok: false, message: invalidProductMessage, fieldErrors };
+  }
+
+  const context = await authorizeMutation();
+  if (!isAuthorizedContext(context)) {
+    return { ok: false, message: context.message };
+  }
+  const excludedVariantId =
+    input.variantId ?? "00000000-0000-0000-0000-000000000000";
+  const [productResult, duplicateSkuResult, duplicateNameResult, orderResult] =
+    await Promise.all([
+      context.supabase
+        .from("products")
+        .select("id, slug")
+        .eq("id", input.productId)
+        .maybeSingle(),
+      context.supabase
+        .from("product_variants")
+        .select("id")
+        .ilike("sku", sku)
+        .neq("id", excludedVariantId)
+        .maybeSingle(),
+      context.supabase
+        .from("product_variants")
+        .select("id")
+        .eq("product_id", input.productId)
+        .ilike("variant_name", variantName)
+        .neq("id", excludedVariantId)
+        .maybeSingle(),
+      context.supabase
+        .from("product_variants")
+        .select("sort_order")
+        .eq("product_id", input.productId)
+        .order("sort_order", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+    ]);
+  if (
+    productResult.error ||
+    !productResult.data ||
+    duplicateSkuResult.error ||
+    duplicateNameResult.error ||
+    orderResult.error
+  ) {
+    return { ok: false, message: saveFailedMessage };
+  }
+  if (duplicateSkuResult.data) {
+    return {
+      ok: false,
+      message: "That SKU is already assigned.",
+      fieldErrors: { sku: "Use a unique SKU." },
+    };
+  }
+  if (duplicateNameResult.data) {
+    return {
+      ok: false,
+      message: "That configuration already exists for this product.",
+      fieldErrors: { variantName: "Use a unique configuration name." },
+    };
+  }
+
+  const values = {
+    sku,
+    variant_name: variantName,
+    ram_gb: ramGb as number | null,
+    extended_ram_gb: extendedRamGb as number | null,
+    storage_gb: storageGb as number,
+    current_price_centavos: currentPriceCentavos as number,
+    srp_centavos: srpCentavos as number | null,
+    financing_available: input.financingAvailable,
+    is_active: input.isActive,
+  };
+  const result = input.variantId
+    ? await context.supabase
+        .from("product_variants")
+        .update(values)
+        .eq("id", input.variantId)
+        .eq("product_id", input.productId)
+        .select("id")
+        .maybeSingle()
+    : await context.supabase
+        .from("product_variants")
+        .insert({
+          ...values,
+          product_id: input.productId,
+          condition: "brand_new",
+          sort_order: (orderResult.data?.sort_order ?? -1) + 1,
+        })
+        .select("id")
+        .maybeSingle();
+
+  if (result.error || !result.data) {
+    return { ok: false, message: saveFailedMessage };
+  }
+  revalidateStorefront(productResult.data.slug);
+  revalidatePath(`/admin/products/${input.productId}`);
+  return {
+    ok: true,
+    message: input.variantId ? "Configuration saved." : "Configuration added.",
+  };
+}
+
+export async function setDefaultProductVariant(
+  productId: string,
+  variantId: string,
+): Promise<ProductVariantMutationResult> {
+  if (!isValidUuid(productId) || !isValidUuid(variantId)) {
+    return { ok: false, message: invalidProductMessage };
+  }
+  const context = await authorizeMutation();
+  if (!isAuthorizedContext(context)) {
+    return { ok: false, message: context.message };
+  }
+  const [productResult, variantsResult] = await Promise.all([
+    context.supabase
+      .from("products")
+      .select("slug")
+      .eq("id", productId)
+      .maybeSingle(),
+    context.supabase
+      .from("product_variants")
+      .select("id, sort_order")
+      .eq("product_id", productId)
+      .order("sort_order", { ascending: true })
+      .order("id", { ascending: true }),
+  ]);
+  if (productResult.error || !productResult.data || variantsResult.error) {
+    return { ok: false, message: saveFailedMessage };
+  }
+  const ordered = variantsResult.data ?? [];
+  const selected = ordered.find((variant) => variant.id === variantId);
+  if (!selected) {
+    return { ok: false, message: "The selected configuration is unavailable." };
+  }
+  const updates = [selected, ...ordered.filter((variant) => variant.id !== variantId)];
+  for (const [sortOrder, variant] of updates.entries()) {
+    const { error } = await context.supabase
+      .from("product_variants")
+      .update({ sort_order: sortOrder })
+      .eq("id", variant.id)
+      .eq("product_id", productId);
+    if (error) return { ok: false, message: saveFailedMessage };
+  }
+  revalidateStorefront(productResult.data.slug);
+  revalidatePath(`/admin/products/${productId}`);
+  return { ok: true, message: "Default configuration updated." };
+}
+
+export async function saveProductColor(
+  input: ProductColorEditorSubmission,
+): Promise<ProductColorMutationResult> {
+  if (
+    !isValidUuid(input.productId) ||
+    (input.colorId !== undefined && !isValidUuid(input.colorId))
+  ) {
+    return { ok: false, message: invalidProductMessage };
+  }
+  const name = input.name.trim();
+  const hexCode = input.hexCode.trim().toUpperCase();
+  const sortOrder = Number(input.sortOrder);
+  const fieldErrors: Record<string, string> = {};
+  if (!name || name.length > 80) {
+    fieldErrors.name = "Enter a color name using 80 characters or fewer.";
+  }
+  if (hexCode && !/^#[0-9A-F]{6}$/.test(hexCode)) {
+    fieldErrors.hexCode = "Use #RRGGBB or leave the swatch value blank.";
+  }
+  if (!Number.isSafeInteger(sortOrder) || sortOrder < 0) {
+    fieldErrors.sortOrder = "Use a non-negative whole number.";
+  }
+  if (Object.keys(fieldErrors).length) {
+    return { ok: false, message: invalidProductMessage, fieldErrors };
+  }
+
+  const context = await authorizeMutation();
+  if (!isAuthorizedContext(context)) {
+    return { ok: false, message: context.message };
+  }
+  const excludedColorId =
+    input.colorId ?? "00000000-0000-0000-0000-000000000000";
+  const [productResult, duplicateResult] = await Promise.all([
+    context.supabase
+      .from("products")
+      .select("id, slug")
+      .eq("id", input.productId)
+      .maybeSingle(),
+    context.supabase
+      .from("product_color_variants")
+      .select("id")
+      .eq("product_id", input.productId)
+      .eq("normalized_name", name.toLocaleLowerCase())
+      .neq("id", excludedColorId)
+      .maybeSingle(),
+  ]);
+  if (productResult.error || !productResult.data || duplicateResult.error) {
+    return { ok: false, message: saveFailedMessage };
+  }
+  if (duplicateResult.data) {
+    return {
+      ok: false,
+      message: "That color already exists for this product.",
+      fieldErrors: { name: "Use a unique color name." },
+    };
+  }
+  const values = {
+    name,
+    hex_code: hexCode || null,
+    is_active: input.isActive,
+    sort_order: sortOrder,
+  };
+  const result = input.colorId
+    ? await context.supabase
+        .from("product_color_variants")
+        .update(values)
+        .eq("id", input.colorId)
+        .eq("product_id", input.productId)
+        .select("id")
+        .maybeSingle()
+    : await context.supabase
+        .from("product_color_variants")
+        .insert({ ...values, product_id: input.productId })
+        .select("id")
+        .maybeSingle();
+  if (result.error || !result.data) {
+    return { ok: false, message: saveFailedMessage };
+  }
+  revalidateStorefront(productResult.data.slug);
+  revalidatePath(`/admin/products/${input.productId}`);
+  return {
+    ok: true,
+    message: input.colorId ? "Color saved." : "Color added.",
+  };
+}
+
+export async function deleteProductColor(
+  productId: string,
+  colorId: string,
+): Promise<ProductColorMutationResult> {
+  if (!isValidUuid(productId) || !isValidUuid(colorId)) {
+    return { ok: false, message: invalidProductMessage };
+  }
+  const context = await authorizeMutation();
+  if (!isAuthorizedContext(context)) {
+    return { ok: false, message: context.message };
+  }
+  const productResult = await context.supabase
+    .from("products")
+    .select("slug")
+    .eq("id", productId)
+    .maybeSingle();
+  if (productResult.error || !productResult.data) {
+    return { ok: false, message: saveFailedMessage };
+  }
+  const { data, error } = await context.supabase
+    .from("product_color_variants")
+    .delete()
+    .eq("id", colorId)
+    .eq("product_id", productId)
+    .select("id")
+    .maybeSingle();
+  if (error || !data) {
+    return {
+      ok: false,
+      message:
+        "The color could not be deleted. Deactivate it if order history references it.",
+    };
+  }
+  revalidateStorefront(productResult.data.slug);
+  revalidatePath(`/admin/products/${productId}`);
+  return { ok: true, message: "Color deleted." };
 }

@@ -4,7 +4,7 @@ import { SectionHeading } from "./section-heading";
 const options = [
   ["Nationwide Delivery", "Delivery ordering is available for planning. Charges, timing, and product availability are confirmed by the sales team."],
   ["Same-Day Delivery", "Same-day service may be discussed where available and requires sales-team confirmation."],
-  ["Store Pickup", "Currently unavailable until branch and pickup details are confirmed."],
+  ["Store Pickup", "Available at Barangay Sabang, Dasmariñas. Product availability and pickup timing require confirmation."],
 ] as const;
 
 export function DeliveryOptions() {

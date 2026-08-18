@@ -47,7 +47,7 @@ const customerMessages: Record<OrderServerErrorCode, string> = {
     "Choose an available delivery method and try again.",
   INVALID_ADDRESS: "Review your delivery address and try again.",
   INVALID_PICKUP_LOCATION:
-    "Store pickup is currently unavailable. Choose delivery instead.",
+    "The selected pickup location is currently unavailable. Choose another fulfillment option.",
   UNSUPPORTED_PAYMENT_METHOD:
     "Choose an available payment method and try again.",
   DUPLICATE_SUBMISSION:

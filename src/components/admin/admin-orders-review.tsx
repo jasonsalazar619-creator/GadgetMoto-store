@@ -17,6 +17,7 @@ import type {
   AdminPaymentReviewPage,
   AdminPaymentSummary,
 } from "@/lib/admin/server/payments";
+import { primaryPickupLocation } from "@/lib/storefront/pickup-location";
 
 type AdminOrdersReviewProps = Readonly<{
   initialPage: AdminPaymentReviewPage;
@@ -234,7 +235,14 @@ function PaymentDetail({
           <h3 className="font-bold">Delivery details</h3>
           <p className="mt-2 text-sm leading-6 text-[var(--color-muted)]">
             {review.deliveryMethod.replaceAll("_", " ")}
-            {review.address ? (
+            {review.deliveryMethod === "store_pickup" ? (
+              <>
+                <br />
+                {primaryPickupLocation.name}
+                <br />
+                {primaryPickupLocation.address}
+              </>
+            ) : review.address ? (
               <>
                 <br />
                 {review.address.streetAddress}
@@ -264,8 +272,10 @@ function PaymentDetail({
                 </div>
                 <p className="mt-1 leading-6 text-[var(--color-muted)]">
                   {item.variantName}
+                  {` · SKU ${item.sku}`}
                   {item.colorName ? ` · ${item.colorName}` : ""}
                   {item.ramGb ? ` · ${item.ramGb}GB RAM` : ""}
+                  {item.extendedRamGb ? ` + ${item.extendedRamGb}GB extended RAM` : ""}
                   {item.storageGb ? ` · ${item.storageGb}GB storage` : ""}
                   {` · Qty ${item.quantity} · ${formatMoney(item.unitPriceCentavos)} each`}
                 </p>

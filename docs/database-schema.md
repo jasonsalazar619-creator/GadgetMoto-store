@@ -426,10 +426,19 @@ These do not block schema planning, but must be resolved before their relevant m
 - Inventory reservation expiry duration
 - Whether preorder inventory may go below zero
 - Final public order-number format
-- Exact branch address and pickup schedule
+- Pickup schedule and operating instructions for the approved Barangay Sabang, Dasmariñas branch
 - Courier providers and delivery-pricing rules
 - Maya webhook and checkout requirements
 - Manual payment proof-upload process
+
+## Pending storefront variant ordering
+
+Migration `20260819120000_catalog_variant_ordering.sql` is deployed, and its
+local and remote history versions match. It preserves the existing `storefront.catalog_products`
+security-barrier projection and appends `variant_sort_order` from
+`public.product_variants`. The application uses this field to select the first
+active administrator-ordered configuration as the product default. No public
+grant, policy, write path, seed data, or table change is included.
 - Staff role assignments
 - Data retention and deletion policies
 - Price-alert email provider

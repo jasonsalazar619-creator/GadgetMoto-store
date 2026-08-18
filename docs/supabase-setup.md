@@ -135,3 +135,16 @@
 - Primary-image selection and deletion-with-replacement use migration
   `20260816153000_admin_product_primary_image_management.sql`; the existing
   administrator authorization and image audit boundaries remain unchanged.
+- Store-pickup location migration
+  `20260817120000_store_pickup_location.sql` is deployed. It records
+  only the approved Barangay Sabang, Dasmariñas pickup address and active
+  branch state. It creates no schedule, instructions, inventory, policy,
+  privilege, credential, or public database path.
+- Catalog variant-ordering migration
+  `20260819120000_catalog_variant_ordering.sql` is deployed. It
+  appends the existing variant sort order to the security-barrier storefront
+  read model so an administrator-selected default is deterministic. It adds no
+  table, policy, grant, public access, seed data, or write path.
+- Both migrations were manually deployed and verified. All 18 migration
+  versions now match in local and remote history. Future changes must use a new
+  timestamped migration; neither deployed file may be edited in place.

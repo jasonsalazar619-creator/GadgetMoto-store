@@ -14,8 +14,8 @@ The following launch rules are approved for the first production order workflow:
 - Customer mobile number is required.
 - Customer email is optional. The deployed `orders.customer_email` column, server contract, and checkout interface all support an omitted email.
 - Checkout currently submits nationwide or same-day delivery only.
-- Store pickup remains visibly unavailable until an approved active GadgetMoTo branch record, address, schedule, pickup instructions, and inventory rows exist. No placeholder location or slug is used.
-- Cash on delivery and cash on store pickup are unavailable in the current delivery-only checkout.
+- Store pickup uses the approved GadgetMoTo branch address in Barangay Sabang, Dasmariñas. Pickup timing, instructions, and product availability remain pending confirmation; no placeholder schedule or stock is shown.
+- Cash on delivery remains unavailable. Cash on store pickup is accepted only when the approved store-pickup fulfillment option is selected.
 - Preorders are disabled.
 - Split fulfillment is disabled; one location must be able to fulfill the complete order.
 - Maya is the approved online payment provider, but live provider setup remains disabled until credentials and the provider workflow are separately completed.
@@ -101,7 +101,7 @@ The current `CheckoutForm` owns transient React state only and collects:
 - Optional customer notes, limited in the UI to 500 characters
 - Separate required acknowledgements for the Privacy Policy, Terms and Conditions, and final availability/VAT/delivery/payment review
 
-Store pickup remains visible only as a disabled “Pickup option coming soon” control. The request can contain only nationwide or same-day delivery. Validation requires all address fields, a nonblank supported payment choice, all three acknowledgements, a minimally nonblank name, a syntactically valid email, and a Philippine mobile number matching the current UI rule.
+Store pickup is enabled for the single approved Barangay Sabang, Dasmariñas branch. Delivery requests require all address fields, while pickup requests use the fixed reviewed location slug and do not submit a customer delivery address. Validation requires a nonblank compatible payment choice, all three acknowledgements, a minimally nonblank name, an optional syntactically valid email, and a Philippine mobile number matching the current UI rule.
 
 The form first validates and reveals an in-browser review panel. When live ordering is enabled, its final submit action resolves each current cart slug through `CatalogProvider`, sends only product slug, canonical SKU, quantity, approved customer/fulfillment/payment fields, notes, and consent booleans, and calls `POST /api/orders`. It prevents double submission, preserves one UUID-v4 key across retries and refreshes for the same cart, regenerates the key when the cart changes, keeps the cart after failure, and clears it only after a confirmed safe success response. While disabled, no idempotency key is prepared, no endpoint call occurs, the cart is preserved, and the customer receives a Messenger contact action instead. The endpoint has not been called in this checkpoint.
 
@@ -530,7 +530,7 @@ VAT, delivery, final-total, cancellation, refund, warranty, payment, and retenti
 | VAT calculation and rounding | Rate and calculation unconfirmed | Keep VAT and final total null; no payable order | Future total-integrity migration after approval | Yes, plus tax review | Order-creation migration |
 | Delivery-fee calculation | Unconfirmed | Keep fee and final total null pending review | Possibly rules/configuration tables later | Yes | Contract/schema-gap decisions |
 | Delivery service area | “Nationwide” and conditional same-day are presentation only | Do not promise eligibility; server rejects unsupported addresses after rules exist | Possibly service-area configuration | Yes | Fulfillment rules |
-| Pickup branch details | Existing GadgetMoTo Cavite City branch approved; no location record exists yet | Keep real pickup submission disabled until the reviewed active branch record exists | Data addition through controlled workflow; schema already exists | Approved; exact public details still require confirmation | Location/inventory readiness |
+| Pickup branch details | Approved GadgetMoTo address in Barangay Sabang, Dasmariñas | Use the fixed reviewed location slug and revalidate the active database record in the order transaction | Forward-only location-data migration; schema already exists | Address approved; schedule and instructions remain unconfirmed | Location/inventory readiness |
 | Pickup instructions | Unconfirmed | Show pending confirmation only | No; `pickup_instructions` exists | Yes | Location/inventory readiness |
 | Inventory allocation location | Cavite City branch approved; reservation schema exists but no location or inventory rows exist yet | Require one active location to fulfill every item; no split allocation | Controlled location/inventory data only | Launch default approved | Location/inventory readiness |
 | Reservation duration | Approved at exactly 30 minutes and implemented from transaction time for newly created orders | Do not extend the original expiry during idempotent replay; add separately reviewed release jobs later | No additional schema change for duration | Approved | Controlled database testing |

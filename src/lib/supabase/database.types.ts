@@ -223,6 +223,37 @@ export type Database = {
         };
         Relationships: [];
       };
+      product_color_variants: {
+        Row: {
+          id: string;
+          product_id: string;
+          name: string;
+          normalized_name: string;
+          hex_code: string | null;
+          is_active: boolean;
+          sort_order: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          product_id: string;
+          name: string;
+          hex_code?: string | null;
+          is_active?: boolean;
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          name?: string;
+          hex_code?: string | null;
+          is_active?: boolean;
+          sort_order?: number;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       product_images: {
         Row: {
           id: string;

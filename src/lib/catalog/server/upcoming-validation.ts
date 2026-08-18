@@ -9,6 +9,7 @@ import {
 import { CatalogServerError } from "./catalog-error";
 import type { UpcomingDatabaseRow } from "./database-upcoming-catalog";
 import { resolveProductImage } from "@/lib/catalog/product-image-source";
+import { upcomingProductVariantResearch } from "@/data/upcoming-product-variant-research";
 
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const fail = (): never => {
@@ -116,6 +117,7 @@ export function normalizeDatabaseUpcomingRows(
 
     const images = readImages(row.images);
     const [primaryImage, ...gallery] = images;
+    const research = upcomingProductVariantResearch[row.product_slug];
 
     return {
       id: row.product_slug,
@@ -128,6 +130,15 @@ export function normalizeDatabaseUpcomingRows(
       description: row.full_description,
       highlights: readStringArray(row.highlights),
       specifications: readSpecifications(row.specifications),
+      configurations: research?.configurations ?? [],
+      colors: research?.colors ?? [],
+      configurationSource: research
+        ? {
+            url: research.sourceUrl,
+            region: research.sourceRegion,
+            note: research.note,
+          }
+        : null,
       availabilityMessage: "Details and availability coming soon.",
     };
   });

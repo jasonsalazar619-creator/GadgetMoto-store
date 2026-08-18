@@ -49,6 +49,7 @@ export type AdminPaymentReview = AdminPaymentSummary &
       sku: string;
       colorName: string | null;
       ramGb: number | null;
+      extendedRamGb: number | null;
       storageGb: number | null;
       quantity: number;
       unitPriceCentavos: number;
@@ -98,6 +99,7 @@ type DetailRow = SummaryRow &
     sku_snapshot: string;
     color_name_snapshot: string | null;
     ram_gb: number | null;
+    extended_ram_gb: number | null;
     storage_gb: number | null;
     quantity: number;
     unit_price_centavos: string | number;
@@ -283,6 +285,7 @@ export async function getAdminPaymentReviewDetail(
         items.sku_snapshot,
         items.color_name_snapshot,
         variants.ram_gb,
+        variants.extended_ram_gb,
         variants.storage_gb,
         items.quantity,
         items.unit_price_centavos,
@@ -316,6 +319,7 @@ export async function getAdminPaymentReviewDetail(
       sku: row.sku_snapshot,
       colorName: row.color_name_snapshot,
       ramGb: row.ram_gb,
+      extendedRamGb: row.extended_ram_gb,
       storageGb: row.storage_gb,
       quantity: row.quantity,
       unitPriceCentavos: readCentavos(row.unit_price_centavos),

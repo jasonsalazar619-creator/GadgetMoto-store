@@ -12,7 +12,7 @@ Checkpoint 3A replaces the temporary confirmation page with a polished, static s
 6. **Featured tablets** — presents four verified tablet records with supplied SRPs.
 7. **Compare promo** — links to the functional three-product comparison experience.
 8. **Payment and financing** — separates payment choices from provider-dependent financing options.
-9. **Delivery** — communicates nationwide delivery, conditional same-day delivery, and Cavite City pickup without invented rates or timing.
+9. **Delivery** — communicates nationwide delivery, conditional same-day delivery, and the confirmed Barangay Sabang, Dasmariñas pickup location without inventing rates or timing.
 10. **Why GadgetMoTo** — summarizes four supported trust points.
 11. **Price-drop alert** — previews an accessible, disabled signup control without collecting data or showing success feedback.
 12. **Footer** — repeats core navigation, location, payment context, Messenger access, current-year copyright, and availability messaging.

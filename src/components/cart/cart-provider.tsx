@@ -12,8 +12,10 @@ import {
 import { useCatalog } from "@/components/catalog/catalog-provider";
 import type {
   ProductColor,
+  ProductVariant,
   PrototypeProduct,
 } from "@/data/prototype-products";
+import type { ProductFulfillmentMethod } from "@/lib/storefront/pickup-location";
 
 const storageKey = "gadgetmoto:cart:v1";
 const maxQuantity = 99;
@@ -22,14 +24,18 @@ export const modalEvent = "gadgetmoto:modal-open";
 export type CartLine = Readonly<{
   lineId: string;
   productSlug: string;
+  variantId: string;
+  sku: string;
   variant: string;
   colorId?: string;
+  fulfillmentMethod: ProductFulfillmentMethod;
   quantity: number;
 }>;
 
 export type ResolvedCartLine = CartLine &
   Readonly<{
     product: PrototypeProduct;
+    variantData: ProductVariant & { currentPrice: number; sku: string };
     color: ProductColor | null;
     lineTotal: number;
   }>;
@@ -38,8 +44,9 @@ type CartAction =
   | Readonly<{
       type: "add";
       productSlug: string;
-      variant: string;
+      variant: ProductVariant & { currentPrice: number; sku: string };
       colorId?: string;
+      fulfillmentMethod: ProductFulfillmentMethod;
     }>
   | Readonly<{ type: "remove"; lineId: string }>
   | Readonly<{ type: "set"; lineId: string; quantity: number }>
@@ -53,10 +60,16 @@ const normalizeLineSegment = (value: string): string =>
 
 const makeLineId = (
   slug: string,
-  variant: string,
+  variantId: string,
   colorId?: string,
+  fulfillmentMethod: ProductFulfillmentMethod = "delivery",
 ): string =>
-  [slug, normalizeLineSegment(variant), colorId ?? "no-color"].join("::");
+  [
+    slug,
+    normalizeLineSegment(variantId),
+    colorId ?? "no-color",
+    fulfillmentMethod,
+  ].join("::");
 
 function applyCartAction(
   lines: readonly CartLine[],
@@ -82,8 +95,9 @@ function applyCartAction(
 
   const lineId = makeLineId(
     action.productSlug,
-    action.variant,
+    action.variant.id,
     action.colorId,
+    action.fulfillmentMethod,
   );
   const existing = lines.find((line) => line.lineId === lineId);
   if (existing) {
@@ -98,8 +112,11 @@ function applyCartAction(
     {
       lineId,
       productSlug: action.productSlug,
-      variant: action.variant,
+      variantId: action.variant.id,
+      sku: action.variant.sku,
+      variant: action.variant.name,
       ...(action.colorId ? { colorId: action.colorId } : {}),
+      fulfillmentMethod: action.fulfillmentMethod,
       quantity: 1,
     },
   ];
@@ -115,7 +132,12 @@ type CartContextValue = Readonly<{
   openCart: (trigger?: HTMLElement | null) => void;
   closeCart: () => void;
   toggleCart: (trigger?: HTMLElement | null) => void;
-  addItem: (productSlug: string, variant: string, colorId?: string) => void;
+  addItem: (
+    productSlug: string,
+    variantId: string,
+    colorId: string | undefined,
+    fulfillmentMethod: ProductFulfillmentMethod,
+  ) => void;
   removeItem: (lineId: string) => void;
   setQuantity: (lineId: string, quantity: number) => void;
   incrementItem: (lineId: string) => void;
@@ -123,8 +145,9 @@ type CartContextValue = Readonly<{
   clearCart: () => void;
   getItemQuantity: (
     productSlug: string,
-    variant: string,
+    variantId: string,
     colorId?: string,
+    fulfillmentMethod?: ProductFulfillmentMethod,
   ) => number;
 }>;
 
@@ -134,11 +157,36 @@ const resolveColor = (
   product: PrototypeProduct,
   colorId: unknown,
 ): ProductColor | null | undefined => {
-  const colors = product.colors ?? [];
+  const colors = (product.colors ?? []).filter((color) => color.purchasable);
   if (!colors.length) return colorId === undefined ? null : undefined;
   if (typeof colorId !== "string") return undefined;
   return colors.find((color) => color.id === colorId);
 };
+
+const resolveVariant = (
+  product: PrototypeProduct,
+  variantId: unknown,
+  legacyName?: unknown,
+): ProductVariant | undefined => {
+  const exact =
+    typeof variantId === "string"
+      ? product.variants.find((variant) => variant.id === variantId)
+      : undefined;
+  if (exact) return exact;
+  return typeof legacyName === "string"
+    ? product.variants.find((variant) => variant.name === legacyName)
+    : undefined;
+};
+
+const isPurchasableVariant = (
+  variant: ProductVariant | undefined,
+): variant is ProductVariant & { currentPrice: number; sku: string } =>
+  Boolean(
+    variant?.isActive &&
+      variant.purchasable &&
+      variant.sku &&
+      variant.currentPrice !== null,
+  );
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const { productBySlug } = useCatalog();
@@ -187,9 +235,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
             const color = product
               ? resolveColor(product, line.colorId)
               : undefined;
+            const variant = product
+              ? resolveVariant(product, line.variantId, line.variant)
+              : undefined;
+            const fulfillmentMethod =
+              line.fulfillmentMethod === "store_pickup"
+                ? "store_pickup"
+                : "delivery";
             if (
               !product ||
-              line.variant !== product.variant ||
+              !isPurchasableVariant(variant) ||
+              (typeof line.sku === "string" && line.sku !== variant.sku) ||
               color === undefined ||
               typeof line.quantity !== "number" ||
               !Number.isFinite(line.quantity)
@@ -198,8 +254,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
             }
             const lineId = makeLineId(
               product.slug,
-              product.variant,
+              variant.id,
               color?.id,
+              fulfillmentMethod,
             );
             const quantity = Math.min(
               maxQuantity,
@@ -208,8 +265,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
             deduped.set(lineId, {
               lineId,
               productSlug: product.slug,
-              variant: product.variant,
+              variantId: variant.id,
+              sku: variant.sku,
+              variant: variant.name,
               ...(color ? { colorId: color.id } : {}),
+              fulfillmentMethod,
               quantity: Math.min(
                 maxQuantity,
                 (deduped.get(lineId)?.quantity ?? 0) + quantity,
@@ -249,15 +309,24 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const items = lines.flatMap((line): readonly ResolvedCartLine[] => {
     const product = productBySlug(line.productSlug);
     const color = product ? resolveColor(product, line.colorId) : undefined;
-    if (!product || product.variant !== line.variant || color === undefined) {
+    const variant = product
+      ? resolveVariant(product, line.variantId, line.variant)
+      : undefined;
+    if (
+      !product ||
+      !isPurchasableVariant(variant) ||
+      line.sku !== variant.sku ||
+      color === undefined
+    ) {
       return [];
     }
     return [
       {
         ...line,
         product,
+        variantData: variant,
         color,
-        lineTotal: product.currentPrice * line.quantity,
+        lineTotal: variant.currentPrice * line.quantity,
       },
     ];
   });
@@ -274,10 +343,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
     closeCart,
     toggleCart: (trigger) =>
       isCartOpen ? closeCart() : openCart(trigger),
-    addItem: (productSlug, variant, colorId) => {
+    addItem: (productSlug, variantId, colorId, fulfillmentMethod) => {
       const product = productBySlug(productSlug);
       const color = product ? resolveColor(product, colorId) : undefined;
-      if (!product || product.variant !== variant || color === undefined) {
+      const variant = product
+        ? resolveVariant(product, variantId)
+        : undefined;
+      if (!product || !isPurchasableVariant(variant) || color === undefined) {
         return;
       }
       dispatch({
@@ -285,6 +357,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         productSlug,
         variant,
         ...(color ? { colorId: color.id } : {}),
+        fulfillmentMethod,
       });
       setAnnouncement(
         `${product.name}${color ? ` in ${color.name}` : ""} added to cart.`,
@@ -316,10 +389,16 @@ export function CartProvider({ children }: { children: ReactNode }) {
       dispatch({ type: "clear" });
       setAnnouncement("Cart cleared.");
     },
-    getItemQuantity: (productSlug, variant, colorId) =>
+    getItemQuantity: (
+      productSlug,
+      variantId,
+      colorId,
+      fulfillmentMethod = "delivery",
+    ) =>
       lines.find(
         (line) =>
-          line.lineId === makeLineId(productSlug, variant, colorId),
+          line.lineId ===
+          makeLineId(productSlug, variantId, colorId, fulfillmentMethod),
       )?.quantity ?? 0,
   };
 

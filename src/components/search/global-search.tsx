@@ -16,7 +16,10 @@ const SearchContext = createContext<SearchContextValue | null>(null);
 function scoreProduct(product: PrototypeProduct, query: string) {
   const name = product.name.toLocaleLowerCase();
   const brand = product.brand.toLocaleLowerCase();
-  const variant = product.variant.toLocaleLowerCase();
+  const variant = product.variants
+    .map(({ name, ramGb, storageGb }) => `${name} ${ramGb ?? ""}GB ${storageGb}GB`)
+    .join(" ")
+    .toLocaleLowerCase();
   const category = product.category.toLocaleLowerCase();
   if (name.startsWith(query)) return 0;
   if (brand.startsWith(query)) return 1;

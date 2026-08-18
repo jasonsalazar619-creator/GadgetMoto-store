@@ -61,8 +61,9 @@ export default function ContactPage() {
           <section>
             <h2>Current ordering status</h2>
             <p>
-              Online order submission and store pickup are currently
-              unavailable. No payment is processed through this website.
+              Store pickup is available in Barangay Sabang, Dasmariñas.
+              Product availability and pickup timing require confirmation.
+              No payment is processed automatically through this website.
             </p>
           </section>
         </div>

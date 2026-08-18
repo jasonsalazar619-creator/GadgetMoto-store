@@ -49,6 +49,7 @@ export type CheckoutOrderItemInput = Readonly<{
   productSlug: string;
   sku: string;
   colorId?: string;
+  fulfillmentMethod: FulfillmentMethod;
   quantity: number;
 }>;
 

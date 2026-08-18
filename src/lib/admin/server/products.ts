@@ -21,6 +21,8 @@ import {
 
 type ProductRow = Database["public"]["Tables"]["products"]["Row"];
 type VariantRow = Database["public"]["Tables"]["product_variants"]["Row"];
+type ColorRow =
+  Database["public"]["Tables"]["product_color_variants"]["Row"];
 type ImageRow = Database["public"]["Tables"]["product_images"]["Row"];
 
 const unavailableMessage =
@@ -191,12 +193,14 @@ function buildSlugCounts(products: readonly ProductRow[]): Map<string, number> {
 
 function toEditorData(
   product: ProductRow,
-  variant: VariantRow | null,
+  variantRows: readonly VariantRow[],
+  colorRows: readonly ColorRow[],
   imageRows: readonly ImageRow[],
   brandIsActive: boolean,
   slugIsUnique: boolean,
   skuIsUnique: boolean,
 ): AdminProductEditorData {
+  const variant = variantRows[0] ?? null;
   const variantDraft = commerceDraftForProduct(product, variant);
   const images = imageRows.flatMap((image) => {
     const mapped = toImage(image);
@@ -247,8 +251,32 @@ function toEditorData(
           financingAvailable: variant.financing_available,
           isActive: variant.is_active,
           updatedAt: variant.updated_at,
+          sortOrder: variant.sort_order,
         }
       : null,
+    variants: variantRows.map((item) => ({
+      id: item.id,
+      sku: item.sku,
+      variantName: item.variant_name,
+      ramGb: item.ram_gb,
+      extendedRamGb: item.extended_ram_gb,
+      storageGb: item.storage_gb,
+      currentPriceCentavos: item.current_price_centavos,
+      srpCentavos: item.srp_centavos,
+      badge: item.badge,
+      financingAvailable: item.financing_available,
+      isActive: item.is_active,
+      updatedAt: item.updated_at,
+      sortOrder: item.sort_order,
+    })),
+    colors: colorRows.map((item) => ({
+      id: item.id,
+      name: item.name,
+      hexCode: item.hex_code,
+      isActive: item.is_active,
+      sortOrder: item.sort_order,
+      updatedAt: item.updated_at,
+    })),
     variantDraft,
     images,
     readiness,
@@ -271,7 +299,7 @@ async function loadEditorData(
   supabase: SupabaseClient<Database>,
   productId: string,
 ): Promise<AdminProductEditorData | null> {
-  const [productResult, variantResult, brandResult, imageResult, allProductsResult, allVariantsResult] =
+  const [productResult, variantResult, colorResult, brandResult, imageResult, allProductsResult, allVariantsResult] =
     await Promise.all([
       supabase.from("products").select("*").eq("id", productId).maybeSingle(),
       supabase
@@ -279,9 +307,13 @@ async function loadEditorData(
         .select("*")
         .eq("product_id", productId)
         .order("sort_order", { ascending: true })
-        .order("id", { ascending: true })
-        .limit(1)
-        .maybeSingle(),
+        .order("id", { ascending: true }),
+      supabase
+        .from("product_color_variants")
+        .select("*")
+        .eq("product_id", productId)
+        .order("sort_order", { ascending: true })
+        .order("id", { ascending: true }),
       supabase.from("brands").select("id").eq("is_active", true),
       supabase
         .from("product_images")
@@ -297,6 +329,7 @@ async function loadEditorData(
   if (
     productResult.error ||
     variantResult.error ||
+    colorResult.error ||
     brandResult.error ||
     imageResult.error ||
     allProductsResult.error ||
@@ -311,7 +344,7 @@ async function loadEditorData(
   const variants = allVariantsResult.data ?? [];
   const variantDraft = commerceDraftForProduct(
     productResult.data,
-    variantResult.data,
+    variantResult.data?.[0] ?? null,
   );
   const sku = normalizedSku(variantDraft.sku);
   const skuCounts = buildSkuCounts(products, variants);
@@ -319,7 +352,8 @@ async function loadEditorData(
 
   return toEditorData(
     productResult.data,
-    variantResult.data,
+    variantResult.data ?? [],
+    colorResult.data ?? [],
     imageResult.data ?? [],
     (brandResult.data ?? []).some(
       ({ id }) => id === productResult.data?.brand_id,

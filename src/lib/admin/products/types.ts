@@ -81,6 +81,16 @@ export type AdminProductVariant = {
   financingAvailable: boolean;
   isActive: boolean;
   updatedAt: string;
+  sortOrder: number;
+};
+
+export type AdminProductColor = {
+  id: string;
+  name: string;
+  hexCode: string | null;
+  isActive: boolean;
+  sortOrder: number;
+  updatedAt: string;
 };
 
 export type AdminProductVariantDraft = {
@@ -110,6 +120,8 @@ export type AdminProductEditorData = {
   sortOrder: number;
   specifications: AdminProductSpecification[];
   variant: AdminProductVariant | null;
+  variants: readonly AdminProductVariant[];
+  colors: readonly AdminProductColor[];
   variantDraft: AdminProductVariantDraft;
   images: AdminProductImage[];
   readiness: AdminProductReadiness;
@@ -189,3 +201,35 @@ export type ProductEditorSubmission = {
   confirmSlugChange: boolean;
   confirmSkuChange: boolean;
 };
+
+export type ProductVariantEditorSubmission = {
+  productId: string;
+  variantId?: string;
+  sku: string;
+  variantName: string;
+  ramGb: string;
+  ramNotApplicable: boolean;
+  extendedRamGb: string;
+  storageGb: string;
+  currentPricePesos: string;
+  srpPesos: string;
+  financingAvailable: boolean;
+  isActive: boolean;
+};
+
+export type ProductVariantMutationResult =
+  | { ok: true; message: string }
+  | { ok: false; message: string; fieldErrors?: Record<string, string> };
+
+export type ProductColorEditorSubmission = {
+  productId: string;
+  colorId?: string;
+  name: string;
+  hexCode: string;
+  isActive: boolean;
+  sortOrder: string;
+};
+
+export type ProductColorMutationResult =
+  | { ok: true; message: string }
+  | { ok: false; message: string; fieldErrors?: Record<string, string> };

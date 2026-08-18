@@ -4,6 +4,7 @@ import {
   getAllProducts,
   type ProductCategory,
   type ProductColor,
+  type ProductVariant,
   type PrototypeProduct,
 } from "@/data/prototype-products";
 import { upcomingProducts } from "@/data/upcoming-products";
@@ -171,7 +172,7 @@ function readColors(value: unknown): readonly ProductColor[] {
     ) {
       return failValidation();
     }
-    return { id: item.id, name: item.name, hexCode: item.hexCode };
+    return { id: item.id, name: item.name, hexCode: item.hexCode, purchasable: true };
   });
 
   assertUnique(colors.map(({ id }) => id.toLocaleLowerCase()));
@@ -203,6 +204,7 @@ function validateDatabaseCatalogRows(
       !isNonblankString(row.sku) ||
       !isNonblankString(row.variant_name) ||
       !isSafeNonnegativeInteger(row.product_sort_order) ||
+      !isSafeNonnegativeInteger(row.variant_sort_order) ||
       (!isSafeNonnegativeInteger(row.ram_gb) && row.ram_gb !== null) ||
       row.ram_gb === 0 ||
       (!isSafeNonnegativeInteger(row.extended_ram_gb) &&
@@ -253,9 +255,7 @@ function validateDatabaseCatalogRows(
     };
   });
 
-  assertUnique(validatedRows.map(({ row }) => row.product_slug));
   assertUnique(validatedRows.map(({ row }) => row.sku.toLocaleLowerCase()));
-  assertUnique(validatedRows.map(({ row }) => row.product_id.toLocaleLowerCase()));
   assertUnique(validatedRows.map(({ row }) => row.variant_id.toLocaleLowerCase()));
 
   return validatedRows;
@@ -265,66 +265,136 @@ export function normalizeDatabaseCatalogRows(
   rows: readonly CatalogDatabaseRow[],
 ): readonly PrototypeProduct[] {
   const validatedRows = validateDatabaseCatalogRows(rows);
+  const ordered = [...validatedRows].sort(
+    (left, right) =>
+      left.row.product_sort_order - right.row.product_sort_order ||
+      left.row.product_slug.localeCompare(right.row.product_slug) ||
+      left.row.variant_sort_order - right.row.variant_sort_order ||
+      left.row.sku.localeCompare(right.row.sku),
+  );
+  const grouped = new Map<string, ValidatedCatalogRow[]>();
 
-  return [...validatedRows]
-    .sort(
-      (left, right) =>
-        left.row.product_sort_order - right.row.product_sort_order ||
-        left.row.product_slug.localeCompare(right.row.product_slug) ||
-        left.row.sku.localeCompare(right.row.sku),
-    )
-    .map(
-      ({
-        row,
-        staticProduct,
-        category,
-        condition,
-        badge,
-        currentPriceCentavos,
-        srpCentavos,
-        images,
-        specifications,
-        colors,
-      }): PrototypeProduct => {
-        const primaryImage = row.primary_image_path
-          ? resolveProductImage(
-              row.primary_image_path,
-              row.primary_image_alt ?? "",
-              imageByPath.get(row.primary_image_path),
-            )
-          : null;
+  for (const item of ordered) {
+    grouped.set(item.row.product_slug, [
+      ...(grouped.get(item.row.product_slug) ?? []),
+      item,
+    ]);
+  }
 
-        return {
-          id: staticProduct?.id ?? row.product_slug,
-          slug: row.product_slug,
-          sku: row.sku,
-          brand: row.brand_name,
-          name: row.product_name,
-          category,
-          variant: row.variant_name,
-          currentPrice: currentPriceCentavos / 100,
-          ...(srpCentavos === null ? {} : { srp: srpCentavos / 100 }),
-          ...(row.ram_gb === null ? {} : { ramGb: row.ram_gb }),
-          storageGb: row.storage_gb,
-          condition,
-          ...(badge === null ? {} : { badge }),
-          financingMessage: "Financing options available",
-          financingAvailable: row.financing_available,
-          artSeed:
-            staticProduct?.artSeed ??
-            (category === "Tablet" ? "wide-orbit" : "orbit-blue"),
-          primaryImage,
-          images: images.filter(({ src }) => src !== primaryImage?.src),
-          specifications:
-            staticProduct?.specifications ?? specifications,
-          ...(colors.length ? { colors } : {}),
-          ...(row.short_description
-            ? { shortDescription: row.short_description }
-            : {}),
-          ...(row.full_description
-            ? { fullDescription: row.full_description }
-            : {}),
-        };
-      },
+  const products = [...grouped.values()].map((productRows): PrototypeProduct => {
+    const first = productRows[0];
+    if (!first) return failValidation();
+
+    for (const item of productRows.slice(1)) {
+      if (
+        item.row.product_id !== first.row.product_id ||
+        item.row.product_name !== first.row.product_name ||
+        item.row.brand_name !== first.row.brand_name ||
+        item.row.brand_slug !== first.row.brand_slug ||
+        item.row.category !== first.row.category ||
+        item.row.product_sort_order !== first.row.product_sort_order ||
+        item.row.short_description !== first.row.short_description ||
+        item.row.full_description !== first.row.full_description ||
+        JSON.stringify(item.images) !== JSON.stringify(first.images) ||
+        JSON.stringify(item.specifications) !== JSON.stringify(first.specifications) ||
+        JSON.stringify(item.colors) !== JSON.stringify(first.colors)
+      ) {
+        return failValidation();
+      }
+    }
+
+    const databaseVariants = productRows.map(
+      (item, index): ProductVariant => ({
+        id: item.row.variant_id,
+        name: item.row.variant_name,
+        sku: item.row.sku,
+        ...(item.row.ram_gb === null ? {} : { ramGb: item.row.ram_gb }),
+        ...(item.row.extended_ram_gb === null
+          ? {}
+          : { extendedRamGb: item.row.extended_ram_gb }),
+        storageGb: item.row.storage_gb,
+        condition: item.condition,
+        currentPrice: item.currentPriceCentavos / 100,
+        ...(item.srpCentavos === null
+          ? {}
+          : { srp: item.srpCentavos / 100 }),
+        ...(item.badge === null ? {} : { badge: item.badge }),
+        financingAvailable: item.row.financing_available,
+        isActive: true,
+        isDefault: index === 0,
+        purchasable: true,
+        availabilityMessage: "Contact us to confirm availability.",
+      }),
     );
+    const staticManufacturerVariants = (first.staticProduct?.variants ?? [])
+      .filter(
+        (candidate) =>
+          !candidate.purchasable &&
+          !databaseVariants.some(
+            (variant) =>
+              variant.ramGb === candidate.ramGb &&
+              variant.storageGb === candidate.storageGb,
+          ),
+      )
+      .map((variant) => ({ ...variant, isDefault: false }));
+    const variants = [...databaseVariants, ...staticManufacturerVariants];
+    const defaultVariant = variants[0];
+    if (!defaultVariant || defaultVariant.currentPrice === null || !defaultVariant.sku) {
+      return failValidation();
+    }
+    const primaryImage = first.row.primary_image_path
+      ? resolveProductImage(
+          first.row.primary_image_path,
+          first.row.primary_image_alt ?? "",
+          imageByPath.get(first.row.primary_image_path),
+        )
+      : null;
+
+    return {
+      id: first.staticProduct?.id ?? first.row.product_slug,
+      slug: first.row.product_slug,
+      sku: defaultVariant.sku,
+      brand: first.row.brand_name,
+      name: first.row.product_name,
+      category: first.category,
+      variant: defaultVariant.name,
+      currentPrice: defaultVariant.currentPrice,
+      ...(defaultVariant.srp === undefined ? {} : { srp: defaultVariant.srp }),
+      ...(defaultVariant.ramGb === undefined ? {} : { ramGb: defaultVariant.ramGb }),
+      storageGb: defaultVariant.storageGb,
+      condition: defaultVariant.condition,
+      ...(defaultVariant.badge === undefined ? {} : { badge: defaultVariant.badge }),
+      financingMessage: "Financing options available",
+      financingAvailable: defaultVariant.financingAvailable,
+      artSeed:
+        first.staticProduct?.artSeed ??
+        (first.category === "Tablet" ? "wide-orbit" : "orbit-blue"),
+      primaryImage,
+      images: first.images.filter(({ src }) => src !== primaryImage?.src),
+      specifications: first.staticProduct?.specifications ?? first.specifications,
+      ...(() => {
+        const researchedColors = (first.staticProduct?.colors ?? []).filter(
+          (candidate) =>
+            !first.colors.some(
+              (color) =>
+                color.name.toLocaleLowerCase() ===
+                candidate.name.toLocaleLowerCase(),
+            ),
+        );
+        const colors = [...first.colors, ...researchedColors];
+        return colors.length ? { colors } : {};
+      })(),
+      ...(first.row.short_description
+        ? { shortDescription: first.row.short_description }
+        : {}),
+      ...(first.row.full_description
+        ? { fullDescription: first.row.full_description }
+        : {}),
+      variants,
+    };
+  });
+
+  assertUnique(products.map(({ slug }) => slug));
+  assertUnique(products.map(({ id }) => id.toLocaleLowerCase()));
+  return products;
 }

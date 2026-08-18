@@ -6,6 +6,7 @@ import {
   productMediaBySlug,
   type ProductImage,
 } from "./product-images";
+import { activeProductResearchBySlug } from "./product-variant-research";
 
 export type ProductCategory = "Phone" | "Tablet";
 
@@ -13,6 +14,25 @@ export type ProductColor = Readonly<{
   id: string;
   name: string;
   hexCode: string | null;
+  purchasable: boolean;
+}>;
+
+export type ProductVariant = Readonly<{
+  id: string;
+  name: string;
+  sku: string | null;
+  ramGb?: number;
+  extendedRamGb?: number;
+  storageGb: number;
+  condition: "Brand New";
+  currentPrice: number | null;
+  srp?: number;
+  badge?: "new" | "sale";
+  financingAvailable: boolean;
+  isActive: boolean;
+  isDefault: boolean;
+  purchasable: boolean;
+  availabilityMessage: string;
 }>;
 
 export type PrototypeProduct = {
@@ -38,9 +58,12 @@ export type PrototypeProduct = {
   shortDescription?: string;
   fullDescription?: string;
   colors?: readonly ProductColor[];
+  variants: readonly ProductVariant[];
 };
 
-const products: readonly PrototypeProduct[] = [
+type LegacyProduct = Omit<PrototypeProduct, "variants">;
+
+const baseProducts: readonly LegacyProduct[] = [
   { id: "xiaomi-17-ultra", slug: "xiaomi-17-ultra-5g-leica-kit", sku: "GMT-XIA-PH-17ULTRA-16-512", brand: "Xiaomi", name: "Xiaomi 17 Ultra 5G Leica Kit", category: "Phone", variant: "16GB/512GB", currentPrice: 84990, srp: 89990, ramGb: 16, storageGb: 512, condition: "Brand New", badge: "sale", financingMessage: "Financing options available", financingAvailable: true, artSeed: "orbit-blue", ...productMediaBySlug["xiaomi-17-ultra-5g-leica-kit"], specifications: productSpecificationsBySlug["xiaomi-17-ultra-5g-leica-kit"] },
   { id: "iphone-17", slug: "apple-iphone-17", sku: "GMT-APL-PH-IP17-256", brand: "Apple", name: "Apple iPhone 17", category: "Phone", variant: "256GB", currentPrice: 57990, storageGb: 256, condition: "Brand New", badge: "new", financingMessage: "Financing options available", financingAvailable: true, artSeed: "sky-line", ...productMediaBySlug["apple-iphone-17"], specifications: productSpecificationsBySlug["apple-iphone-17"] },
   { id: "poco-f8-ultra", slug: "poco-f8-ultra", sku: "GMT-POC-PH-F8ULTRA-16-512", brand: "POCO", name: "POCO F8 Ultra", category: "Phone", variant: "16GB/512GB", currentPrice: 46990, ramGb: 16, storageGb: 512, condition: "Brand New", badge: "new", financingMessage: "Financing options available", financingAvailable: true, artSeed: "bright-arc", ...productMediaBySlug["poco-f8-ultra"], specifications: productSpecificationsBySlug["poco-f8-ultra"] },
@@ -55,9 +78,84 @@ const products: readonly PrototypeProduct[] = [
   { id: "tecno-mega-pad-pro", slug: "tecno-mega-pad-pro", sku: "GMT-TEC-TB-MEGAPADPRO-8-256", brand: "TECNO", name: "TECNO Mega Pad Pro", category: "Tablet", variant: "8GB/256GB", currentPrice: 13990, srp: 14990, ramGb: 8, storageGb: 256, condition: "Brand New", badge: "sale", financingMessage: "Financing options available", financingAvailable: true, artSeed: "wide-beam", ...productMediaBySlug["tecno-mega-pad-pro"], specifications: productSpecificationsBySlug["tecno-mega-pad-pro"] },
 ] as const;
 
+function commercialVariant(product: LegacyProduct): ProductVariant {
+  return {
+    id: product.sku,
+    name: product.variant,
+    sku: product.sku,
+    ...(product.ramGb ? { ramGb: product.ramGb } : {}),
+    ...(product.slug === "infinix-note-60-pro-5g" ||
+    product.slug === "tecno-camon-50"
+      ? { extendedRamGb: 8 }
+      : {}),
+    storageGb: product.storageGb,
+    condition: product.condition,
+    currentPrice: product.currentPrice,
+    ...(product.srp === undefined ? {} : { srp: product.srp }),
+    ...(product.badge === undefined ? {} : { badge: product.badge }),
+    financingAvailable: product.financingAvailable,
+    isActive: true,
+    isDefault: true,
+    purchasable: true,
+    availabilityMessage: "Contact us to confirm availability.",
+  };
+}
+
+const products: readonly PrototypeProduct[] = baseProducts.map((product) => {
+  const commercial = commercialVariant(product);
+  const research = activeProductResearchBySlug[product.slug];
+  const manufacturerOnly = (research?.configurations ?? [])
+    .filter(
+      (configuration) =>
+        configuration.ramGb !== commercial.ramGb ||
+        configuration.storageGb !== commercial.storageGb,
+    )
+    .map(
+      (configuration): ProductVariant => ({
+        id: configuration.id,
+        name: configuration.label,
+        sku: null,
+        ...(configuration.ramGb
+          ? { ramGb: configuration.ramGb }
+          : {}),
+        ...(configuration.extendedRamGb
+          ? { extendedRamGb: configuration.extendedRamGb }
+          : {}),
+        storageGb: configuration.storageGb,
+        condition: "Brand New",
+        currentPrice: null,
+        financingAvailable: false,
+        isActive: true,
+        isDefault: false,
+        purchasable: false,
+        availabilityMessage: "Contact us for price and availability.",
+      }),
+    );
+
+  return {
+    ...product,
+    ...(research?.colors.length
+      ? {
+          colors: research.colors.map((color) => ({
+            ...color,
+            purchasable: false,
+          })),
+        }
+      : {}),
+    variants: [commercial, ...manufacturerOnly],
+  };
+});
+
 if (
   products.length !== 12 ||
   products.some((product) => !product.sku.trim()) ||
+  products.some(
+    (product) =>
+      product.variants.length < 1 ||
+      product.variants.filter((variant) => variant.isDefault).length !== 1 ||
+      new Set(product.variants.map((variant) => variant.id)).size !==
+        product.variants.length,
+  ) ||
   new Set(products.map((product) => product.slug)).size !== products.length ||
   new Set(products.map((product) => product.sku.toLocaleLowerCase())).size !==
     products.length

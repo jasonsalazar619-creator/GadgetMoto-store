@@ -2,12 +2,14 @@ import "server-only";
 
 import { isPaymentGatewayEnabled } from "./config";
 import { OrderServerError } from "./order-error";
+import { primaryPickupLocation } from "@/lib/storefront/pickup-location";
 import {
   fulfillmentMethods,
   supportedPaymentMethods,
   type CheckoutDeliveryAddressInput,
   type CheckoutFulfillmentInput,
   type CreateOrderRequest,
+  type FulfillmentMethod,
   type SupportedPaymentMethod,
 } from "./types";
 
@@ -110,7 +112,16 @@ const readFulfillment = (value: unknown): CheckoutFulfillmentInput => {
   }
 
   if (value.method === "store_pickup") {
-    throw new OrderServerError("INVALID_PICKUP_LOCATION");
+    if (
+      !hasOnlyKeys(value, ["method", "pickupLocationSlug"]) ||
+      value.pickupLocationSlug !== primaryPickupLocation.slug
+    ) {
+      throw new OrderServerError("INVALID_PICKUP_LOCATION");
+    }
+    return {
+      method: "store_pickup",
+      pickupLocationSlug: primaryPickupLocation.slug,
+    };
   }
 
   if (
@@ -142,6 +153,9 @@ const isSupportedPaymentMethod = (
   value: string,
 ): value is SupportedPaymentMethod =>
   supportedPaymentMethods.some((method) => method === value);
+
+const isFulfillmentMethod = (value: string): value is FulfillmentMethod =>
+  fulfillmentMethods.some((method) => method === value);
 
 const readPaymentMethod = (value: unknown): SupportedPaymentMethod => {
   if (
@@ -194,9 +208,17 @@ export function validateCreateOrderRequest(
   const items = value.items.map((item) => {
     if (
       !isPlainObject(item) ||
-      !hasOnlyKeys(item, ["productSlug", "sku", "colorId", "quantity"]) ||
+      !hasOnlyKeys(item, [
+        "productSlug",
+        "sku",
+        "colorId",
+        "fulfillmentMethod",
+        "quantity",
+      ]) ||
       typeof item.productSlug !== "string" ||
-      typeof item.sku !== "string"
+      typeof item.sku !== "string" ||
+      typeof item.fulfillmentMethod !== "string" ||
+      !isFulfillmentMethod(item.fulfillmentMethod)
     ) {
       throw new OrderServerError("INVALID_CHECKOUT_REQUEST");
     }
@@ -226,7 +248,7 @@ export function validateCreateOrderRequest(
       throw new OrderServerError("INVALID_QUANTITY");
     }
 
-    const itemKey = `${productSlug}::${sku.toLowerCase()}::${colorId ?? "no-color"}`;
+    const itemKey = `${productSlug}::${sku.toLowerCase()}::${colorId ?? "no-color"}::${item.fulfillmentMethod}`;
     if (itemKeys.has(itemKey)) {
       throw new OrderServerError("DUPLICATE_CART_ITEM");
     }
@@ -236,6 +258,7 @@ export function validateCreateOrderRequest(
       productSlug,
       sku,
       ...(colorId ? { colorId } : {}),
+      fulfillmentMethod: item.fulfillmentMethod,
       quantity: item.quantity,
     };
   });
@@ -272,6 +295,13 @@ export function validateCreateOrderRequest(
   }
 
   const fulfillment = readFulfillment(value.fulfillment);
+  if (
+    items.some(
+      (item) => item.fulfillmentMethod !== fulfillment.method,
+    )
+  ) {
+    throw new OrderServerError("INVALID_FULFILLMENT");
+  }
   const paymentMethod = readPaymentMethod(value.paymentMethod);
   if (
     paymentMethod === "cash_on_pickup" &&
@@ -320,7 +350,8 @@ export function validateCreateOrderRequest(
       (left, right) =>
         left.productSlug.localeCompare(right.productSlug) ||
         left.sku.localeCompare(right.sku) ||
-        (left.colorId ?? "").localeCompare(right.colorId ?? ""),
+        (left.colorId ?? "").localeCompare(right.colorId ?? "") ||
+        left.fulfillmentMethod.localeCompare(right.fulfillmentMethod),
     ),
     customer: {
       fullName,

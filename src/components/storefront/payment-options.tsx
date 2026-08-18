@@ -4,7 +4,7 @@ import { SectionHeading } from "./section-heading";
 const payments = [
   "Maya online payment · coming later",
   "Manual bank or e-wallet transfer · confirmed after review",
-  "Cash on store pickup · unavailable",
+  "Cash on store pickup · available for confirmed pickup orders",
 ] as const;
 const financing = ["Home Credit", "Skyro", "GGives", "Atome", "BillEase", "Maya Credit"] as const;
 

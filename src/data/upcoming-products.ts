@@ -2,6 +2,10 @@ import {
   upcomingProductContent,
   type UpcomingProductSpecification,
 } from "@/data/upcoming-product-content";
+import {
+  upcomingProductVariantResearch,
+  type PreviewConfiguration,
+} from "@/data/upcoming-product-variant-research";
 
 export type UpcomingProductCategory =
   | "Phone"
@@ -26,6 +30,13 @@ export type UpcomingProduct = Readonly<{
   description: string;
   highlights: readonly string[];
   specifications: readonly UpcomingProductSpecification[];
+  configurations: readonly PreviewConfiguration[];
+  colors: readonly string[];
+  configurationSource: Readonly<{
+    url: string;
+    region: "Philippines" | "Southeast Asia" | "Global";
+    note: string;
+  }> | null;
   availabilityMessage: "Details and availability coming soon.";
 }>;
 
@@ -44,24 +55,36 @@ const upcoming = (
   width: number | null,
   height: number | null,
   images: readonly UpcomingProductImage[] = [],
-): UpcomingProduct => ({
-  id,
-  name,
-  brand,
-  category,
-  primaryImage:
-    width === null || height === null
-      ? null
-      : previewImage(
-          `/upcoming/${id}.png`,
-          `${name} product preview`,
-          width,
-          height,
-        ),
-  images,
-  ...upcomingProductContent[id],
-  availabilityMessage: "Details and availability coming soon.",
-});
+): UpcomingProduct => {
+  const research = upcomingProductVariantResearch[id];
+  return {
+    id,
+    name,
+    brand,
+    category,
+    primaryImage:
+      width === null || height === null
+        ? null
+        : previewImage(
+            `/upcoming/${id}.png`,
+            `${name} product preview`,
+            width,
+            height,
+          ),
+    images,
+    ...upcomingProductContent[id],
+    configurations: research?.configurations ?? [],
+    colors: research?.colors ?? [],
+    configurationSource: research
+      ? {
+          url: research.sourceUrl,
+          region: research.sourceRegion,
+          note: research.note,
+        }
+      : null,
+    availabilityMessage: "Details and availability coming soon.",
+  };
+};
 
 export const upcomingProducts: readonly UpcomingProduct[] = [
   upcoming("honor-600", "HONOR 600", "HONOR", "Phone", 1122, 1402),

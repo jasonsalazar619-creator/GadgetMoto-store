@@ -8,7 +8,7 @@ import { useComparison } from "./comparison-provider";
 const messengerUrl = "https://www.facebook.com/profile.php?id=100063905416187";
 const peso = new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP", maximumFractionDigits: 0 });
 const paymentMethods = "Maya online payment (coming later); manual bank or e-wallet transfer after sales-team confirmation; financing options are informational only; no cash on delivery";
-const deliveryOptions = "Nationwide delivery; same-day delivery where available; store pickup is currently unavailable. Details require sales-team confirmation.";
+const deliveryOptions = "Nationwide delivery; same-day delivery where available; store pickup in Barangay Sabang, Dasmariñas. Availability, charges, and timing require sales-team confirmation.";
 
 export function ComparisonPageContent() {
   const { selectedProducts, selectionCount, removeProduct, clearProducts } = useComparison();
@@ -21,6 +21,8 @@ export function ComparisonPageContent() {
     ["Brand", (product) => product.brand],
     ["Category", (product) => product.category],
     ["Variant", (product) => product.variant],
+    ["Available configurations", (product) => product.variants.map((variant) => variant.name).join("; ")],
+    ["Official colors", (product) => product.colors?.map((color) => color.name).join(", ") || "Not listed"],
     ["Catalog RAM value", (product) => product.ramGb ? `${product.ramGb}GB` : "Not provided"],
     ["Catalog storage", (product) => `${product.storageGb}GB`],
     ["Current price", (product) => peso.format(product.currentPrice)],

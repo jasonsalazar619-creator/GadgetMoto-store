@@ -169,6 +169,49 @@ export default async function UpcomingProductPage({
               </section>
             ) : null}
 
+            {product.configurations.length > 0 || product.colors.length > 0 ? (
+              <section
+                aria-labelledby="upcoming-options"
+                className="upcoming-detail__section upcoming-options"
+              >
+                <h2 id="upcoming-options">Official manufacturer options</h2>
+                {product.configurations.length > 0 ? (
+                  <div>
+                    <h3>Memory and storage</h3>
+                    <ul className="upcoming-options__chips">
+                      {product.configurations.map((configuration) => (
+                        <li key={configuration.label}>{configuration.label}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
+                {product.colors.length > 0 ? (
+                  <div>
+                    <h3>Colors</h3>
+                    <ul className="upcoming-options__chips">
+                      {product.colors.map((color) => <li key={color}>{color}</li>)}
+                    </ul>
+                  </div>
+                ) : null}
+                {product.configurationSource ? (
+                  <p className="upcoming-options__source">
+                    {product.configurationSource.note}{" "}
+                    <a href={product.configurationSource.url} rel="noopener noreferrer" target="_blank">
+                      Official {product.configurationSource.region} source
+                    </a>
+                  </p>
+                ) : null}
+                <p className="upcoming-options__warning">
+                  These manufacturer options are informational. GadgetMoTo has not assigned a purchasable SKU, local price, or availability.
+                </p>
+              </section>
+            ) : (
+              <div className="upcoming-detail__notice" role="note">
+                <strong>Configurations need manual verification.</strong>
+                <p>No exact official RAM, storage, and color matrix has been approved for this preview.</p>
+              </div>
+            )}
+
             <div className="upcoming-detail__notice" role="note">
               <strong>{product.availabilityMessage}</strong>
               <p>

@@ -11,13 +11,15 @@ import {
 import { useCart } from "@/components/cart/cart-provider";
 import { useCatalog } from "@/components/catalog/catalog-provider";
 import { ProductArtwork } from "@/components/storefront/product-artwork";
+import { primaryPickupLocation } from "@/lib/storefront/pickup-location";
 
-type Delivery = "nationwide" | "same-day";
+type Delivery = "nationwide" | "same-day" | "store-pickup";
 type Payment =
   | "maya-online"
   | "maya-transfer"
   | "gcash"
   | "bank"
+  | "cash-on-pickup"
   | "financing"
   | "";
 type Values = {
@@ -57,6 +59,7 @@ type OrderResult = Readonly<{
     productName: string;
     variant: string;
     ramGb: number | null;
+    extendedRamGb: number | null;
     storageGb: number;
     colorName: string | null;
     quantity: number;
@@ -100,22 +103,29 @@ const longDigitSequencePattern = /(?:\d[\s-]*){13,19}/;
 const deliveryLabels: Record<Delivery, string> = {
   nationwide: "Nationwide Delivery",
   "same-day": "Same-Day Delivery",
+  "store-pickup": "Store Pickup",
 };
 const paymentLabels: Record<Exclude<Payment, "">, string> = {
   "maya-online": "Maya Online Payment",
   "maya-transfer": "Maya Manual Transfer",
   gcash: "GCash",
   bank: "Bank Transfer",
+  "cash-on-pickup": "Cash on Store Pickup",
   financing: "Financing Inquiry via Messenger",
 };
 const paymentMethods: Record<
   Exclude<Payment, "" | "financing">,
-  "maya_online" | "maya_manual" | "gcash" | "bank_transfer"
+  | "maya_online"
+  | "maya_manual"
+  | "gcash"
+  | "bank_transfer"
+  | "cash_on_pickup"
 > = {
   "maya-online": "maya_online",
   "maya-transfer": "maya_manual",
   gcash: "gcash",
   bank: "bank_transfer",
+  "cash-on-pickup": "cash_on_pickup",
 };
 
 function Field({
@@ -233,12 +243,15 @@ export function CheckoutForm({
   const cartSignature = items
     .map(
       (item) =>
-        `${item.productSlug}:${item.product.sku}:${item.color?.id ?? "no-color"}:${item.quantity}`,
+        `${item.productSlug}:${item.variantData.sku}:${item.color?.id ?? "no-color"}:${item.fulfillmentMethod}:${item.quantity}`,
     )
     .join("|");
   const financingEligible =
     items.length > 0 &&
-    items.every((item) => item.product.financingAvailable);
+    items.every((item) => item.variantData.financingAvailable);
+  const cartFulfillmentMethods = new Set(
+    items.map((item) => item.fulfillmentMethod),
+  );
 
   const ensureIdempotencyKey = useCallback((): string => {
     if (
@@ -310,7 +323,15 @@ export function CheckoutForm({
   };
 
   const chooseDelivery = (delivery: Delivery) => {
-    setValues((current) => ({ ...current, delivery }));
+    setValues((current) => ({
+      ...current,
+      delivery,
+      payment:
+        current.payment === "cash-on-pickup" &&
+        delivery !== "store-pickup"
+          ? ""
+          : current.payment,
+    }));
     setErrors((current) => ({
       ...current,
       delivery: undefined,
@@ -335,23 +356,44 @@ export function CheckoutForm({
     ) {
       next.email = "Enter a valid email address.";
     }
-    if (!values.street.trim()) {
-      next.street = "Enter the complete street address.";
+    if (values.delivery !== "store-pickup") {
+      if (!values.street.trim()) {
+        next.street = "Enter the complete street address.";
+      }
+      if (!values.province.trim()) next.province = "Enter the province.";
+      if (!values.city.trim()) {
+        next.city = "Enter the city or municipality.";
+      }
+      if (!values.barangay.trim()) {
+        next.barangay = "Enter the barangay.";
+      }
+      if (!/^\d{4}$/.test(values.postal.trim())) {
+        next.postal = "Enter a valid four-digit postal code.";
+      }
     }
-    if (!values.province.trim()) next.province = "Enter the province.";
-    if (!values.city.trim()) {
-      next.city = "Enter the city or municipality.";
-    }
-    if (!values.barangay.trim()) {
-      next.barangay = "Enter the barangay.";
-    }
-    if (!/^\d{4}$/.test(values.postal.trim())) {
-      next.postal = "Enter a valid four-digit postal code.";
+    if (cartFulfillmentMethods.size > 1) {
+      next.delivery =
+        "Delivery and Store Pickup items must be submitted as separate orders.";
+    } else if (
+      items.some(
+        (item) =>
+          (values.delivery === "store-pickup") !==
+          (item.fulfillmentMethod === "store_pickup"),
+      )
+    ) {
+      next.delivery =
+        "The checkout fulfillment method must match the option saved with every cart item.";
     }
     if (!values.payment) next.payment = "Choose a payment method.";
     if (values.payment === "financing" && !financingEligible) {
       next.payment =
         "Financing inquiries are unavailable for one or more cart items.";
+    }
+    if (
+      values.payment === "cash-on-pickup" &&
+      values.delivery !== "store-pickup"
+    ) {
+      next.payment = "Cash on Store Pickup requires Store Pickup.";
     }
     if (values.payment === "financing" && !values.financingConsent) {
       next.financingConsent =
@@ -432,16 +474,28 @@ export function CheckoutForm({
       const product = productBySlug(item.productSlug);
       if (
         !product ||
-        product.variant !== item.variant ||
-        !product.sku
+        !item.variantData.purchasable ||
+        !item.variantData.sku ||
+        item.variantData.currentPrice === null ||
+        !product.variants.some(
+          (variant) =>
+            variant.id === item.variantData.id &&
+            variant.sku === item.variantData.sku,
+        )
       ) {
         return [];
       }
       return [
         {
           productSlug: product.slug,
-          sku: product.sku,
+          sku: item.variantData.sku,
           ...(item.color ? { colorId: item.color.id } : {}),
+          fulfillmentMethod:
+            values.delivery === "store-pickup"
+              ? "store_pickup"
+              : values.delivery === "same-day"
+                ? "same_day_delivery"
+                : "nationwide_delivery",
           quantity: item.quantity,
         },
       ];
@@ -470,19 +524,25 @@ export function CheckoutForm({
             mobile: values.mobile,
             email: values.email,
           },
-          fulfillment: {
-            method:
-              values.delivery === "nationwide"
-                ? "nationwide_delivery"
-                : "same_day_delivery",
-            address: {
-              streetAddress: values.street,
-              province: values.province,
-              cityMunicipality: values.city,
-              barangay: values.barangay,
-              postalCode: values.postal,
-            },
-          },
+          fulfillment:
+            values.delivery === "store-pickup"
+              ? {
+                  method: "store_pickup",
+                  pickupLocationSlug: primaryPickupLocation.slug,
+                }
+              : {
+                  method:
+                    values.delivery === "nationwide"
+                      ? "nationwide_delivery"
+                      : "same_day_delivery",
+                  address: {
+                    streetAddress: values.street,
+                    province: values.province,
+                    cityMunicipality: values.city,
+                    barangay: values.barangay,
+                    postalCode: values.postal,
+                  },
+                },
           paymentMethod: paymentMethods[values.payment],
           ...(values.notes.trim()
             ? { customerNotes: values.notes }
@@ -536,19 +596,23 @@ export function CheckoutForm({
         },
         delivery: {
           method: deliveryLabels[values.delivery],
-          address: `${values.street}, ${values.barangay}, ${values.city}, ${values.province} ${values.postal}`,
+          address:
+            values.delivery === "store-pickup"
+              ? primaryPickupLocation.address
+              : `${values.street}, ${values.barangay}, ${values.city}, ${values.province} ${values.postal}`,
         },
         paymentLabel: paymentLabels[values.payment],
         paymentStatus: responseBody.paymentStatus,
         items: items.map((item) => ({
           lineId: item.lineId,
           productName: item.product.name,
-          variant: item.variant,
-          ramGb: item.product.ramGb ?? null,
-          storageGb: item.product.storageGb,
+          variant: item.variantData.name,
+          ramGb: item.variantData.ramGb ?? null,
+          extendedRamGb: item.variantData.extendedRamGb ?? null,
+          storageGb: item.variantData.storageGb,
           colorName: item.color?.name ?? null,
           quantity: item.quantity,
-          unitPrice: item.product.currentPrice,
+          unitPrice: item.variantData.currentPrice,
           lineTotal: item.lineTotal,
         })),
         subtotal,
@@ -580,7 +644,7 @@ export function CheckoutForm({
     "GadgetMoTo order inquiry",
     ...items.map(
       (item) =>
-        `${item.product.name} — ${item.variant}${item.color ? ` — ${item.color.name}` : ""} — Qty ${item.quantity}`,
+        `${item.product.name} — ${item.variantData.name}${item.color ? ` — ${item.color.name}` : ""} — ${item.fulfillmentMethod === "store_pickup" ? "Store Pickup" : "Delivery"} — Qty ${item.quantity}`,
     ),
     `Estimated merchandise subtotal: ${money.format(subtotal)}`,
     `Delivery preference: ${deliveryLabels[values.delivery]}`,
@@ -591,17 +655,29 @@ export function CheckoutForm({
     "GadgetMoTo financing inquiry",
     "",
     `NAME: ${values.fullName.trim()}`,
-    `ADDRESS: ${values.street.trim()}, ${values.barangay.trim()}, ${values.city.trim()}, ${values.province.trim()} ${values.postal.trim()}`,
+    `ADDRESS: ${
+      values.delivery === "store-pickup"
+        ? primaryPickupLocation.address
+        : `${values.street.trim()}, ${values.barangay.trim()}, ${values.city.trim()}, ${values.province.trim()} ${values.postal.trim()}`
+    }`,
     `CONTACT: ${values.mobile.trim()}`,
     `EMAIL: ${values.email.trim() || "Not provided"}`,
     "",
     "PRODUCT DETAILS:",
     ...items.flatMap((item, index) => [
       `${index + 1}. UNIT: ${item.product.name}`,
-      `   VARIANT: ${item.variant}`,
+      `   VARIANT: ${item.variantData.name}`,
+      ...(item.variantData.ramGb
+        ? [`   PHYSICAL RAM: ${item.variantData.ramGb}GB`]
+        : []),
+      ...(item.variantData.extendedRamGb
+        ? [`   EXTENDED RAM: Up to ${item.variantData.extendedRamGb}GB`]
+        : []),
+      `   STORAGE: ${item.variantData.storageGb === 1024 ? "1TB" : `${item.variantData.storageGb}GB`}`,
       ...(item.color ? [`   COLOR: ${item.color.name}`] : []),
       `   QUANTITY: ${item.quantity}`,
-      `   CURRENT CASH PRICE: ${money.format(item.product.currentPrice)} each`,
+      `   FULFILLMENT: ${item.fulfillmentMethod === "store_pickup" ? "Store Pickup" : "Delivery"}`,
+      `   CURRENT CASH PRICE: ${money.format(item.variantData.currentPrice)} each`,
     ]),
     "",
     `CURRENT MERCHANDISE SUBTOTAL: ${money.format(subtotal)}`,
@@ -714,7 +790,8 @@ export function CheckoutForm({
                 {money.format(item.lineTotal)}
                 <br />
                 {item.ramGb ? `${item.ramGb}GB RAM · ` : ""}
-                {item.storageGb}GB storage
+                {item.extendedRamGb ? `Up to ${item.extendedRamGb}GB extended RAM · ` : ""}
+                {item.storageGb === 1024 ? "1TB" : `${item.storageGb}GB`} storage
               </p>
             ))}
           </section>
@@ -767,7 +844,10 @@ export function CheckoutForm({
     );
   }
 
-  const address = `${values.street}, ${values.barangay}, ${values.city}, ${values.province} ${values.postal}`;
+  const address =
+    values.delivery === "store-pickup"
+      ? primaryPickupLocation.address
+      : `${values.street}, ${values.barangay}, ${values.city}, ${values.province} ${values.postal}`;
 
   return (
     <>
@@ -862,11 +942,16 @@ export function CheckoutForm({
             <fieldset>
               <legend>2. Delivery Method</legend>
               <div className="checkout-options">
-                {(["nationwide", "same-day"] as Delivery[]).map(
+                {(["nationwide", "same-day", "store-pickup"] as Delivery[]).map(
                   (method) => (
                     <label key={method}>
                       <input
                         checked={values.delivery === method}
+                        disabled={
+                          cartFulfillmentMethods.size !== 1 ||
+                          (method === "store-pickup") !==
+                            (items[0]?.fulfillmentMethod === "store_pickup")
+                        }
                         name="delivery"
                         onChange={() => chooseDelivery(method)}
                         type="radio"
@@ -877,31 +962,39 @@ export function CheckoutForm({
                         <small>
                           {method === "nationwide"
                             ? "Delivery fees, courier details, and timing will be confirmed after review."
-                            : "Subject to location, availability, and sales-team confirmation."}
+                            : method === "same-day"
+                              ? "Subject to location, availability, and sales-team confirmation."
+                              : primaryPickupLocation.address}
                         </small>
                       </span>
                     </label>
                   ),
                 )}
-                <label
-                  aria-disabled="true"
-                  className="checkout-option--disabled"
-                >
-                  <input disabled name="delivery" type="radio" />
-                  <span>
-                    <strong>Store Pickup</strong>
-                    <small>
-                      Unavailable until branch and pickup details are
-                      confirmed.
-                    </small>
-                  </span>
-                </label>
               </div>
+              <p className="checkout-help">
+                Fulfillment is saved with each cart configuration. Return to
+                the product page to add the same item with another method.
+              </p>
+              {errors.delivery ? (
+                <small className="checkout-group-error">{errors.delivery}</small>
+              ) : null}
             </fieldset>
           </section>
 
           <section className="checkout-section">
-            <h2>3. Delivery Address</h2>
+            <h2>
+              3. {values.delivery === "store-pickup" ? "Pickup Location" : "Delivery Address"}
+            </h2>
+            {values.delivery === "store-pickup" ? (
+              <div className="checkout-pickup-location">
+                <strong>{primaryPickupLocation.name}</strong>
+                <address>{primaryPickupLocation.address}</address>
+                <p>
+                  Pickup timing and product availability are confirmed after
+                  the order is reviewed.
+                </p>
+              </div>
+            ) : (
             <div className="checkout-field-grid">
               <Field
                 autoComplete="street-address"
@@ -945,6 +1038,7 @@ export function CheckoutForm({
                 value={values.postal}
               />
             </div>
+            )}
           </section>
 
           <section className="checkout-section">
@@ -977,7 +1071,11 @@ export function CheckoutForm({
                         "bank",
                       ] as Exclude<Payment, "">[])
                 )
-                  .concat("financing")
+                  .concat(
+                    values.delivery === "store-pickup"
+                      ? ["cash-on-pickup", "financing"]
+                      : ["financing"],
+                  )
                   .map((method) => {
                   const financingUnavailable =
                     method === "financing" && !financingEligible;
@@ -1000,7 +1098,9 @@ export function CheckoutForm({
                             ? financingUnavailable
                               ? "One or more cart items are not currently marked as financing-eligible."
                               : "Prepare your checkout details, then continue through GadgetMoTo Messenger. Provider, terms, fees, and approval remain subject to confirmation."
-                          : "Payment instructions are provided after the order is submitted and reviewed."}
+                          : method === "cash-on-pickup"
+                            ? "Available only for orders collected from the confirmed pickup location."
+                            : "Payment instructions are provided after the order is submitted and reviewed."}
                       </small>
                     </span>
                   </label>
@@ -1145,14 +1245,14 @@ export function CheckoutForm({
                 <small>{item.product.brand}</small>
                 <strong>{item.product.name}</strong>
                 <small>
-                  {item.variant}
-                  {item.color ? ` · ${item.color.name}` : ""} · Qty {item.quantity}
+                  {item.variantData.name}
+                  {item.color ? ` · ${item.color.name}` : ""} · {item.fulfillmentMethod === "store_pickup" ? "Store Pickup" : "Delivery"} · Qty {item.quantity}
                 </small>
               </span>
               <span>
                 {money.format(item.lineTotal)}
                 <small>
-                  {money.format(item.product.currentPrice)} each
+                  {money.format(item.variantData.currentPrice)} each
                 </small>
               </span>
             </article>
@@ -1238,8 +1338,8 @@ export function CheckoutForm({
               <h3>Items</h3>
               {items.map((item) => (
                 <p key={item.lineId}>
-                  {item.product.name} · {item.variant}
-                  {item.color ? ` · ${item.color.name}` : ""} · Qty{" "}
+                  {item.product.name} · {item.variantData.name}
+                  {item.color ? ` · ${item.color.name}` : ""} · {item.fulfillmentMethod === "store_pickup" ? "Store Pickup" : "Delivery"} · Qty{" "}
                   {item.quantity} · {money.format(item.lineTotal)}
                 </p>
               ))}

@@ -9,7 +9,7 @@ const messengerUrl = "https://www.facebook.com/profile.php?id=100063905416187";
 
 export function StorefrontHeader() {
   return (
-    <header className="relative z-30 bg-white">
+    <header className="sticky top-0 z-50 bg-white shadow-[0_8px_24px_rgb(23_26_32_/_0.08)]">
       <div className="bg-[var(--color-ink)] py-2.5 text-center text-xs font-semibold tracking-wide text-white sm:text-sm">
         <Container>Flexible ways to pay <span aria-hidden="true">•</span> Nationwide delivery <span aria-hidden="true">•</span> Availability confirmed by our sales team</Container>
       </div>

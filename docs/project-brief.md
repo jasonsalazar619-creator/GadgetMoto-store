@@ -5,7 +5,7 @@
 - Name: GadgetMoTo
 - Slogan: Your Next Upgrade, Mo ’To.
 - Supporting line: Phones and tablets for every lifestyle, budget, and way to pay.
-- Location: Cavite City
+- Store pickup location: LOT 1 DON PLACEDO CAMPUS AVE BRGY SABANG, Dasmariñas, Philippines, 4114
 - Primary contact: Facebook Messenger
 - Facebook page: https://www.facebook.com/profile.php?id=100063905416187
 

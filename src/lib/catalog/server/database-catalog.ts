@@ -11,6 +11,7 @@ export type CatalogDatabaseRow = {
   brand_slug: string;
   category: string;
   product_sort_order: number;
+  variant_sort_order: number;
   variant_id: string;
   sku: string;
   variant_name: string;
@@ -45,6 +46,7 @@ export async function loadDatabaseCatalogRows(): Promise<
         brand_slug,
         category,
         product_sort_order,
+        variant_sort_order,
         variant_id,
         sku,
         variant_name,
@@ -78,7 +80,7 @@ export async function loadDatabaseCatalogRows(): Promise<
           '[]'::jsonb
         ) as colors
       from storefront.catalog_products as catalog_products
-      order by product_sort_order asc, product_slug asc, sku asc
+      order by product_sort_order asc, product_slug asc, variant_sort_order asc, sku asc
     `;
 
     return rows;

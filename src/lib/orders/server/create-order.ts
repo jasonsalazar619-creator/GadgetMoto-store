@@ -426,7 +426,7 @@ async function lockAndValidateInventory(
   sql: OrderTransaction,
   location: LocationRow,
   items: readonly PreparedOrderItem[],
-): Promise<void> {
+): Promise<boolean> {
   const rows = await sql<InventoryLevelRow[]>`
     select
       levels.variant_id,
@@ -450,6 +450,11 @@ async function lockAndValidateInventory(
     );
   }
 
+  // A newly approved pickup branch can receive a pending-review order before
+  // inventory levels are configured. Once any requested variant is tracked at
+  // this branch, complete coverage and sufficient available stock are required.
+  if (rows.length === 0) return false;
+
   if (rows.length !== quantitiesByVariant.size) {
     throw new OrderServerError("INSUFFICIENT_INVENTORY");
   }
@@ -471,6 +476,7 @@ async function lockAndValidateInventory(
       throw new OrderServerError("INSUFFICIENT_INVENTORY");
     }
   }
+  return true;
 }
 
 async function createNewOrder(
@@ -482,9 +488,9 @@ async function createNewOrder(
 ): Promise<CreateOrderSuccessResponse> {
   const items = await loadAuthoritativeProducts(sql, request);
   const location = await resolveFulfillmentLocation(sql, request, items);
-  if (location) {
-    await lockAndValidateInventory(sql, location, items);
-  }
+  const inventoryReserved = location
+    ? await lockAndValidateInventory(sql, location, items)
+    : false;
 
   const subtotalCentavos = items.reduce(
     (subtotal, item) => subtotal + item.lineTotalCentavos,
@@ -644,7 +650,7 @@ async function createNewOrder(
     )
   `;
 
-  if (location) {
+  if (location && inventoryReserved) {
     for (const item of [...items].sort((left, right) =>
       left.variantId.localeCompare(right.variantId),
     )) {
