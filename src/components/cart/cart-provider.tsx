@@ -187,7 +187,7 @@ const resolveColor = (
   variantId: string,
   colorId: unknown,
 ): ProductColor | null | undefined => {
-  const colors = product.colors ?? [];
+  const colors = (product.colors ?? []).filter((color) => color.purchasable);
   if (!colors.length) return colorId === undefined ? null : undefined;
   if (typeof colorId !== "string") return undefined;
   const color = colors.find((candidate) => candidate.id === colorId);
@@ -224,7 +224,8 @@ const isPurchasableVariant = (
     variant?.isActive &&
       variant.purchasable &&
       variant.sku &&
-      variant.currentPrice !== null,
+      variant.currentPrice !== null &&
+      variant.currentPrice > 0,
   );
 
 export function CartProvider({ children }: { children: ReactNode }) {

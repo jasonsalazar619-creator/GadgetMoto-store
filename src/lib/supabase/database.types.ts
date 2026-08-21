@@ -285,6 +285,139 @@ export type Database = {
         };
         Relationships: [];
       };
+      product_manufacturer_sources: {
+        Row: {
+          id: string;
+          product_id: string;
+          source_name: string;
+          source_url: string;
+          region: "ph" | "sea" | "regional" | "global";
+          source_type:
+            | "manufacturer_product_page"
+            | "manufacturer_support_page"
+            | "manufacturer_newsroom"
+            | "manufacturer_specification_pdf"
+            | "authorized_retailer";
+          researched_at: string;
+          verification_status: "verified" | "partial" | "needs_manual_verification";
+          notes: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          product_id: string;
+          source_name: string;
+          source_url: string;
+          region: "ph" | "sea" | "regional" | "global";
+          source_type:
+            | "manufacturer_product_page"
+            | "manufacturer_support_page"
+            | "manufacturer_newsroom"
+            | "manufacturer_specification_pdf"
+            | "authorized_retailer";
+          researched_at?: string;
+          verification_status: "verified" | "partial" | "needs_manual_verification";
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["product_manufacturer_sources"]["Insert"]>;
+        Relationships: [];
+      };
+      product_manufacturer_variants: {
+        Row: {
+          id: string;
+          product_id: string;
+          source_id: string;
+          region: "ph" | "sea" | "regional" | "global";
+          physical_ram_gb: number | null;
+          physical_ram_not_published: boolean;
+          extended_ram_gb: number | null;
+          storage_gb: number;
+          verification_status: "verified" | "partial" | "needs_manual_verification";
+          mapped_product_variant_id: string | null;
+          sort_order: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          product_id: string;
+          source_id: string;
+          region: "ph" | "sea" | "regional" | "global";
+          physical_ram_gb?: number | null;
+          physical_ram_not_published?: boolean;
+          extended_ram_gb?: number | null;
+          storage_gb: number;
+          verification_status: "verified" | "partial" | "needs_manual_verification";
+          mapped_product_variant_id?: string | null;
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["product_manufacturer_variants"]["Insert"]>;
+        Relationships: [];
+      };
+      product_manufacturer_colors: {
+        Row: {
+          id: string;
+          product_id: string;
+          source_id: string;
+          region: "ph" | "sea" | "regional" | "global";
+          official_name: string;
+          normalized_name: string;
+          hex_code: string | null;
+          verification_status: "verified" | "partial" | "needs_manual_verification";
+          mapped_product_color_variant_id: string | null;
+          sort_order: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          product_id: string;
+          source_id: string;
+          region: "ph" | "sea" | "regional" | "global";
+          official_name: string;
+          hex_code?: string | null;
+          verification_status: "verified" | "partial" | "needs_manual_verification";
+          mapped_product_color_variant_id?: string | null;
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["product_manufacturer_colors"]["Insert"]>;
+        Relationships: [];
+      };
+      product_manufacturer_combinations: {
+        Row: {
+          id: string;
+          product_id: string;
+          source_id: string;
+          region: "ph" | "sea" | "regional" | "global";
+          manufacturer_variant_id: string;
+          manufacturer_color_id: string;
+          verification_status: "verified" | "partial" | "needs_manual_verification";
+          sort_order: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          product_id: string;
+          source_id: string;
+          region: "ph" | "sea" | "regional" | "global";
+          manufacturer_variant_id: string;
+          manufacturer_color_id: string;
+          verification_status: "verified" | "partial" | "needs_manual_verification";
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["product_manufacturer_combinations"]["Insert"]>;
+        Relationships: [];
+      };
       product_images: {
         Row: {
           id: string;

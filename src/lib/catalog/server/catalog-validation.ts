@@ -450,6 +450,8 @@ export function normalizeDatabaseCatalogRows(
         : {}),
       variants,
       variantColorOptions: first.variantColorOptions,
+      manufacturerCombinations:
+        first.staticProduct?.manufacturerCombinations ?? [],
     };
   });
 

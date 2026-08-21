@@ -102,6 +102,63 @@ export type AdminProductVariantColorOption = {
   updatedAt: string;
 };
 
+export type ManufacturerResearchStatus =
+  | "verified"
+  | "partial"
+  | "needs_manual_verification";
+
+export type ManufacturerResearchRegion = "ph" | "sea" | "regional" | "global";
+
+export type AdminManufacturerSource = {
+  id: string;
+  name: string;
+  url: string;
+  region: ManufacturerResearchRegion;
+  status: ManufacturerResearchStatus;
+  notes: string | null;
+};
+
+export type AdminManufacturerVariant = {
+  id: string;
+  sourceId: string;
+  region: ManufacturerResearchRegion;
+  physicalRamGb: number | null;
+  physicalRamNotPublished: boolean;
+  extendedRamGb: number | null;
+  storageGb: number;
+  status: ManufacturerResearchStatus;
+  mappedProductVariantId: string | null;
+  sortOrder: number;
+};
+
+export type AdminManufacturerColor = {
+  id: string;
+  sourceId: string;
+  region: ManufacturerResearchRegion;
+  officialName: string;
+  hexCode: string | null;
+  status: ManufacturerResearchStatus;
+  mappedProductColorId: string | null;
+  sortOrder: number;
+};
+
+export type AdminManufacturerCombination = {
+  id: string;
+  sourceId: string;
+  region: ManufacturerResearchRegion;
+  status: ManufacturerResearchStatus;
+  variant: AdminManufacturerVariant;
+  color: AdminManufacturerColor;
+  sortOrder: number;
+};
+
+export type AdminManufacturerResearch = {
+  sources: readonly AdminManufacturerSource[];
+  variants: readonly AdminManufacturerVariant[];
+  colors: readonly AdminManufacturerColor[];
+  combinations: readonly AdminManufacturerCombination[];
+};
+
 export type AdminProductVariantDraft = {
   sku: string | null;
   variantName: string | null;
@@ -132,6 +189,7 @@ export type AdminProductEditorData = {
   variants: readonly AdminProductVariant[];
   colors: readonly AdminProductColor[];
   variantColorOptions: readonly AdminProductVariantColorOption[];
+  manufacturerResearch: AdminManufacturerResearch;
   variantDraft: AdminProductVariantDraft;
   images: AdminProductImage[];
   readiness: AdminProductReadiness;
@@ -247,8 +305,7 @@ export type ProductColorMutationResult =
 export type ProductVariantColorAvailabilitySubmission = {
   productId: string;
   variantId: string;
-  colorId?: string;
-  officialColorName?: string;
+  colorId: string;
   isAvailable: boolean;
 };
 

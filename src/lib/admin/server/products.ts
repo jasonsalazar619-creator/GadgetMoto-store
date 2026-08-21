@@ -25,6 +25,14 @@ type ColorRow =
   Database["public"]["Tables"]["product_color_variants"]["Row"];
 type VariantColorOptionRow =
   Database["public"]["Tables"]["product_variant_color_options"]["Row"];
+type ManufacturerSourceRow =
+  Database["public"]["Tables"]["product_manufacturer_sources"]["Row"];
+type ManufacturerVariantRow =
+  Database["public"]["Tables"]["product_manufacturer_variants"]["Row"];
+type ManufacturerColorRow =
+  Database["public"]["Tables"]["product_manufacturer_colors"]["Row"];
+type ManufacturerCombinationRow =
+  Database["public"]["Tables"]["product_manufacturer_combinations"]["Row"];
 type ImageRow = Database["public"]["Tables"]["product_images"]["Row"];
 
 const unavailableMessage =
@@ -198,6 +206,10 @@ function toEditorData(
   variantRows: readonly VariantRow[],
   colorRows: readonly ColorRow[],
   variantColorOptionRows: readonly VariantColorOptionRow[],
+  manufacturerSourceRows: readonly ManufacturerSourceRow[],
+  manufacturerVariantRows: readonly ManufacturerVariantRow[],
+  manufacturerColorRows: readonly ManufacturerColorRow[],
+  manufacturerCombinationRows: readonly ManufacturerCombinationRow[],
   imageRows: readonly ImageRow[],
   brandIsActive: boolean,
   slugIsUnique: boolean,
@@ -226,6 +238,34 @@ function toEditorData(
     skuIsUnique,
     variant: variantDraft,
   });
+  const manufacturerVariants = manufacturerVariantRows.map((item) => ({
+    id: item.id,
+    sourceId: item.source_id,
+    region: item.region,
+    physicalRamGb: item.physical_ram_gb,
+    physicalRamNotPublished: item.physical_ram_not_published,
+    extendedRamGb: item.extended_ram_gb,
+    storageGb: item.storage_gb,
+    status: item.verification_status,
+    mappedProductVariantId: item.mapped_product_variant_id,
+    sortOrder: item.sort_order,
+  }));
+  const manufacturerColors = manufacturerColorRows.map((item) => ({
+    id: item.id,
+    sourceId: item.source_id,
+    region: item.region,
+    officialName: item.official_name,
+    hexCode: item.hex_code,
+    status: item.verification_status,
+    mappedProductColorId: item.mapped_product_color_variant_id,
+    sortOrder: item.sort_order,
+  }));
+  const manufacturerVariantsById = new Map(
+    manufacturerVariants.map((item) => [item.id, item]),
+  );
+  const manufacturerColorsById = new Map(
+    manufacturerColors.map((item) => [item.id, item]),
+  );
 
   return {
     id: product.id,
@@ -288,6 +328,39 @@ function toEditorData(
       sortOrder: item.sort_order,
       updatedAt: item.updated_at,
     })),
+    manufacturerResearch: {
+      sources: manufacturerSourceRows.map((item) => ({
+        id: item.id,
+        name: item.source_name,
+        url: item.source_url,
+        region: item.region,
+        status: item.verification_status,
+        notes: item.notes,
+      })),
+      variants: manufacturerVariants,
+      colors: manufacturerColors,
+      combinations: manufacturerCombinationRows.flatMap((item) => {
+        const researchedVariant = manufacturerVariantsById.get(
+          item.manufacturer_variant_id,
+        );
+        const researchedColor = manufacturerColorsById.get(
+          item.manufacturer_color_id,
+        );
+        return researchedVariant && researchedColor
+          ? [
+              {
+                id: item.id,
+                sourceId: item.source_id,
+                region: item.region,
+                status: item.verification_status,
+                variant: researchedVariant,
+                color: researchedColor,
+                sortOrder: item.sort_order,
+              },
+            ]
+          : [];
+      }),
+    },
     variantDraft,
     images,
     readiness,
@@ -310,7 +383,20 @@ async function loadEditorData(
   supabase: SupabaseClient<Database>,
   productId: string,
 ): Promise<AdminProductEditorData | null> {
-  const [productResult, variantResult, colorResult, variantColorOptionResult, brandResult, imageResult, allProductsResult, allVariantsResult] =
+  const [
+    productResult,
+    variantResult,
+    colorResult,
+    variantColorOptionResult,
+    manufacturerSourceResult,
+    manufacturerVariantResult,
+    manufacturerColorResult,
+    manufacturerCombinationResult,
+    brandResult,
+    imageResult,
+    allProductsResult,
+    allVariantsResult,
+  ] =
     await Promise.all([
       supabase.from("products").select("*").eq("id", productId).maybeSingle(),
       supabase
@@ -327,6 +413,30 @@ async function loadEditorData(
         .order("id", { ascending: true }),
       supabase
         .from("product_variant_color_options")
+        .select("*")
+        .eq("product_id", productId)
+        .order("sort_order", { ascending: true })
+        .order("id", { ascending: true }),
+      supabase
+        .from("product_manufacturer_sources")
+        .select("*")
+        .eq("product_id", productId)
+        .order("researched_at", { ascending: false })
+        .order("id", { ascending: true }),
+      supabase
+        .from("product_manufacturer_variants")
+        .select("*")
+        .eq("product_id", productId)
+        .order("sort_order", { ascending: true })
+        .order("id", { ascending: true }),
+      supabase
+        .from("product_manufacturer_colors")
+        .select("*")
+        .eq("product_id", productId)
+        .order("sort_order", { ascending: true })
+        .order("id", { ascending: true }),
+      supabase
+        .from("product_manufacturer_combinations")
         .select("*")
         .eq("product_id", productId)
         .order("sort_order", { ascending: true })
@@ -348,6 +458,10 @@ async function loadEditorData(
     variantResult.error ||
     colorResult.error ||
     variantColorOptionResult.error ||
+    manufacturerSourceResult.error ||
+    manufacturerVariantResult.error ||
+    manufacturerColorResult.error ||
+    manufacturerCombinationResult.error ||
     brandResult.error ||
     imageResult.error ||
     allProductsResult.error ||
@@ -373,6 +487,10 @@ async function loadEditorData(
     variantResult.data ?? [],
     colorResult.data ?? [],
     variantColorOptionResult.data ?? [],
+    manufacturerSourceResult.data ?? [],
+    manufacturerVariantResult.data ?? [],
+    manufacturerColorResult.data ?? [],
+    manufacturerCombinationResult.data ?? [],
     imageResult.data ?? [],
     (brandResult.data ?? []).some(
       ({ id }) => id === productResult.data?.brand_id,

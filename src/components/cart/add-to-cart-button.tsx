@@ -20,17 +20,30 @@ type ConfigurationChoice = Readonly<{
   isAvailable: boolean;
 }>;
 
+function manufacturerCombinationKey(
+  colorName: string,
+  variant: Pick<ProductVariant, "ramGb" | "extendedRamGb" | "storageGb">,
+): string {
+  return [
+    colorName.trim().toLocaleLowerCase(),
+    variant.ramGb ?? "storage-only",
+    variant.extendedRamGb ?? "none",
+    variant.storageGb,
+  ].join(":");
+}
+
 function getConfigurationChoices(
   product: PrototypeProduct,
 ): readonly ConfigurationChoice[] {
   const variants = product.variants.filter((variant) => variant.isActive);
   const colors = product.colors ?? [];
-  if (!colors.length) {
-    return variants.map((variant) => ({
+  const commercialColors = colors.filter((color) => color.purchasable);
+  if (!commercialColors.length) {
+    return variants.filter((variant) => variant.purchasable).map((variant) => ({
       key: variant.id,
       variant,
       color: null,
-      isAvailable: variant.purchasable,
+      isAvailable: true,
     }));
   }
 
@@ -39,15 +52,31 @@ function getConfigurationChoices(
       .filter(({ isAvailable }) => isAvailable)
       .map(({ variantId, colorId }) => `${variantId}:${colorId}`),
   );
+  const verifiedManufacturerPairs = new Set(
+    product.manufacturerCombinations.map((combination) =>
+      manufacturerCombinationKey(combination.colorName, combination),
+    ),
+  );
   return colors.flatMap((color) =>
-    variants.map((variant) => ({
-      key: `${variant.id}:${color.id}`,
-      variant,
-      color,
-      isAvailable:
-        variant.purchasable &&
-        availablePairs.has(`${variant.id}:${color.id}`),
-    })),
+    variants.flatMap((variant) => {
+      const pairId = `${variant.id}:${color.id}`;
+      const isAvailable =
+        variant.purchasable && availablePairs.has(pairId);
+      const isManufacturerVerified = verifiedManufacturerPairs.has(
+        manufacturerCombinationKey(color.name, variant),
+      );
+      const isCommercialPair = color.purchasable && variant.purchasable;
+      return isCommercialPair || isAvailable || isManufacturerVerified
+        ? [
+            {
+              key: pairId,
+              variant,
+              color,
+              isAvailable,
+            },
+          ]
+        : [];
+    }),
   );
 }
 
@@ -75,7 +104,8 @@ export function AddToCartButton({ product }: { product: PrototypeProduct }) {
     selectedChoice?.isAvailable &&
       selectedVariant?.purchasable &&
       selectedVariant.sku &&
-      selectedVariant.currentPrice !== null,
+      selectedVariant.currentPrice !== null &&
+      selectedVariant.currentPrice > 0,
   );
   const quantity = selectedChoice && selectedVariant
     ? getItemQuantity(
@@ -98,7 +128,7 @@ export function AddToCartButton({ product }: { product: PrototypeProduct }) {
             : ""}
         </legend>
         <div className="product-configurator__options product-configurator__options--combinations">
-          {choices.map((choice) => (
+          {choices.length ? choices.map((choice) => (
             <label key={choice.key}>
               <input
                 checked={selectedChoice?.key === choice.key}
@@ -127,7 +157,9 @@ export function AddToCartButton({ product }: { product: PrototypeProduct }) {
                 <small>{choice.isAvailable ? "Available" : "Unavailable"}</small>
               </span>
             </label>
-          ))}
+          )) : (
+            <p>No verified color and memory/storage combination is currently configured.</p>
+          )}
         </div>
       </fieldset>
 

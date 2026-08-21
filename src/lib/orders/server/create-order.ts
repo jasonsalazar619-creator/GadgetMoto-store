@@ -323,6 +323,7 @@ async function loadAuthoritativeProducts(
       row.requested_order !== index ||
       row.product_slug !== requested.productSlug ||
       row.sku.toLowerCase() !== requested.sku.toLowerCase() ||
+      !row.sku.trim() ||
       !row.brand_active ||
       !row.product_active ||
       !row.product_published ||
@@ -344,6 +345,9 @@ async function loadAuthoritativeProducts(
     const unitPriceCentavos = readDatabaseBigint(
       row.current_price_centavos,
     );
+    if (unitPriceCentavos <= BigInt(0)) {
+      throw new OrderServerError("PRODUCT_NOT_AVAILABLE");
+    }
     const lineTotalCentavos =
       unitPriceCentavos * BigInt(requested.quantity);
     if (lineTotalCentavos > postgresBigintMaximum) {

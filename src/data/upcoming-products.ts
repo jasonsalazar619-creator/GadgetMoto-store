@@ -34,7 +34,11 @@ export type UpcomingProduct = Readonly<{
   colors: readonly string[];
   configurationSource: Readonly<{
     url: string;
-    region: "Philippines" | "Southeast Asia" | "Global";
+    region:
+      | "Philippines"
+      | "Southeast Asia"
+      | "Official regional"
+      | "Global";
     note: string;
   }> | null;
   availabilityMessage: "Details and availability coming soon.";
@@ -115,7 +119,7 @@ export const upcomingProducts: readonly UpcomingProduct[] = [
     "lenovo-legion-y70-2026",
     "Lenovo Legion Y70 2026",
     "Lenovo",
-    "To be confirmed",
+    "Phone",
     1024,
     1536,
     [

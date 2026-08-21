@@ -43,14 +43,14 @@ const seeds: Readonly<Record<string, ContentSeed>> = {
   "honor-win-rt": {
     name: "HONOR WIN RT",
     device: "phone",
-    focus: "a streamlined handset concept whose exact regional configuration still needs confirmation",
-    audience: "customers following HONOR announcements before choosing a future phone",
+    focus: "a China-official WIN-series smartphone with manufacturer-confirmed finishes and memory configurations",
+    audience: "customers evaluating official China-market HONOR imports before local availability is confirmed",
   },
   "honor-win": {
     name: "HONOR WIN",
     device: "phone",
-    focus: "a future-facing HONOR handset identity awaiting an exact official product match",
-    audience: "shoppers who want to track emerging HONOR models without relying on unverified specifications",
+    focus: "a China-official WIN-series smartphone with manufacturer-confirmed finishes and memory configurations",
+    audience: "shoppers evaluating official China-market HONOR imports without assuming Philippine availability",
   },
   "honor-x9d": {
     name: "HONOR X9d",
@@ -90,20 +90,20 @@ const seeds: Readonly<Record<string, ContentSeed>> = {
   "infinix-note-edge-5g": {
     name: "Infinix Note Edge 5G",
     device: "phone",
-    focus: "a Note-series form factor paired with 5G connectivity in the submitted product identity",
-    audience: "users interested in larger-screen Infinix phones for connected daily tasks",
+    focus: "an officially documented NOTE EDGE 5G handset with distinct physical and extended-memory options",
+    audience: "users interested in a slim, larger-screen Infinix phone for connected daily tasks",
   },
   "infinix-note-60-ultra": {
     name: "Infinix Note 60 Ultra",
     device: "phone",
-    focus: "an upper-tier Note-series concept awaiting confirmation of its exact manufacturer configuration",
-    audience: "customers following Infinix’s premium-leaning Note releases and future regional availability",
+    focus: "an official Philippine NOTE-series handset whose finish names are confirmed while its complete memory matrix remains unpublished",
+    audience: "customers following Infinix’s premium-leaning Note releases and future local availability",
   },
   "infinix-smart-20": {
     name: "Infinix Smart 20",
     device: "phone",
-    focus: "straightforward smartphone essentials under an identity that still requires official verification",
-    audience: "first-time and value-conscious users watching for practical Infinix options",
+    focus: "officially documented smartphone essentials with manufacturer-confirmed memory and finish options",
+    audience: "first-time and value-conscious users considering practical Infinix options",
   },
   "identity-to-be-confirmed": {
     name: "Product identity to be confirmed",
@@ -248,19 +248,19 @@ const seeds: Readonly<Record<string, ContentSeed>> = {
   "lenovo-legion-tab-y700-gen5": {
     name: "Lenovo Legion Tab Y700 Gen5",
     device: "tablet",
-    focus: "a compact Legion gaming-tablet concept whose generation label still needs official confirmation",
+    focus: "the compact fifth-generation Y700 gaming tablet identified from its supplied media and Lenovo’s official specification record",
     audience: "players seeking a portable tablet format for games and media",
   },
   "lenovo-legion-y70-2026": {
     name: "Lenovo Legion Y70 2026",
-    device: "device",
-    focus: "a Legion-branded identity represented by two supplied images but lacking a confirmed device category",
-    audience: "visitors tracking Lenovo gaming hardware while its exact model record is resolved",
+    device: "phone",
+    focus: "the China-official Legion Y70 New Generation smartphone identified from the existing media and specifications",
+    audience: "players tracking Lenovo’s 2026 Legion smartphone and official China-market configurations",
   },
   "lenovo-legion-tab-y700": {
     name: "Lenovo Legion Tab Y700",
     device: "tablet",
-    focus: "a compact gaming-tablet identity awaiting a reliable official page for the exact submitted model",
+    focus: "the fourth-generation Y700 gaming tablet identified from its supplied 2025 media and Lenovo’s official listings",
     audience: "users interested in portable Legion hardware for games, streaming, and touch interaction",
   },
   "oneplus-ace6t": {

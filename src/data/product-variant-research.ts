@@ -13,11 +13,19 @@ export type ResearchedProductColor = Readonly<{
   hexCode: null;
 }>;
 
+export type ResearchedProductCombination = Readonly<{
+  colorName: string;
+  ramGb?: number;
+  extendedRamGb?: number;
+  storageGb: number;
+}>;
+
 type ActiveProductResearch = Readonly<{
   sourceUrl: string;
   region: "Philippines" | "Southeast Asia" | "Global" | "Official regional";
   configurations: readonly ResearchedProductConfiguration[];
   colors: readonly ResearchedProductColor[];
+  exactCombinations?: readonly ResearchedProductCombination[];
   notes?: string;
 }>;
 
@@ -85,6 +93,11 @@ export const activeProductResearchBySlug: Readonly<
       option("apple-iphone-17", undefined, 512, iphone17),
     ],
     colors: colors("apple-iphone-17", ["Black", "White", "Mist Blue", "Sage", "Lavender"]),
+    exactCombinations: [256, 512].flatMap((storageGb) =>
+      ["Black", "White", "Mist Blue", "Sage", "Lavender"].map(
+        (colorName) => ({ colorName, storageGb }),
+      ),
+    ),
     notes: "Apple does not publish customer-facing RAM for this product, so only storage is displayed.",
   },
   "poco-f8-ultra": {

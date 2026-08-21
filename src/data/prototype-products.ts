@@ -41,6 +41,13 @@ export type ProductVariantColorOption = Readonly<{
   isAvailable: boolean;
 }>;
 
+export type ProductManufacturerCombination = Readonly<{
+  colorName: string;
+  ramGb?: number;
+  extendedRamGb?: number;
+  storageGb: number;
+}>;
+
 export type PrototypeProduct = {
   id: string;
   slug: string;
@@ -66,11 +73,12 @@ export type PrototypeProduct = {
   colors?: readonly ProductColor[];
   variants: readonly ProductVariant[];
   variantColorOptions: readonly ProductVariantColorOption[];
+  manufacturerCombinations: readonly ProductManufacturerCombination[];
 };
 
 type LegacyProduct = Omit<
   PrototypeProduct,
-  "variants" | "variantColorOptions"
+  "variants" | "variantColorOptions" | "manufacturerCombinations"
 >;
 
 const baseProducts: readonly LegacyProduct[] = [
@@ -154,6 +162,7 @@ const products: readonly PrototypeProduct[] = baseProducts.map((product) => {
     : {}),
     variants: [commercial, ...manufacturerOnly],
     variantColorOptions: [],
+    manufacturerCombinations: research?.exactCombinations ?? [],
   };
 });
 

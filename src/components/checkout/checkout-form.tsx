@@ -869,8 +869,9 @@ export function CheckoutForm({
             contact us to complete your order.
           </p>
           <p>
-            Contact us to confirm product availability, delivery charges,
-            and payment instructions.
+            Product availability follows the exact variant selected in your
+            cart. Delivery charges and payment instructions are confirmed
+            during manual order review.
           </p>
         </aside>
       ) : null}

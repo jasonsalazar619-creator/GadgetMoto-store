@@ -22,8 +22,8 @@ export default function TermsPage() {
         </p>
         <h2>Products and order confirmation</h2>
         <p>
-          Product prices and availability may change. Contact us to confirm
-          availability before completing an order.
+          Product prices and exact variant availability may change. The
+          storefront displays the combinations currently enabled for ordering.
         </p>
         <h2>VAT, delivery, pickup, and payment</h2>
         <p>
