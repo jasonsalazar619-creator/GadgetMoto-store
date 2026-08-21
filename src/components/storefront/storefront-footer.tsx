@@ -40,7 +40,7 @@ export function StorefrontFooter() {
         </div>
         <div className="flex flex-col gap-3 pt-7 text-xs text-[#91a0ad] sm:flex-row sm:items-center sm:justify-between">
           <p>© {year} GadgetMoTo. Your Next Upgrade, Mo ’To.</p>
-          <p>Contact us to confirm availability.</p>
+          <p>Availability is managed per product variant.</p>
         </div>
       </Container>
     </footer>

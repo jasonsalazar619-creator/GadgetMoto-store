@@ -5,6 +5,7 @@ import {
   type ProductCategory,
   type ProductColor,
   type ProductVariant,
+  type ProductVariantColorOption,
   type PrototypeProduct,
 } from "@/data/prototype-products";
 import { upcomingProducts } from "@/data/upcoming-products";
@@ -31,6 +32,7 @@ type ValidatedCatalogRow = Readonly<{
   images: readonly ProductImage[];
   specifications: readonly ProductSpecification[];
   colors: readonly ProductColor[];
+  variantColorOptions: readonly ProductVariantColorOption[];
 }>;
 
 const failValidation = (): never => {
@@ -180,6 +182,41 @@ function readColors(value: unknown): readonly ProductColor[] {
   return colors;
 }
 
+function readVariantColorOptions(
+  value: unknown,
+): readonly ProductVariantColorOption[] {
+  if (!Array.isArray(value) || value.length > 2500) return failValidation();
+
+  const options = value.map((item): ProductVariantColorOption => {
+    if (
+      typeof item !== "object" ||
+      item === null ||
+      Array.isArray(item) ||
+      !("variantId" in item) ||
+      !("colorId" in item) ||
+      typeof item.variantId !== "string" ||
+      !uuidPattern.test(item.variantId) ||
+      typeof item.colorId !== "string" ||
+      !uuidPattern.test(item.colorId)
+    ) {
+      return failValidation();
+    }
+    return {
+      variantId: item.variantId,
+      colorId: item.colorId,
+      isAvailable: true,
+    };
+  });
+
+  assertUnique(
+    options.map(
+      ({ variantId, colorId }) =>
+        `${variantId.toLocaleLowerCase()}:${colorId.toLocaleLowerCase()}`,
+    ),
+  );
+  return options;
+}
+
 function validateDatabaseCatalogRows(
   rows: readonly CatalogDatabaseRow[],
 ): readonly ValidatedCatalogRow[] {
@@ -233,6 +270,9 @@ function validateDatabaseCatalogRows(
     const images = readImages(row.images);
     const specifications = readSpecifications(row.specifications);
     const colors = readColors(row.colors);
+    const variantColorOptions = readVariantColorOptions(
+      row.variant_color_options,
+    );
 
     if (
       srpCentavos !== null &&
@@ -252,6 +292,7 @@ function validateDatabaseCatalogRows(
       images,
       specifications,
       colors,
+      variantColorOptions,
     };
   });
 
@@ -297,7 +338,9 @@ export function normalizeDatabaseCatalogRows(
         item.row.full_description !== first.row.full_description ||
         JSON.stringify(item.images) !== JSON.stringify(first.images) ||
         JSON.stringify(item.specifications) !== JSON.stringify(first.specifications) ||
-        JSON.stringify(item.colors) !== JSON.stringify(first.colors)
+        JSON.stringify(item.colors) !== JSON.stringify(first.colors) ||
+        JSON.stringify(item.variantColorOptions) !==
+          JSON.stringify(first.variantColorOptions)
       ) {
         return failValidation();
       }
@@ -323,9 +366,24 @@ export function normalizeDatabaseCatalogRows(
         isActive: true,
         isDefault: index === 0,
         purchasable: true,
-        availabilityMessage: "Contact us to confirm availability.",
+        availabilityMessage: "Available",
       }),
     );
+    const databaseVariantIds = new Set(
+      databaseVariants.map(({ id }) => id.toLocaleLowerCase()),
+    );
+    const databaseColorIds = new Set(
+      first.colors.map(({ id }) => id.toLocaleLowerCase()),
+    );
+    if (
+      first.variantColorOptions.some(
+        ({ variantId, colorId }) =>
+          !databaseVariantIds.has(variantId.toLocaleLowerCase()) ||
+          !databaseColorIds.has(colorId.toLocaleLowerCase()),
+      )
+    ) {
+      return failValidation();
+    }
     const staticManufacturerVariants = (first.staticProduct?.variants ?? [])
       .filter(
         (candidate) =>
@@ -391,6 +449,7 @@ export function normalizeDatabaseCatalogRows(
         ? { fullDescription: first.row.full_description }
         : {}),
       variants,
+      variantColorOptions: first.variantColorOptions,
     };
   });
 

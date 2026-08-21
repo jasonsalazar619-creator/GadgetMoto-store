@@ -2,43 +2,82 @@
 
 import { useMemo, useState } from "react";
 import { PriceDisplay } from "@/components/ui/price-display";
-import type { PrototypeProduct } from "@/data/prototype-products";
+import type {
+  ProductColor,
+  ProductVariant,
+  PrototypeProduct,
+} from "@/data/prototype-products";
 import {
   primaryPickupLocation,
   type ProductFulfillmentMethod,
 } from "@/lib/storefront/pickup-location";
 import { useCart } from "./cart-provider";
 
+type ConfigurationChoice = Readonly<{
+  key: string;
+  variant: ProductVariant;
+  color: ProductColor | null;
+  isAvailable: boolean;
+}>;
+
+function getConfigurationChoices(
+  product: PrototypeProduct,
+): readonly ConfigurationChoice[] {
+  const variants = product.variants.filter((variant) => variant.isActive);
+  const colors = product.colors ?? [];
+  if (!colors.length) {
+    return variants.map((variant) => ({
+      key: variant.id,
+      variant,
+      color: null,
+      isAvailable: variant.purchasable,
+    }));
+  }
+
+  const availablePairs = new Set(
+    product.variantColorOptions
+      .filter(({ isAvailable }) => isAvailable)
+      .map(({ variantId, colorId }) => `${variantId}:${colorId}`),
+  );
+  return colors.flatMap((color) =>
+    variants.map((variant) => ({
+      key: `${variant.id}:${color.id}`,
+      variant,
+      color,
+      isAvailable:
+        variant.purchasable &&
+        availablePairs.has(`${variant.id}:${color.id}`),
+    })),
+  );
+}
+
 export function AddToCartButton({ product }: { product: PrototypeProduct }) {
+  const choices = useMemo(() => getConfigurationChoices(product), [product]);
+  const defaultChoice = choices.find(({ isAvailable }) => isAvailable);
   const defaultVariant =
     product.variants.find((variant) => variant.isDefault && variant.isActive) ??
     product.variants.find((variant) => variant.isActive) ??
     product.variants[0];
-  const [selectedVariantId, setSelectedVariantId] = useState(
-    defaultVariant?.id ?? "",
-  );
-  const [selectedColorId, setSelectedColorId] = useState(
-    product.colors?.find((color) => color.purchasable)?.id ?? "",
+  const [selectedChoiceKey, setSelectedChoiceKey] = useState(
+    defaultChoice?.key ?? "",
   );
   const [fulfillmentMethod, setFulfillmentMethod] =
     useState<ProductFulfillmentMethod>("delivery");
   const { addItem, getItemQuantity } = useCart();
-  const selectedVariant = useMemo(
-    () =>
-      product.variants.find(
-        (variant) => variant.id === selectedVariantId && variant.isActive,
-      ) ?? defaultVariant,
-    [defaultVariant, product.variants, selectedVariantId],
-  );
-  const selectedColor = product.colors?.find(
-    (color) => color.id === selectedColorId,
-  );
+  const selectedChoice =
+    choices.find(
+      (choice) =>
+        choice.key === selectedChoiceKey && choice.isAvailable,
+    ) ?? defaultChoice;
+  const selectedVariant = selectedChoice?.variant ?? defaultVariant;
+  const selectedColor = selectedChoice?.color ?? null;
   const canPurchase = Boolean(
-    selectedVariant?.purchasable &&
+    selectedChoice?.isAvailable &&
+      selectedVariant?.purchasable &&
       selectedVariant.sku &&
       selectedVariant.currentPrice !== null,
   );
-  const quantity = selectedVariant
+  const quantity = selectedChoice && selectedVariant
     ? getItemQuantity(
         product.slug,
         selectedVariant.id,
@@ -51,71 +90,73 @@ export function AddToCartButton({ product }: { product: PrototypeProduct }) {
 
   return (
     <div className="product-configurator">
-      <fieldset className="product-variant-selector">
-        <legend>Memory &amp; Storage</legend>
-        <div className="product-configurator__options">
-          {product.variants
-            .filter((variant) => variant.isActive)
-            .map((variant) => (
-              <label key={variant.id}>
-                <input
-                  checked={selectedVariant.id === variant.id}
-                  name={`variant-${product.slug}`}
-                  onChange={() => setSelectedVariantId(variant.id)}
-                  type="radio"
-                  value={variant.id}
-                />
-                <span>
-                  <strong>{variant.name}</strong>
-                  <small>
-                    {variant.purchasable
-                      ? "GadgetMoTo configuration"
-                      : "Official configuration · contact us"}
-                  </small>
-                </span>
-              </label>
-            ))}
+      <fieldset className="product-combination-selector">
+        <legend>
+          Variant
+          {selectedChoice
+            ? `: ${selectedColor ? `${selectedColor.name}, ` : ""}${selectedVariant.name}`
+            : ""}
+        </legend>
+        <div className="product-configurator__options product-configurator__options--combinations">
+          {choices.map((choice) => (
+            <label key={choice.key}>
+              <input
+                checked={selectedChoice?.key === choice.key}
+                disabled={!choice.isAvailable}
+                name={`configuration-${product.slug}`}
+                onChange={() => setSelectedChoiceKey(choice.key)}
+                type="radio"
+                value={choice.key}
+              />
+              <span>
+                <strong>
+                  {choice.color ? (
+                    <i
+                      aria-hidden="true"
+                      className="product-color-swatch"
+                      style={
+                        choice.color.hexCode
+                          ? { backgroundColor: choice.color.hexCode }
+                          : undefined
+                      }
+                    />
+                  ) : null}
+                  {choice.color ? `${choice.color.name}, ` : ""}
+                  {choice.variant.name}
+                </strong>
+                <small>{choice.isAvailable ? "Available" : "Unavailable"}</small>
+              </span>
+            </label>
+          ))}
         </div>
       </fieldset>
 
-      {product.colors?.length ? (
-        <fieldset className="product-color-selector">
-          <legend>Color: {selectedColor?.name}</legend>
-          <div className="product-color-selector__options">
-            {product.colors.map((color) => (
-              <label key={color.id} title={color.name}>
-                <input
-                  checked={selectedColorId === color.id}
-                  disabled={!color.purchasable}
-                  name={`color-${product.slug}`}
-                  onChange={() => setSelectedColorId(color.id)}
-                  type="radio"
-                  value={color.id}
-                />
-                <span
-                  aria-hidden="true"
-                  className="product-color-swatch"
-                  style={
-                    color.hexCode
-                      ? { backgroundColor: color.hexCode }
-                      : undefined
-                  }
-                />
-                <span>{color.name}{color.purchasable ? "" : " · ask us"}</span>
-              </label>
-            ))}
-          </div>
-        </fieldset>
-      ) : null}
-
       <div className="product-configurator__facts">
+        <div>
+          <span>SKU</span>
+          <strong>{selectedVariant.sku ?? "Unavailable"}</strong>
+        </div>
+        {selectedVariant.ramGb ? (
+          <div>
+            <span>Physical RAM</span>
+            <strong>{selectedVariant.ramGb}GB</strong>
+          </div>
+        ) : null}
+        <div>
+          <span>Storage</span>
+          <strong>
+            {selectedVariant.storageGb === 1024
+              ? "1TB"
+              : `${selectedVariant.storageGb}GB`}
+          </strong>
+        </div>
         <div>
           <span>Condition</span>
           <strong>{selectedVariant.condition}</strong>
         </div>
         <div>
           <span>Availability</span>
-          <strong>{selectedVariant.availabilityMessage}</strong>
+          <strong>{canPurchase ? "Available" : "Currently unavailable"}</strong>
         </div>
         {selectedVariant.extendedRamGb ? (
           <div>
@@ -168,8 +209,8 @@ export function AddToCartButton({ product }: { product: PrototypeProduct }) {
       <div aria-live="polite" className="product-configurator__commercial">
         {selectedVariant.currentPrice === null ? (
           <div>
-            <strong>Contact us for price</strong>
-            <p>This official configuration is not yet a GadgetMoTo sellable variant.</p>
+            <strong>Price unavailable</strong>
+            <p>This configuration is not currently available on the storefront.</p>
           </div>
         ) : (
           <>
@@ -202,14 +243,13 @@ export function AddToCartButton({ product }: { product: PrototypeProduct }) {
           Add to Cart
         </button>
       ) : (
-        <a
+        <button
           className="button-link button-link--secondary"
-          href="https://www.facebook.com/profile.php?id=100063905416187"
-          rel="noopener noreferrer"
-          target="_blank"
+          disabled
+          type="button"
         >
-          Message Us about this configuration
-        </a>
+          Currently unavailable
+        </button>
       )}
       {quantity ? (
         <p>{quantity} currently in your cart with this configuration</p>

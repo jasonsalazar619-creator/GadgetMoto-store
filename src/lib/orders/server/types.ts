@@ -56,7 +56,7 @@ export type CheckoutOrderItemInput = Readonly<{
 export type CheckoutCustomerInput = Readonly<{
   fullName: string;
   mobile: string;
-  email?: string;
+  email: string;
 }>;
 
 export type CheckoutDeliveryAddressInput = Readonly<{

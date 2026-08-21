@@ -279,19 +279,12 @@ export function validateCreateOrderRequest(
     throw new OrderServerError("INVALID_CHECKOUT_REQUEST");
   }
 
-  let email: string | undefined;
-  if (
-    value.customer.email !== undefined &&
-    value.customer.email !== null &&
-    value.customer.email !== ""
-  ) {
-    if (typeof value.customer.email !== "string") {
-      throw new OrderServerError("INVALID_CHECKOUT_REQUEST");
-    }
-    email = value.customer.email.trim().toLowerCase();
-    if (email.length > 254 || !emailPattern.test(email)) {
-      throw new OrderServerError("INVALID_CHECKOUT_REQUEST");
-    }
+  if (typeof value.customer.email !== "string") {
+    throw new OrderServerError("INVALID_CHECKOUT_REQUEST");
+  }
+  const email = value.customer.email.trim().toLowerCase();
+  if (!email || email.length > 254 || !emailPattern.test(email)) {
+    throw new OrderServerError("INVALID_CHECKOUT_REQUEST");
   }
 
   const fulfillment = readFulfillment(value.fulfillment);
@@ -356,7 +349,7 @@ export function validateCreateOrderRequest(
     customer: {
       fullName,
       mobile: readMobile(value.customer.mobile),
-      ...(email ? { email } : {}),
+      email,
     },
     fulfillment,
     paymentMethod,

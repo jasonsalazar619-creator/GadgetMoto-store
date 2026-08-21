@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { getAuthenticatedAdmin } from "@/lib/admin/server/auth";
 import { adminProductInternals } from "@/lib/admin/server/products";
+import { activeProductResearchBySlug } from "@/data/product-variant-research";
 import {
   isValidSlug,
   isValidUuid,
@@ -19,6 +20,8 @@ import type {
   ProductPromotionResult,
   ProductColorEditorSubmission,
   ProductColorMutationResult,
+  ProductVariantColorAvailabilitySubmission,
+  ProductVariantColorAvailabilityResult,
   ProductVariantEditorSubmission,
   ProductVariantMutationResult,
 } from "@/lib/admin/products/types";
@@ -1509,6 +1512,155 @@ export async function saveProductColor(
   return {
     ok: true,
     message: input.colorId ? "Color saved." : "Color added.",
+  };
+}
+
+export async function setProductVariantColorAvailability(
+  input: ProductVariantColorAvailabilitySubmission,
+): Promise<ProductVariantColorAvailabilityResult> {
+  const officialColorName = input.officialColorName?.trim();
+  if (
+    !isValidUuid(input.productId) ||
+    !isValidUuid(input.variantId) ||
+    (input.colorId !== undefined && !isValidUuid(input.colorId)) ||
+    (input.colorId === undefined && !officialColorName) ||
+    (input.colorId !== undefined && officialColorName !== undefined)
+  ) {
+    return { ok: false, message: invalidProductMessage };
+  }
+
+  const context = await authorizeMutation();
+  if (!isAuthorizedContext(context)) {
+    return { ok: false, message: context.message };
+  }
+
+  const [productResult, variantResult] = await Promise.all([
+    context.supabase
+      .from("products")
+      .select("id, slug")
+      .eq("id", input.productId)
+      .maybeSingle(),
+    context.supabase
+      .from("product_variants")
+      .select("id, sort_order")
+      .eq("id", input.variantId)
+      .eq("product_id", input.productId)
+      .maybeSingle(),
+  ]);
+  if (
+    productResult.error ||
+    !productResult.data ||
+    variantResult.error ||
+    !variantResult.data
+  ) {
+    return { ok: false, message: saveFailedMessage };
+  }
+
+  let colorId = input.colorId;
+  if (colorId) {
+    const colorResult = await context.supabase
+      .from("product_color_variants")
+      .select("id, is_active")
+      .eq("id", colorId)
+      .eq("product_id", input.productId)
+      .maybeSingle();
+    if (colorResult.error || !colorResult.data) {
+      return { ok: false, message: "The selected color no longer exists." };
+    }
+    if (!colorResult.data.is_active) {
+      return {
+        ok: false,
+        message: "Activate this color under Manage colors before using it.",
+      };
+    }
+  } else {
+    if (!input.isAvailable) {
+      return { ok: true, message: "Combination remains unavailable." };
+    }
+    const officialColor = activeProductResearchBySlug[
+      productResult.data.slug
+    ]?.colors.find(
+      ({ name }) =>
+        name.toLocaleLowerCase() === officialColorName?.toLocaleLowerCase(),
+    );
+    if (!officialColor) {
+      return { ok: false, message: "Add this color under Manage colors first." };
+    }
+
+    const existingColorResult = await context.supabase
+      .from("product_color_variants")
+      .select("id, is_active")
+      .eq("product_id", input.productId)
+      .eq("normalized_name", officialColor.name.toLocaleLowerCase())
+      .maybeSingle();
+    if (existingColorResult.error) {
+      return { ok: false, message: saveFailedMessage };
+    }
+    if (existingColorResult.data) {
+      if (!existingColorResult.data.is_active) {
+        return {
+          ok: false,
+          message: "Activate this color under Manage colors before using it.",
+        };
+      }
+      colorId = existingColorResult.data.id;
+    } else {
+      const lastColorResult = await context.supabase
+        .from("product_color_variants")
+        .select("sort_order")
+        .eq("product_id", input.productId)
+        .order("sort_order", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (lastColorResult.error) {
+        return { ok: false, message: saveFailedMessage };
+      }
+      const createdColorResult = await context.supabase
+        .from("product_color_variants")
+        .insert({
+          product_id: input.productId,
+          name: officialColor.name,
+          hex_code: officialColor.hexCode,
+          is_active: true,
+          sort_order: (lastColorResult.data?.sort_order ?? -1) + 1,
+        })
+        .select("id")
+        .maybeSingle();
+      if (createdColorResult.error || !createdColorResult.data) {
+        return { ok: false, message: saveFailedMessage };
+      }
+      colorId = createdColorResult.data.id;
+    }
+  }
+
+  if (!colorId) {
+    return { ok: false, message: saveFailedMessage };
+  }
+  const optionResult = await context.supabase
+    .from("product_variant_color_options")
+    .upsert(
+      {
+        product_id: input.productId,
+        variant_id: input.variantId,
+        color_id: colorId,
+        is_available: input.isAvailable,
+        sort_order: variantResult.data.sort_order,
+      },
+      { onConflict: "variant_id,color_id" },
+    )
+    .select("id")
+    .maybeSingle();
+  if (optionResult.error || !optionResult.data) {
+    return { ok: false, message: saveFailedMessage };
+  }
+
+  revalidateStorefront(productResult.data.slug);
+  revalidatePath(`/admin/products/${input.productId}`);
+  return {
+    ok: true,
+    message: input.isAvailable
+      ? "Combination is available."
+      : "Combination is unavailable.",
   };
 }
 

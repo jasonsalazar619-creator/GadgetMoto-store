@@ -30,6 +30,7 @@ export type CatalogDatabaseRow = {
   specifications: unknown;
   images: unknown;
   colors: unknown;
+  variant_color_options: unknown;
 };
 
 export async function loadDatabaseCatalogRows(): Promise<
@@ -78,7 +79,23 @@ export async function loadDatabaseCatalogRows(): Promise<
             where colors.product_id = catalog_products.product_id
           ),
           '[]'::jsonb
-        ) as colors
+        ) as colors,
+        coalesce(
+          (
+            select jsonb_agg(
+              jsonb_build_object(
+                'variantId', options.variant_id,
+                'colorId', options.color_id
+              )
+              order by options.option_sort_order asc,
+                options.variant_id asc,
+                options.color_id asc
+            )
+            from storefront.product_variant_color_options as options
+            where options.product_id = catalog_products.product_id
+          ),
+          '[]'::jsonb
+        ) as variant_color_options
       from storefront.catalog_products as catalog_products
       order by product_sort_order asc, product_slug asc, variant_sort_order asc, sku asc
     `;

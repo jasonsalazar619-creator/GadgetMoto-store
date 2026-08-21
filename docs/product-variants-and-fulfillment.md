@@ -23,7 +23,7 @@ Research priority is Philippine manufacturer material, followed by Southeast Asi
 | Redmi Pad 2 Pro 5G | 6GB/128GB; 8GB/256GB | Silver, Graphite Gray | [Xiaomi global specification](https://www.mi.com/global/product/redmi-pad-2-pro-5g/specs/) | Existing 8GB/256GB SKU remains purchasable. 6GB/128GB is informational. |
 | TECNO Mega Pad Pro | Existing 8GB/256GB commercial configuration retained; complete official memory matrix unresolved | Sky Grey, Aurora Purple | [Official TECNO product page](https://www.tecno-mobile.com/laptops/product-detail/product/megapad-pro/) | No new commercial configuration was created. |
 
-Official colors from static research are informational and disabled until an administrator creates the matching active database color. This prevents an unverified color identifier from reaching order creation.
+Official colors from static research appear in the product editor's exact-combination table. Each row represents one color plus one commercial RAM/storage variant. Switching on a previously unconfigured official color creates its product-level color record and enables only that selected combination. Other combinations for the same color remain unavailable until enabled separately. The storefront never asks customers to verify an unavailable choice.
 
 ## Coming Soon: 68-product verification ledger
 
@@ -102,22 +102,23 @@ Coming Soon options never display a price, SKU, Add to Cart control, or availabi
 
 ## Reusable storefront behavior
 
-- The product-detail configurator orders controls as memory/storage, color, condition and availability, fulfillment, then commercial actions.
-- Price, SRP, financing, SKU, and Add to Cart eligibility update from the exact selected GadgetMoTo variant.
-- Manufacturer-only configurations and colors remain visible but cannot be purchased.
+- The product-detail configurator presents one authoritative combined choice such as `Black, 12GB/512GB`, followed by condition, fulfillment, and commercial actions.
+- Price, SRP, financing, SKU, RAM, storage, color, and Add to Cart eligibility update from the exact selected combination.
+- The first available combination is selected automatically. Unavailable combinations remain visible, muted, and unclickable. If every combination is unavailable, Add to Cart displays `Currently unavailable`.
+- Manufacturer-only configurations and colors remain visible but unavailable until the administrator enables a matching commercial record. No customer verification prompt is displayed.
 - Product cards show a concise configuration/color count. Catalog RAM/storage filters and global search inspect every active configuration.
 - Comparison lists all canonical configuration names and colors.
 - Coming Soon pages show only approved manufacturer options and otherwise display a manual-verification notice.
 
 ## Cart, checkout, and order preservation
 
-The cart identity is product slug + exact variant ID + optional active database color ID + fulfillment method. Different choices remain separate lines. Cart restoration revalidates product, variant, SKU, color, quantity, and fulfillment against canonical data. Checkout rejects mixed delivery/pickup carts, verifies the selected checkout delivery method matches every cart line, and submits the exact SKU, variant, color, quantity, unit price, and fulfillment choice for server validation. The order endpoint independently verifies the variant, price, color, and uniform fulfillment method.
+The cart identity is product slug + exact variant ID + optional active database color ID + fulfillment method. Different color/RAM/storage choices remain separate lines. Cart restoration revalidates the exact enabled variant/color relationship as well as SKU, quantity, and fulfillment. Checkout displays the selected color, RAM, storage, SKU, quantity, price, and fulfillment choice. The order endpoint independently verifies that the variant belongs to the product, the color belongs to the product, the exact relationship is available, the variant is active, and the price comes from the database.
 
 The administrator order review shows variant name, SKU, physical RAM, extended RAM separately, storage, color, quantity, unit price, and either delivery information or the official pickup address.
 
 ## Administrator management
 
-Each product editor now loads every variant, not only the first. Authorized administrators can add or edit configurations, activate/deactivate them, set the default through deterministic sort order, and manage exact SKU, physical RAM, optional extended RAM, storage, price, SRP, and financing. Color management supports add, edit, optional `#RRGGBB`, active state, sort order, duplicate protection, and deletion. Existing database authorization, RLS, and audit triggers remain the enforcement layer.
+Each product editor loads every commercial variant and product color. The simple Variant Availability table shows swatch, color, RAM/storage, canonical SKU, database price, and one autosaving availability switch per exact combination. Black + 256GB can therefore be enabled while Black + 512GB remains disabled. Color creation, renaming, optional `#RRGGBB`, active state, ordering, duplicate protection, and deletion remain in a separate collapsed Manage colors section. Existing administrator authorization, RLS, and audit triggers remain the enforcement layer.
 
 ## Pickup location
 
@@ -133,9 +134,10 @@ Pickup has no fabricated fee or readiness claim. Availability and timing remain 
 
 ## Database deployment status
 
-Two migrations were manually deployed and verified:
+Three related migrations were manually deployed and verified:
 
 1. `20260817120000_store_pickup_location.sql` inserts or reconciles the official Sabang store location by its unique slug. It does not alter the existing RLS or privilege model, and order fulfillment resolves the location through the reviewed server path.
 2. `20260819120000_catalog_variant_ordering.sql` appends only `variant_sort_order` to the existing security-barrier storefront projection. It creates no public write path and allows the administrator-selected default variant to be deterministic.
+3. `20260821041434_product_variant_color_availability.sql` creates `product_variant_color_options`, which stores administrator-controlled availability for an exact product variant and color relationship. Same-product composite foreign keys, duplicate prevention, safe-unavailable defaults, RLS, least-privilege server reads, administrator CRUD policies, audit logging, and exact order-item validation are included. It inserts no option, SKU, price, inventory, or seed record.
 
-All 18 migration versions now match locally and remotely. The deployed files were not edited after deployment and must remain immutable. Any future correction requires a new timestamped migration.
+All 19 migration versions now match locally and remotely. The deployed files were not edited after deployment and must remain immutable. Any future correction requires a new timestamped migration.

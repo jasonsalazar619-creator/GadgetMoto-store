@@ -79,7 +79,7 @@ export default async function SalePage() {
                         {product.variant}
                       </p>
                       <p className="product-availability mt-3">
-                        Contact us to confirm availability.
+                        View exact variant availability
                       </p>
                       <div className="mt-auto pt-5">
                         <PriceDisplay

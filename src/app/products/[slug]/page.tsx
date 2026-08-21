@@ -21,7 +21,7 @@ export function generateStaticParams() { return getAllProducts().map(({ slug }) 
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
   const product = await getCatalogProductBySlug((await params).slug);
   if (!product) return { title: "Product not found | GadgetMoTo" };
-  const description = `View the ${product.name} in ${product.variant} at GadgetMoTo. Compare confirmed details and contact us for availability.`;
+  const description = `View the ${product.name} at GadgetMoTo. Compare confirmed details and selectable configurations.`;
   const image = product.primaryImage;
   return {
     title: formatProductTitle(product),
@@ -106,7 +106,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
             </dl>
           </article>
           <article className="detail-summary"><p className="type-eyebrow text-[var(--color-action)]">Ways to pay</p><h2 className="type-h3 mt-4">Payment options</h2><ul><li>Maya online payment · coming later</li><li>Manual bank or e-wallet transfer after confirmation</li><li>Financing options are informational only</li><li>No cash on delivery</li></ul><p>Payment instructions and financing availability require sales-team confirmation.</p></article>
-          <article className="detail-summary"><p className="type-eyebrow text-[var(--color-action)]">Getting your order</p><h2 className="type-h3 mt-4">Delivery and pickup</h2><ul><li>Nationwide delivery</li><li>Same-day delivery where available</li><li>Store pickup in Barangay Sabang, Dasmariñas</li></ul><p>Contact us to confirm product availability, delivery charges, and pickup timing.</p></article>
+          <article className="detail-summary"><p className="type-eyebrow text-[var(--color-action)]">Getting your order</p><h2 className="type-h3 mt-4">Delivery and pickup</h2><ul><li>Nationwide delivery</li><li>Same-day delivery where available</li><li>Store pickup in Barangay Sabang, Dasmariñas</li></ul><p>Exact product availability is controlled by the selectable variants above. Delivery charges and pickup timing are confirmed during order review.</p></article>
         </Container>
       </section>
       <section className="py-[var(--space-section)]">

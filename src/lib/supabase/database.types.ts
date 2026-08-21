@@ -254,6 +254,37 @@ export type Database = {
         };
         Relationships: [];
       };
+      product_variant_color_options: {
+        Row: {
+          id: string;
+          product_id: string;
+          variant_id: string;
+          color_id: string;
+          is_available: boolean;
+          sort_order: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          product_id: string;
+          variant_id: string;
+          color_id: string;
+          is_available?: boolean;
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          product_id?: string;
+          variant_id?: string;
+          color_id?: string;
+          is_available?: boolean;
+          sort_order?: number;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       product_images: {
         Row: {
           id: string;

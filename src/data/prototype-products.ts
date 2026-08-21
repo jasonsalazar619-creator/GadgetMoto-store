@@ -35,6 +35,12 @@ export type ProductVariant = Readonly<{
   availabilityMessage: string;
 }>;
 
+export type ProductVariantColorOption = Readonly<{
+  variantId: string;
+  colorId: string;
+  isAvailable: boolean;
+}>;
+
 export type PrototypeProduct = {
   id: string;
   slug: string;
@@ -59,9 +65,13 @@ export type PrototypeProduct = {
   fullDescription?: string;
   colors?: readonly ProductColor[];
   variants: readonly ProductVariant[];
+  variantColorOptions: readonly ProductVariantColorOption[];
 };
 
-type LegacyProduct = Omit<PrototypeProduct, "variants">;
+type LegacyProduct = Omit<
+  PrototypeProduct,
+  "variants" | "variantColorOptions"
+>;
 
 const baseProducts: readonly LegacyProduct[] = [
   { id: "xiaomi-17-ultra", slug: "xiaomi-17-ultra-5g-leica-kit", sku: "GMT-XIA-PH-17ULTRA-16-512", brand: "Xiaomi", name: "Xiaomi 17 Ultra 5G Leica Kit", category: "Phone", variant: "16GB/512GB", currentPrice: 84990, srp: 89990, ramGb: 16, storageGb: 512, condition: "Brand New", badge: "sale", financingMessage: "Financing options available", financingAvailable: true, artSeed: "orbit-blue", ...productMediaBySlug["xiaomi-17-ultra-5g-leica-kit"], specifications: productSpecificationsBySlug["xiaomi-17-ultra-5g-leica-kit"] },
@@ -97,7 +107,7 @@ function commercialVariant(product: LegacyProduct): ProductVariant {
     isActive: true,
     isDefault: true,
     purchasable: true,
-    availabilityMessage: "Contact us to confirm availability.",
+    availabilityMessage: "Available",
   };
 }
 
@@ -128,7 +138,7 @@ const products: readonly PrototypeProduct[] = baseProducts.map((product) => {
         isActive: true,
         isDefault: false,
         purchasable: false,
-        availabilityMessage: "Contact us for price and availability.",
+        availabilityMessage: "Unavailable",
       }),
     );
 
@@ -141,8 +151,9 @@ const products: readonly PrototypeProduct[] = baseProducts.map((product) => {
             purchasable: false,
           })),
         }
-      : {}),
+    : {}),
     variants: [commercial, ...manufacturerOnly],
+    variantColorOptions: [],
   };
 });
 

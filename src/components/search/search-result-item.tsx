@@ -49,7 +49,7 @@ export function SearchResultItem({
         <strong>{product.name}</strong>
         <small>{product.variant}</small>
         <small className="global-search-result__availability">
-          Contact us to confirm availability.
+          View exact variant availability
         </small>
       </span>
       <span className="global-search-result__price">

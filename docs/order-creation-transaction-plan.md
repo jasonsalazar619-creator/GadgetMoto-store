@@ -12,7 +12,7 @@ The following launch rules are approved for the first production order workflow:
 
 - Guest checkout remains available; customer accounts are not required.
 - Customer mobile number is required.
-- Customer email is optional. The deployed `orders.customer_email` column, server contract, and checkout interface all support an omitted email.
+- Customer email is required by the checkout interface and server contract. The deployed nullable `orders.customer_email` column is retained for backward compatibility, but new storefront submissions cannot omit email.
 - Checkout currently submits nationwide or same-day delivery only.
 - Store pickup uses the approved GadgetMoTo branch address in Barangay Sabang, Dasmariñas. Pickup timing, instructions, and product availability remain pending confirmation; no placeholder schedule or stock is shown.
 - Cash on delivery remains unavailable. Cash on store pickup is accepted only when the approved store-pickup fulfillment option is selected.
@@ -48,7 +48,7 @@ The forward-only migration `20260726121534_secure_order_transaction_schema.sql` 
 
 The deployed migration added:
 
-- Optional order email storage
+- Required order email for new storefront submissions
 - Hashed high-entropy order lookup tokens
 - Private order-submission idempotency claims and request fingerprints
 - Duplicate order-variant protection
@@ -94,14 +94,14 @@ The current `CheckoutForm` owns transient React state only and collects:
 
 - Required full name
 - Required Philippine mobile number
-- Required email address in the current preview UI; the approved launch contract makes email optional and requires a later UI/schema change
+- Required email address in both the checkout UI and server request contract; the existing nullable database column remains backward compatible
 - Fulfillment choice: nationwide delivery or same-day delivery
 - Required delivery address: street address, province, city or municipality, barangay, and four-digit postal code
 - Payment preference: Maya online, Maya manual transfer, GCash, or bank transfer
 - Optional customer notes, limited in the UI to 500 characters
 - Separate required acknowledgements for the Privacy Policy, Terms and Conditions, and final availability/VAT/delivery/payment review
 
-Store pickup is enabled for the single approved Barangay Sabang, Dasmariñas branch. Delivery requests require all address fields, while pickup requests use the fixed reviewed location slug and do not submit a customer delivery address. Validation requires a nonblank compatible payment choice, all three acknowledgements, a minimally nonblank name, an optional syntactically valid email, and a Philippine mobile number matching the current UI rule.
+Store pickup is enabled for the single approved Barangay Sabang, Dasmariñas branch. The checkout selector applies Delivery or Store Pickup to every cart line, so fulfillment can be changed during checkout. Delivery requests require all address fields, while pickup requests use the fixed reviewed location slug and do not submit a customer delivery address. Validation requires a nonblank compatible payment choice, all three acknowledgements, a minimally nonblank name, a required syntactically valid email, and a Philippine mobile number matching the current UI rule.
 
 The form first validates and reveals an in-browser review panel. When live ordering is enabled, its final submit action resolves each current cart slug through `CatalogProvider`, sends only product slug, canonical SKU, quantity, approved customer/fulfillment/payment fields, notes, and consent booleans, and calls `POST /api/orders`. It prevents double submission, preserves one UUID-v4 key across retries and refreshes for the same cart, regenerates the key when the cart changes, keeps the cart after failure, and clears it only after a confirmed safe success response. While disabled, no idempotency key is prepared, no endpoint call occurs, the cart is preserved, and the customer receives a Messenger contact action instead. The endpoint has not been called in this checkpoint.
 
@@ -174,7 +174,7 @@ type CreateOrderRequestV1 = {
 };
 ```
 
-The service contract uses `productSlug` plus canonical SKU and resolves that pair to exactly one active database product and variant. The shared catalog supplies that database-backed SKU to checkout without allowing the browser to invent it. `POST /api/orders` is the sole server-order consumer, and checkout now uses this contract without submitting prices or totals.
+The service contract uses `productSlug`, canonical SKU, and the optional database color ID. It resolves that request to exactly one active product and variant, then requires an available `product_variant_color_options` relationship whenever the product has colors. The shared catalog supplies identifiers to checkout without allowing the browser to invent prices or totals. `POST /api/orders` remains the sole server-order consumer.
 
 `pickupLocationSlug` must not become client-controlled arbitrary location selection. It may be enabled only after the server supplies a reviewed list of active pickup locations. With one approved branch, the server may resolve the single active location instead of accepting a client identifier.
 
@@ -225,7 +225,7 @@ The future transaction must populate existing commerce fields as follows:
 
 | Table | Trusted creation data |
 | --- | --- |
-| `orders` | Server-generated public number and status; normalized customer name/mobile and optional email; mapped delivery and payment enums; authoritative subtotal; nullable approved VAT, delivery fee, and final total; trimmed notes or null; three server timestamps for accepted acknowledgements |
+| `orders` | Server-generated public number and status; normalized customer name/mobile and required email for new storefront submissions; mapped delivery and payment enums; authoritative subtotal; nullable approved VAT, delivery fee, and final total; trimmed notes or null; three server timestamps for accepted acknowledgements |
 | `order_addresses` | One normalized address snapshot for nationwide or same-day delivery; no row for store pickup |
 | `order_items` | Authoritative product/variant references plus product, brand, variant, SKU, unit-price, quantity, and line-total snapshots |
 | `order_fulfillments` | Exactly one row with `pending_confirmation`; approved inventory/pickup location when known; no invented courier, tracking, pickup schedule, or confirmation notes |
@@ -541,7 +541,7 @@ VAT, delivery, final-total, cancellation, refund, warranty, payment, and retenti
 | Warranty wording | Unresolved | Do not add warranty promises | No immediate commerce schema change | Yes, plus legal/business review | Policy approval |
 | Preorder support | Disabled for launch | Reject preorders at launch | No launch change; future support requires a new design | Launch default approved | Future preorder design |
 | Split fulfillment | Disabled for launch; one fulfillment per order | Require one location to fulfill the complete order | No launch change; future support requires schema changes | Launch default approved | Future fulfillment expansion |
-| Customer email requirement | Optional in the deployed schema and server contract; current UI still requires it | Accept null when omitted and validate only supplied values | No further schema change | Launch default approved | Checkout submission integration |
+| Customer email requirement | Nullable in the deployed schema for backward compatibility; required by the current server contract and checkout UI | Reject omitted, blank, or invalid email for new storefront orders | No further schema change | Launch behavior implemented | Checkout submission integration |
 | Mobile-number validation | Required for launch; current UI accepts `09…` and `639…` forms | Revalidate the same rule server-side until a canonical format is approved | Optional database constraint after format approval | Requirement approved; canonical format still requires approval | Contract validation |
 | Proof-of-payment support | Deferred; optional path exists in `payments` | Disabled at launch until secure upload/review is designed | Storage policies and workflow migration likely | Yes | Manual payment workflow |
 | Maya payment methods | Maya approved as online provider; live products and credentials unresolved | No live initialization until official provider behavior and credentials are approved | Provider fields exist; configuration/integration still required | Provider approved; merchant setup still required | Maya initialization |

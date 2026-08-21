@@ -23,6 +23,8 @@ type ProductRow = Database["public"]["Tables"]["products"]["Row"];
 type VariantRow = Database["public"]["Tables"]["product_variants"]["Row"];
 type ColorRow =
   Database["public"]["Tables"]["product_color_variants"]["Row"];
+type VariantColorOptionRow =
+  Database["public"]["Tables"]["product_variant_color_options"]["Row"];
 type ImageRow = Database["public"]["Tables"]["product_images"]["Row"];
 
 const unavailableMessage =
@@ -195,6 +197,7 @@ function toEditorData(
   product: ProductRow,
   variantRows: readonly VariantRow[],
   colorRows: readonly ColorRow[],
+  variantColorOptionRows: readonly VariantColorOptionRow[],
   imageRows: readonly ImageRow[],
   brandIsActive: boolean,
   slugIsUnique: boolean,
@@ -277,6 +280,14 @@ function toEditorData(
       sortOrder: item.sort_order,
       updatedAt: item.updated_at,
     })),
+    variantColorOptions: variantColorOptionRows.map((item) => ({
+      id: item.id,
+      variantId: item.variant_id,
+      colorId: item.color_id,
+      isAvailable: item.is_available,
+      sortOrder: item.sort_order,
+      updatedAt: item.updated_at,
+    })),
     variantDraft,
     images,
     readiness,
@@ -299,7 +310,7 @@ async function loadEditorData(
   supabase: SupabaseClient<Database>,
   productId: string,
 ): Promise<AdminProductEditorData | null> {
-  const [productResult, variantResult, colorResult, brandResult, imageResult, allProductsResult, allVariantsResult] =
+  const [productResult, variantResult, colorResult, variantColorOptionResult, brandResult, imageResult, allProductsResult, allVariantsResult] =
     await Promise.all([
       supabase.from("products").select("*").eq("id", productId).maybeSingle(),
       supabase
@@ -310,6 +321,12 @@ async function loadEditorData(
         .order("id", { ascending: true }),
       supabase
         .from("product_color_variants")
+        .select("*")
+        .eq("product_id", productId)
+        .order("sort_order", { ascending: true })
+        .order("id", { ascending: true }),
+      supabase
+        .from("product_variant_color_options")
         .select("*")
         .eq("product_id", productId)
         .order("sort_order", { ascending: true })
@@ -330,6 +347,7 @@ async function loadEditorData(
     productResult.error ||
     variantResult.error ||
     colorResult.error ||
+    variantColorOptionResult.error ||
     brandResult.error ||
     imageResult.error ||
     allProductsResult.error ||
@@ -354,6 +372,7 @@ async function loadEditorData(
     productResult.data,
     variantResult.data ?? [],
     colorResult.data ?? [],
+    variantColorOptionResult.data ?? [],
     imageResult.data ?? [],
     (brandResult.data ?? []).some(
       ({ id }) => id === productResult.data?.brand_id,

@@ -29,7 +29,7 @@ export function ComparisonPageContent() {
     ["Verified SRP", (product) => product.srp ? peso.format(product.srp) : "Not provided"],
     ["Savings", (product) => product.srp ? peso.format(product.srp - product.currentPrice) : "Not available"],
     ["Condition", (product) => product.condition],
-    ["Availability", () => "Contact us to confirm availability."],
+    ["Availability", () => "See selectable variants on the product page."],
     ["Promotion", (product) => product.badge === "new" ? "New" : "None"],
     ["Financing", (product) => product.financingAvailable ? "Available through the sales team" : "Not available"],
     ["Store payment options", () => paymentMethods],

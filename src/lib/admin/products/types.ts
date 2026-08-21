@@ -93,6 +93,15 @@ export type AdminProductColor = {
   updatedAt: string;
 };
 
+export type AdminProductVariantColorOption = {
+  id: string;
+  variantId: string;
+  colorId: string;
+  isAvailable: boolean;
+  sortOrder: number;
+  updatedAt: string;
+};
+
 export type AdminProductVariantDraft = {
   sku: string | null;
   variantName: string | null;
@@ -122,6 +131,7 @@ export type AdminProductEditorData = {
   variant: AdminProductVariant | null;
   variants: readonly AdminProductVariant[];
   colors: readonly AdminProductColor[];
+  variantColorOptions: readonly AdminProductVariantColorOption[];
   variantDraft: AdminProductVariantDraft;
   images: AdminProductImage[];
   readiness: AdminProductReadiness;
@@ -233,3 +243,15 @@ export type ProductColorEditorSubmission = {
 export type ProductColorMutationResult =
   | { ok: true; message: string }
   | { ok: false; message: string; fieldErrors?: Record<string, string> };
+
+export type ProductVariantColorAvailabilitySubmission = {
+  productId: string;
+  variantId: string;
+  colorId?: string;
+  officialColorName?: string;
+  isAvailable: boolean;
+};
+
+export type ProductVariantColorAvailabilityResult =
+  | { ok: true; message: string }
+  | { ok: false; message: string };

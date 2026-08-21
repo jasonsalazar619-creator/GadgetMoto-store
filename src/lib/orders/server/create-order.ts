@@ -58,6 +58,7 @@ type AuthoritativeProductRow = {
   selected_color_id: string | null;
   selected_color_name: string | null;
   has_active_colors: boolean;
+  selected_combination_available: boolean;
 };
 
 type LocationRow = {
@@ -287,7 +288,15 @@ async function loadAuthoritativeProducts(
         from public.product_color_variants as available_colors
         where available_colors.product_id = products.id
           and available_colors.is_active is true
-      ) as has_active_colors
+      ) as has_active_colors,
+      exists (
+        select 1
+        from public.product_variant_color_options as options
+        where options.product_id = products.id
+          and options.variant_id = variants.id
+          and options.color_id = requested.color_id
+          and options.is_available is true
+      ) as selected_combination_available
     from requested
     inner join public.products as products
       on products.slug = requested.product_slug
@@ -325,7 +334,8 @@ async function loadAuthoritativeProducts(
       (row.has_active_colors &&
         (!requested.colorId ||
           row.selected_color_id !== requested.colorId ||
-          !row.selected_color_name)) ||
+          !row.selected_color_name ||
+          !row.selected_combination_available)) ||
       (!row.has_active_colors && requested.colorId !== undefined)
     ) {
       throw new OrderServerError("INVALID_COLOR_SELECTION");

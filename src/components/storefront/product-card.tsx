@@ -38,7 +38,7 @@ export function ProductCard({ loading, product }: ProductCardProps) {
             </p>
           ) : null}
           <p className="product-availability mt-3">
-            Contact us to confirm availability.
+            View exact variant availability
           </p>
         </div>
         <div className="mt-auto pt-5">
