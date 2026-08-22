@@ -254,20 +254,7 @@ export type ProductEditorSubmission = {
   isFeatured: boolean;
   sortOrder: string;
   specifications: AdminProductSpecification[];
-  variant: {
-    sku: string;
-    variantName: string;
-    ramGb: string;
-    ramNotApplicable: boolean;
-    extendedRamGb: string;
-    storageGb: string;
-    currentPricePesos: string;
-    srpPesos: string;
-    badge: ProductBadge | "";
-    financingAvailable: boolean;
-  };
   confirmSlugChange: boolean;
-  confirmSkuChange: boolean;
 };
 
 export type ProductVariantEditorSubmission = {
@@ -281,6 +268,7 @@ export type ProductVariantEditorSubmission = {
   storageGb: string;
   currentPricePesos: string;
   srpPesos: string;
+  badge: ProductBadge | "";
   financingAvailable: boolean;
   isActive: boolean;
 };

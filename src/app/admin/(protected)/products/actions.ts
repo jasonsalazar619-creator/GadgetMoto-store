@@ -30,8 +30,6 @@ import type { Database } from "@/lib/supabase/database.types";
 type ProductRow = Database["public"]["Tables"]["products"]["Row"];
 type ProductUpdate = Database["public"]["Tables"]["products"]["Update"];
 type VariantRow = Database["public"]["Tables"]["product_variants"]["Row"];
-type VariantUpdate =
-  Database["public"]["Tables"]["product_variants"]["Update"];
 type ImageRow = Database["public"]["Tables"]["product_images"]["Row"];
 type AuthorizedContext = {
   supabase: SupabaseClient<Database>;
@@ -139,17 +137,6 @@ function productUpdateDiff(
   ) as ProductUpdate;
 }
 
-function variantUpdateDiff(
-  current: VariantRow,
-  desired: VariantUpdate,
-): VariantUpdate {
-  return Object.fromEntries(
-    Object.entries(desired).filter(
-      ([key, value]) => current[key as keyof VariantRow] !== value,
-    ),
-  ) as VariantUpdate;
-}
-
 async function updateProduct(
   supabase: SupabaseClient<Database>,
   productId: string,
@@ -165,23 +152,6 @@ async function updateProduct(
     .maybeSingle();
 
   return !error && data?.id === productId;
-}
-
-async function updateVariant(
-  supabase: SupabaseClient<Database>,
-  variantId: string,
-  update: VariantUpdate,
-): Promise<boolean> {
-  if (Object.keys(update).length === 0) return true;
-
-  const { data, error } = await supabase
-    .from("product_variants")
-    .update(update)
-    .eq("id", variantId)
-    .select("id")
-    .maybeSingle();
-
-  return !error && data?.id === variantId;
 }
 
 function revalidateStorefront(oldSlug: string, newSlug = oldSlug): void {
@@ -562,10 +532,7 @@ export async function saveProductAction(
     return failure("PRODUCT_NOT_FOUND", "The product no longer exists.");
   }
 
-  const validation = validateProductSubmission(
-    input,
-    current.variant !== null,
-  );
+  const validation = validateProductSubmission(input);
   if (!validation.ok) {
     return failure(
       "INVALID_PRODUCT",
@@ -604,17 +571,7 @@ export async function saveProductAction(
     });
   }
 
-  if (
-    current.variant &&
-    value.variant.sku !== current.variant.sku &&
-    !value.confirmSkuChange
-  ) {
-    return failure("INVALID_PRODUCT", invalidProductMessage, {
-      sku: "Confirm the canonical SKU change before saving.",
-    });
-  }
-
-  const [brandResult, slugResult, skuResult, draftSkuResult] = await Promise.all([
+  const [brandResult, slugResult] = await Promise.all([
     context.supabase
       .from("brands")
       .select("id")
@@ -627,20 +584,6 @@ export async function saveProductAction(
       .eq("slug", value.slug)
       .neq("id", value.productId)
       .maybeSingle(),
-    value.variant.sku
-      ? context.supabase
-          .from("product_variants")
-          .select("id")
-          .ilike("sku", value.variant.sku)
-          .neq("id", current.variant?.id ?? "00000000-0000-0000-0000-000000000000")
-          .maybeSingle()
-      : Promise.resolve({ data: null, error: null }),
-    value.variant.sku
-      ? context.supabase
-          .from("products")
-          .select("id, commerce_draft")
-          .neq("id", value.productId)
-      : Promise.resolve({ data: [], error: null }),
   ]);
 
   if (brandResult.error || !brandResult.data) {
@@ -658,34 +601,6 @@ export async function saveProductAction(
       { slug: "Choose a unique slug." },
     );
   }
-  if (skuResult.error) {
-    return failure("PRODUCT_SAVE_FAILED", saveFailedMessage);
-  }
-  if (draftSkuResult.error) {
-    return failure("PRODUCT_SAVE_FAILED", saveFailedMessage);
-  }
-  const duplicateDraftSku = (draftSkuResult.data ?? []).some(({ commerce_draft }) => {
-    if (
-      typeof commerce_draft !== "object" ||
-      commerce_draft === null ||
-      Array.isArray(commerce_draft) ||
-      typeof commerce_draft.sku !== "string"
-    ) {
-      return false;
-    }
-    return (
-      commerce_draft.sku.trim().toLocaleLowerCase() ===
-      value.variant.sku?.toLocaleLowerCase()
-    );
-  });
-  if (skuResult.data || duplicateDraftSku) {
-    return failure(
-      "DUPLICATE_PRODUCT_SKU",
-      "That SKU is already assigned to another product.",
-      { sku: "Choose a unique SKU." },
-    );
-  }
-
   const targetActive = value.lifecycle === "active";
   const targetPreview = value.lifecycle === "coming_soon";
   const targetArchived = value.lifecycle === "archived";
@@ -717,69 +632,6 @@ export async function saveProductAction(
     workingProduct = { ...workingProduct, ...bridge };
   }
 
-  let variant = current.variant;
-  const saveCanonicalVariant =
-    current.product.status === "active" ||
-    (current.product.status === "draft" &&
-      !current.product.is_public_preview &&
-      current.variant !== null);
-  if (value.variant.requested && saveCanonicalVariant) {
-    const variantValues = {
-      sku: value.variant.sku as string,
-      variant_name: value.variant.variantName as string,
-      ram_gb: value.variant.ramGb,
-      extended_ram_gb: value.variant.extendedRamGb,
-      storage_gb: value.variant.storageGb as number,
-      current_price_centavos: value.variant.currentPriceCentavos as number,
-      srp_centavos: value.variant.srpCentavos,
-      badge: value.variant.badge,
-      financing_available: value.variant.financingAvailable,
-      is_active: targetActive
-        ? true
-        : targetPreview
-          ? false
-          : (variant?.is_active ?? false),
-    } satisfies VariantUpdate;
-
-    if (variant) {
-      if (
-        !(await updateVariant(
-          context.supabase,
-          variant.id,
-          variantUpdateDiff(variant, variantValues),
-        ))
-      ) {
-        return failure("PRODUCT_SAVE_FAILED", saveFailedMessage);
-      }
-      variant = { ...variant, ...variantValues };
-    } else {
-      const { data, error } = await context.supabase
-        .from("product_variants")
-        .insert({
-          product_id: value.productId,
-          sku: variantValues.sku,
-          variant_name: variantValues.variant_name,
-          ram_gb: variantValues.ram_gb,
-          extended_ram_gb: variantValues.extended_ram_gb,
-          storage_gb: variantValues.storage_gb,
-          condition: "brand_new",
-          current_price_centavos: variantValues.current_price_centavos,
-          srp_centavos: variantValues.srp_centavos,
-          badge: variantValues.badge,
-          financing_available: variantValues.financing_available,
-          is_active: variantValues.is_active,
-          sort_order: 0,
-        })
-        .select("*")
-        .maybeSingle();
-
-      if (error || !data) {
-        return failure("PRODUCT_SAVE_FAILED", saveFailedMessage);
-      }
-      variant = data;
-    }
-  }
-
   const desiredProduct: ProductUpdate = {
     brand_id: value.brandId,
     name: value.name,
@@ -788,20 +640,7 @@ export async function saveProductAction(
     short_description: value.shortDescription,
     full_description: value.fullDescription,
     specifications: value.specifications,
-    commerce_draft: targetActive
-      ? {}
-      : {
-          sku: value.variant.sku,
-          variantName: value.variant.variantName,
-          ramGb: value.variant.ramGb,
-          ramNotApplicable: value.variant.ramNotApplicable,
-          extendedRamGb: value.variant.extendedRamGb,
-          storageGb: value.variant.storageGb,
-          currentPriceCentavos: value.variant.currentPriceCentavos,
-          srpCentavos: value.variant.srpCentavos,
-          badge: value.variant.badge,
-          financingAvailable: value.variant.financingAvailable,
-        },
+    commerce_draft: targetActive ? {} : current.product.commerce_draft,
     is_featured: value.isFeatured,
     sort_order: value.sortOrder,
     status: targetArchived ? "archived" : targetActive ? "active" : "draft",
@@ -1249,6 +1088,12 @@ export async function saveProductVariant(
   const storageGb = readVariantInteger(input.storageGb);
   const currentPriceCentavos = readVariantCentavos(input.currentPricePesos);
   const srpCentavos = readVariantCentavos(input.srpPesos);
+  const badge =
+    input.badge === "new" || input.badge === "sale"
+      ? input.badge
+      : input.badge === ""
+        ? null
+        : undefined;
   const fieldErrors: Record<string, string> = {};
 
   if (!/^[A-Z0-9][A-Z0-9-]{2,79}$/.test(sku)) {
@@ -1284,6 +1129,9 @@ export async function saveProductVariant(
   ) {
     fieldErrors.srpPesos = "SRP cannot be below the selling price.";
   }
+  if (badge === undefined) {
+    fieldErrors.badge = "Select a valid storefront badge.";
+  }
   if (Object.keys(fieldErrors).length) {
     return { ok: false, message: invalidProductMessage, fieldErrors };
   }
@@ -1294,7 +1142,13 @@ export async function saveProductVariant(
   }
   const excludedVariantId =
     input.variantId ?? "00000000-0000-0000-0000-000000000000";
-  const [productResult, duplicateSkuResult, duplicateNameResult, orderResult] =
+  const [
+    productResult,
+    duplicateSkuResult,
+    duplicateDraftSkuResult,
+    duplicateNameResult,
+    orderResult,
+  ] =
     await Promise.all([
       context.supabase
         .from("products")
@@ -1307,6 +1161,10 @@ export async function saveProductVariant(
         .ilike("sku", sku)
         .neq("id", excludedVariantId)
         .maybeSingle(),
+      context.supabase
+        .from("products")
+        .select("commerce_draft")
+        .neq("id", input.productId),
       context.supabase
         .from("product_variants")
         .select("id")
@@ -1326,12 +1184,21 @@ export async function saveProductVariant(
     productResult.error ||
     !productResult.data ||
     duplicateSkuResult.error ||
+    duplicateDraftSkuResult.error ||
     duplicateNameResult.error ||
     orderResult.error
   ) {
     return { ok: false, message: saveFailedMessage };
   }
-  if (duplicateSkuResult.data) {
+  const duplicateDraftSku = (duplicateDraftSkuResult.data ?? []).some(
+    ({ commerce_draft }) =>
+      typeof commerce_draft === "object" &&
+      commerce_draft !== null &&
+      !Array.isArray(commerce_draft) &&
+      typeof commerce_draft.sku === "string" &&
+      commerce_draft.sku.trim().toLocaleLowerCase() === sku.toLocaleLowerCase(),
+  );
+  if (duplicateSkuResult.data || duplicateDraftSku) {
     return {
       ok: false,
       message: "That SKU is already assigned.",
@@ -1354,6 +1221,7 @@ export async function saveProductVariant(
     storage_gb: storageGb as number,
     current_price_centavos: currentPriceCentavos as number,
     srp_centavos: srpCentavos as number | null,
+    badge: badge as "new" | "sale" | null,
     financing_available: input.financingAvailable,
     is_active: input.isActive,
   };

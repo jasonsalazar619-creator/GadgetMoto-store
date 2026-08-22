@@ -20,11 +20,11 @@ export default async function AdminProductEditorPage({
     <>
       <ProductEditor
         brands={data.brands}
+        commercialOptions={<ProductVariantManager product={data.product} />}
         initialProduct={data.product}
         key={data.product.updatedAt}
       />
       <ManufacturerDataPanel product={data.product} />
-      <ProductVariantManager product={data.product} />
     </>
   );
 }

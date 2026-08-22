@@ -4,15 +4,11 @@ import type {
   AdminProductSpecification,
   ProductEditorSubmission,
 } from "@/lib/admin/products/types";
-import type {
-  ProductBadge,
-  ProductCategory,
-} from "@/lib/supabase/database.types";
+import type { ProductCategory } from "@/lib/supabase/database.types";
 
 const uuidPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-const skuPattern = /^[A-Z0-9][A-Z0-9-]{2,79}$/;
 
 type UnknownRecord = Record<string, unknown>;
 
@@ -28,21 +24,7 @@ export type NormalizedProductSubmission = {
   isFeatured: boolean;
   sortOrder: number;
   specifications: AdminProductSpecification[];
-  variant: {
-    requested: boolean;
-    sku: string | null;
-    variantName: string | null;
-    ramGb: number | null;
-    ramNotApplicable: boolean;
-    extendedRamGb: number | null;
-    storageGb: number | null;
-    currentPriceCentavos: number | null;
-    srpCentavos: number | null;
-    badge: ProductBadge | null;
-    financingAvailable: boolean;
-  };
   confirmSlugChange: boolean;
-  confirmSkuChange: boolean;
 };
 
 export type ValidationResult =
@@ -105,32 +87,6 @@ function readOptionalInteger(
   return parsed;
 }
 
-function readPesosAsCentavos(
-  value: unknown,
-  field: string,
-  errors: Record<string, string>,
-): number | null {
-  const normalized = readTrimmedString(value, field, errors, { max: 24 });
-  if (!normalized) return null;
-
-  const match = /^(0|[1-9][0-9]*)(?:\.([0-9]{1,2}))?$/.exec(normalized);
-  if (!match) {
-    errors[field] = "Enter pesos using up to two decimal places.";
-    return null;
-  }
-
-  const whole = BigInt(match[1]);
-  const fractional = BigInt((match[2] ?? "").padEnd(2, "0"));
-  const centavos = whole * BigInt(100) + fractional;
-
-  if (centavos > BigInt(Number.MAX_SAFE_INTEGER)) {
-    errors[field] = "Enter a smaller price.";
-    return null;
-  }
-
-  return Number(centavos);
-}
-
 function readSpecifications(
   value: unknown,
   errors: Record<string, string>,
@@ -179,7 +135,6 @@ function readSpecifications(
 
 export function validateProductSubmission(
   input: unknown,
-  hasExistingVariant: boolean,
 ): ValidationResult {
   const errors: Record<string, string> = {};
 
@@ -197,22 +152,7 @@ export function validateProductSubmission(
       "isFeatured",
       "sortOrder",
       "specifications",
-      "variant",
       "confirmSlugChange",
-      "confirmSkuChange",
-    ]) ||
-    !isRecord(input.variant) ||
-    !hasExactKeys(input.variant, [
-      "sku",
-      "variantName",
-      "ramGb",
-      "ramNotApplicable",
-      "extendedRamGb",
-      "storageGb",
-      "currentPricePesos",
-      "srpPesos",
-      "badge",
-      "financingAvailable",
     ])
   ) {
     return { ok: false, fieldErrors: { form: "Invalid product request." } };
@@ -273,10 +213,7 @@ export function validateProductSubmission(
   if (typeof input.isFeatured !== "boolean") {
     errors.isFeatured = "Select a valid featured state.";
   }
-  if (
-    typeof input.confirmSlugChange !== "boolean" ||
-    typeof input.confirmSkuChange !== "boolean"
-  ) {
+  if (typeof input.confirmSlugChange !== "boolean") {
     errors.form = "Invalid confirmation state.";
   }
 
@@ -288,87 +225,6 @@ export function validateProductSubmission(
   );
   if (sortOrder === null) errors.sortOrder = "Display order is required.";
 
-  const sku = readTrimmedString(input.variant.sku, "sku", errors, {
-    max: 80,
-  }).toLocaleUpperCase();
-  const variantName = readTrimmedString(
-    input.variant.variantName,
-    "variantName",
-    errors,
-    { max: 160 },
-  );
-  const ramGb = readOptionalInteger(input.variant.ramGb, "ramGb", errors, 4096);
-  const extendedRamGb = readOptionalInteger(
-    input.variant.extendedRamGb,
-    "extendedRamGb",
-    errors,
-    4096,
-  );
-  const storageGb = readOptionalInteger(
-    input.variant.storageGb,
-    "storageGb",
-    errors,
-    100_000,
-  );
-  const currentPriceCentavos = readPesosAsCentavos(
-    input.variant.currentPricePesos,
-    "currentPricePesos",
-    errors,
-  );
-  const srpCentavos = readPesosAsCentavos(
-    input.variant.srpPesos,
-    "srpPesos",
-    errors,
-  );
-
-  if (sku && !skuPattern.test(sku)) {
-    errors.sku = "Use 3–80 uppercase letters, numbers, or hyphens.";
-  }
-  if (ramGb === 0) errors.ramGb = "Physical RAM must be positive.";
-  if (extendedRamGb === 0) {
-    errors.extendedRamGb = "Extended RAM must be positive.";
-  }
-  if (typeof input.variant.ramNotApplicable !== "boolean") {
-    errors.ramNotApplicable = "Select a valid physical RAM state.";
-  }
-  if (ramGb !== null && input.variant.ramNotApplicable === true) {
-    errors.ramNotApplicable =
-      "Clear physical RAM before marking it not applicable.";
-  }
-  if (storageGb === 0) errors.storageGb = "Storage must be positive.";
-  if (
-    srpCentavos !== null &&
-    currentPriceCentavos !== null &&
-    srpCentavos < currentPriceCentavos
-  ) {
-    errors.srpPesos = "SRP cannot be below the current price.";
-  }
-
-  const badge =
-    input.variant.badge === "new" || input.variant.badge === "sale"
-      ? input.variant.badge
-      : input.variant.badge === ""
-        ? null
-        : undefined;
-  if (badge === undefined) errors.badge = "Select a valid badge.";
-  if (typeof input.variant.financingAvailable !== "boolean") {
-    errors.financingAvailable = "Select a valid financing state.";
-  }
-
-  const requested =
-    hasExistingVariant ||
-    Boolean(
-      sku ||
-        variantName ||
-        input.variant.ramGb ||
-        input.variant.extendedRamGb ||
-        input.variant.storageGb ||
-        input.variant.currentPricePesos ||
-        input.variant.srpPesos ||
-        input.variant.badge ||
-        input.variant.ramNotApplicable,
-    );
-
   if (lifecycle === "active") {
     if (!category) errors.category = "Active products need a category.";
     if (!shortDescription) {
@@ -376,30 +232,6 @@ export function validateProductSubmission(
     }
     if (!fullDescription) {
       errors.fullDescription = "Active products need a full description.";
-    }
-    if (!requested) {
-      errors.variant = "Active products need a complete purchasable variant.";
-    }
-    if (!sku) errors.sku = "Active products need a canonical SKU.";
-    if (!variantName) {
-      errors.variantName = "Active products need a variant name.";
-    }
-    if (
-      ramGb === null &&
-      input.variant.ramNotApplicable !== true
-    ) {
-      errors.ramGb =
-        "Enter physical RAM or confirm that it is not applicable.";
-    }
-    if (storageGb === null) {
-      errors.storageGb = "Active products need confirmed storage.";
-    }
-    if (
-      currentPriceCentavos === null ||
-      currentPriceCentavos <= 0
-    ) {
-      errors.currentPricePesos =
-        "Active products need a selling price greater than zero.";
     }
   }
 
@@ -434,21 +266,7 @@ export function validateProductSubmission(
       isFeatured: input.isFeatured as boolean,
       sortOrder: sortOrder ?? 0,
       specifications,
-      variant: {
-        requested,
-        sku: sku || null,
-        variantName: variantName || null,
-        ramGb,
-        ramNotApplicable: input.variant.ramNotApplicable as boolean,
-        extendedRamGb,
-        storageGb,
-        currentPriceCentavos,
-        srpCentavos,
-        badge: badge ?? null,
-        financingAvailable: input.variant.financingAvailable as boolean,
-      },
       confirmSlugChange: input.confirmSlugChange as boolean,
-      confirmSkuChange: input.confirmSkuChange as boolean,
     },
   };
 }

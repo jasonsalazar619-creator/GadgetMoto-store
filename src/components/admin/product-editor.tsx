@@ -27,16 +27,7 @@ type SaveStatus = "saved" | "unsaved" | "saving" | "failed";
 
 type EditorForm = Omit<ProductEditorSubmission, "productId">;
 
-function centavosToPesos(value: number | null): string {
-  if (value === null) return "";
-  const whole = Math.floor(value / 100);
-  const fractional = String(value % 100).padStart(2, "0");
-  return `${whole}.${fractional}`;
-}
-
 function formFromProduct(product: AdminProductEditorData): EditorForm {
-  const variant = product.variant ?? product.variantDraft;
-
   return {
     name: product.name,
     slug: product.slug,
@@ -48,35 +39,7 @@ function formFromProduct(product: AdminProductEditorData): EditorForm {
     isFeatured: product.isFeatured,
     sortOrder: String(product.sortOrder),
     specifications: product.specifications,
-    variant: {
-      sku: variant.sku ?? "",
-      variantName: variant.variantName ?? "",
-      ramGb:
-        variant.ramGb === null || variant.ramGb === undefined
-          ? ""
-          : String(variant.ramGb),
-      ramNotApplicable:
-        "ramNotApplicable" in variant
-          ? variant.ramNotApplicable
-          : variant.ramGb === null,
-      extendedRamGb:
-        variant.extendedRamGb === null ||
-        variant.extendedRamGb === undefined
-          ? ""
-          : String(variant.extendedRamGb),
-      storageGb:
-        variant.storageGb === null || variant.storageGb === undefined
-          ? ""
-          : String(variant.storageGb),
-      currentPricePesos: centavosToPesos(
-        variant.currentPriceCentavos ?? null,
-      ),
-      srpPesos: centavosToPesos(variant.srpCentavos ?? null),
-      badge: variant.badge ?? "",
-      financingAvailable: variant.financingAvailable,
-    },
     confirmSlugChange: false,
-    confirmSkuChange: false,
   };
 }
 
@@ -88,28 +51,7 @@ function validInteger(value: string, allowBlank = true): boolean {
   return (allowBlank && value === "") || /^[0-9]+$/.test(value);
 }
 
-function validPositiveInteger(value: string): boolean {
-  return value === "" || (/^[0-9]+$/.test(value) && Number(value) > 0);
-}
-
-function readClientCentavos(value: string): bigint | null | undefined {
-  if (value === "") return null;
-  const match = /^(0|[1-9][0-9]*)(?:\.([0-9]{1,2}))?$/.exec(value);
-  if (!match) return undefined;
-
-  const centavos =
-    BigInt(match[1]) * BigInt(100) +
-    BigInt((match[2] ?? "").padEnd(2, "0"));
-  return centavos <= BigInt(Number.MAX_SAFE_INTEGER)
-    ? centavos
-    : undefined;
-}
-
-function clientFormIsValid(form: EditorForm, hasVariant: boolean): boolean {
-  const currentPriceCentavos = readClientCentavos(
-    form.variant.currentPricePesos,
-  );
-  const srpCentavos = readClientCentavos(form.variant.srpPesos);
+function clientFormIsValid(form: EditorForm): boolean {
   const normalizedSpecificationLabels = form.specifications.map(({ label }) =>
     label.trim().toLocaleLowerCase(),
   );
@@ -142,52 +84,11 @@ function clientFormIsValid(form: EditorForm, hasVariant: boolean): boolean {
     return false;
   }
 
-  const variantRequested =
-    hasVariant ||
-    Boolean(
-      form.variant.sku ||
-        form.variant.variantName ||
-        form.variant.ramGb ||
-        form.variant.extendedRamGb ||
-        form.variant.storageGb ||
-        form.variant.currentPricePesos ||
-        form.variant.srpPesos ||
-        form.variant.badge,
-    );
-
-  if (
-    !validPositiveInteger(form.variant.ramGb) ||
-    !validPositiveInteger(form.variant.extendedRamGb) ||
-    !validPositiveInteger(form.variant.storageGb) ||
-    currentPriceCentavos === undefined ||
-    srpCentavos === undefined ||
-    (form.variant.sku !== "" &&
-      !/^[A-Z0-9][A-Z0-9-]{2,79}$/.test(form.variant.sku)) ||
-    (form.variant.ramNotApplicable && form.variant.ramGb !== "")
-  ) {
-    return false;
-  }
-
-  if (
-    srpCentavos !== null &&
-    currentPriceCentavos !== null &&
-    srpCentavos < currentPriceCentavos
-  ) {
-    return false;
-  }
-
   return !(
     form.lifecycle === "active" &&
     (!form.category ||
       !form.shortDescription.trim() ||
-      !form.fullDescription.trim() ||
-      !variantRequested ||
-      !form.variant.sku.trim() ||
-      !form.variant.variantName.trim() ||
-      (!form.variant.ramGb && !form.variant.ramNotApplicable) ||
-      !form.variant.storageGb ||
-      currentPriceCentavos === null ||
-      currentPriceCentavos <= BigInt(0))
+      !form.fullDescription.trim())
   );
 }
 
@@ -230,9 +131,11 @@ function Section({
 export function ProductEditor({
   initialProduct,
   brands,
+  commercialOptions,
 }: {
   initialProduct: AdminProductEditorData;
   brands: AdminBrand[];
+  commercialOptions: React.ReactNode;
 }) {
   const router = useRouter();
   const [form, setForm] = useState<EditorForm>(() =>
@@ -242,7 +145,6 @@ export function ProductEditor({
   const [status, setStatus] = useState<SaveStatus>("saved");
   const [message, setMessage] = useState("Saved");
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  const [skuUnlocked, setSkuUnlocked] = useState(false);
   const [deleteName, setDeleteName] = useState("");
   const [deleteMessage, setDeleteMessage] = useState<string | null>(null);
   const [destructivePending, startDestructiveTransition] = useTransition();
@@ -263,7 +165,7 @@ export function ProductEditor({
       return;
     }
 
-    if (!clientFormIsValid(currentForm, baseline.variant !== null)) {
+    if (!clientFormIsValid(currentForm)) {
       setStatus("unsaved");
       setMessage("Unsaved changes — complete the invalid fields to save.");
       return;
@@ -339,7 +241,7 @@ export function ProductEditor({
     setMessage("Unsaved changes");
 
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-    if (clientFormIsValid(form, baseline.variant !== null)) {
+    if (clientFormIsValid(form)) {
       saveTimerRef.current = setTimeout(() => {
         void performSave();
       }, 800);
@@ -348,7 +250,7 @@ export function ProductEditor({
     return () => {
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     };
-  }, [baseline.variant, form, performSave]);
+  }, [form, performSave]);
 
   useEffect(() => {
     const warnBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -463,8 +365,6 @@ export function ProductEditor({
   }
 
   const slugChanged = form.slug !== baseline.slug;
-  const skuChanged =
-    baseline.variant !== null && form.variant.sku !== baseline.variant.sku;
   const canOfferDelete =
     baseline.lifecycle === "draft" && baseline.variant === null;
 
@@ -776,256 +676,7 @@ export function ProductEditor({
           )}
         </Section>
 
-        <Section
-          description="Prices are entered in Philippine pesos and stored as integer centavos."
-          title="Pricing"
-        >
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="grid gap-2">
-              <label className="font-bold" htmlFor="current-price">
-                Current price (₱)
-              </label>
-              <input
-                className="min-h-12 rounded-[var(--radius-sm)] border px-4"
-                id="current-price"
-                inputMode="decimal"
-                onChange={(event) =>
-                  updateForm((current) => ({
-                    ...current,
-                    variant: {
-                      ...current.variant,
-                      currentPricePesos: event.target.value,
-                    },
-                  }))
-                }
-                placeholder="0.00"
-                value={form.variant.currentPricePesos}
-              />
-              <FieldError errors={fieldErrors} field="currentPricePesos" />
-            </div>
-            <div className="grid gap-2">
-              <label className="font-bold" htmlFor="srp-price">
-                SRP (₱)
-              </label>
-              <input
-                className="min-h-12 rounded-[var(--radius-sm)] border px-4"
-                id="srp-price"
-                inputMode="decimal"
-                onChange={(event) =>
-                  updateForm((current) => ({
-                    ...current,
-                    variant: {
-                      ...current.variant,
-                      srpPesos: event.target.value,
-                    },
-                  }))
-                }
-                placeholder="Optional"
-                value={form.variant.srpPesos}
-              />
-              <FieldError errors={fieldErrors} field="srpPesos" />
-            </div>
-            <div className="grid gap-2">
-              <label className="font-bold" htmlFor="product-badge">
-                Badge
-              </label>
-              <select
-                className="min-h-12 rounded-[var(--radius-sm)] border bg-white px-4"
-                id="product-badge"
-                onChange={(event) =>
-                  updateForm((current) => ({
-                    ...current,
-                    variant: {
-                      ...current.variant,
-                      badge: event.target.value as EditorForm["variant"]["badge"],
-                    },
-                  }))
-                }
-                value={form.variant.badge}
-              >
-                <option value="">No badge</option>
-                <option value="new">New</option>
-                <option value="sale">Sale</option>
-              </select>
-              <FieldError errors={fieldErrors} field="badge" />
-            </div>
-          </div>
-          <label className="mt-5 flex gap-3">
-            <input
-              checked={form.variant.financingAvailable}
-              className="mt-1 h-4 w-4"
-              onChange={(event) =>
-                updateForm((current) => ({
-                  ...current,
-                  variant: {
-                    ...current.variant,
-                    financingAvailable: event.target.checked,
-                  },
-                }))
-              }
-              type="checkbox"
-            />
-            <span className="font-bold">Financing availability confirmed</span>
-          </label>
-        </Section>
-
-        <Section
-          description={
-            baseline.lifecycle === "coming_soon"
-              ? "Incomplete commercial details autosave safely without making this product purchasable."
-              : "Active products require a complete canonical variant."
-          }
-          title="Variant"
-        >
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="grid gap-2 sm:col-span-2">
-              <label className="font-bold" htmlFor="product-sku">
-                SKU
-              </label>
-              <input
-                autoCapitalize="characters"
-                className="min-h-12 rounded-[var(--radius-sm)] border px-4 font-mono text-sm disabled:bg-slate-100"
-                disabled={baseline.variant !== null && !skuUnlocked}
-                id="product-sku"
-                maxLength={80}
-                onChange={(event) =>
-                  updateForm((current) => ({
-                    ...current,
-                    variant: {
-                      ...current.variant,
-                      sku: event.target.value.toLocaleUpperCase(),
-                    },
-                    confirmSkuChange: false,
-                  }))
-                }
-                placeholder="No SKU is generated automatically"
-                value={form.variant.sku}
-              />
-              <FieldError errors={fieldErrors} field="sku" />
-              {baseline.variant ? (
-                <label className="flex gap-2 text-sm text-[var(--color-muted)]">
-                  <input
-                    checked={skuUnlocked}
-                    onChange={(event) => {
-                      setSkuUnlocked(event.target.checked);
-                      if (!event.target.checked) {
-                        updateForm((current) => ({
-                          ...current,
-                          variant: {
-                            ...current.variant,
-                            sku: baseline.variant?.sku ?? "",
-                          },
-                          confirmSkuChange: false,
-                        }));
-                      }
-                    }}
-                    type="checkbox"
-                  />
-                  Allow canonical SKU editing
-                </label>
-              ) : null}
-            </div>
-
-            <div className="grid gap-2">
-              <label className="font-bold" htmlFor="variant-name">
-                Variant name
-              </label>
-              <input
-                className="min-h-12 rounded-[var(--radius-sm)] border px-4"
-                id="variant-name"
-                maxLength={160}
-                onChange={(event) =>
-                  updateForm((current) => ({
-                    ...current,
-                    variant: {
-                      ...current.variant,
-                      variantName: event.target.value,
-                    },
-                  }))
-                }
-                value={form.variant.variantName}
-              />
-              <FieldError errors={fieldErrors} field="variantName" />
-            </div>
-
-            {[
-              ["ramGb", "Physical RAM (GB)"],
-              ["extendedRamGb", "Extended RAM (GB)"],
-              ["storageGb", "Storage (GB)"],
-            ].map(([field, label]) => (
-              <div className="grid gap-2" key={field}>
-                <label className="font-bold" htmlFor={`variant-${field}`}>
-                  {label}
-                </label>
-                <input
-                  className="min-h-12 rounded-[var(--radius-sm)] border px-4"
-                  id={`variant-${field}`}
-                  inputMode="numeric"
-                  min="0"
-                  onChange={(event) =>
-                    updateForm((current) => ({
-                      ...current,
-                      variant: {
-                        ...current.variant,
-                        [field]: event.target.value,
-                      },
-                    }))
-                  }
-                  pattern="[0-9]*"
-                  value={
-                    form.variant[field as "ramGb" | "extendedRamGb" | "storageGb"]
-                  }
-                />
-                <FieldError errors={fieldErrors} field={field} />
-              </div>
-            ))}
-          </div>
-          <label className="mt-5 flex gap-3 rounded-[var(--radius-sm)] bg-[var(--color-ice)] p-4">
-            <input
-              checked={form.variant.ramNotApplicable}
-              className="mt-1 h-4 w-4"
-              onChange={(event) =>
-                updateForm((current) => ({
-                  ...current,
-                  variant: {
-                    ...current.variant,
-                    ramNotApplicable: event.target.checked,
-                    ...(event.target.checked ? { ramGb: "" } : {}),
-                  },
-                }))
-              }
-              type="checkbox"
-            />
-            <span>
-              <strong>Physical RAM is not applicable</strong>
-              <span className="mt-1 block text-sm text-[var(--color-muted)]">
-                Use only when the official variant does not have an applicable
-                physical RAM value. Do not use this to guess an unknown value.
-              </span>
-            </span>
-          </label>
-          <FieldError errors={fieldErrors} field="ramNotApplicable" />
-          {skuChanged ? (
-            <label className="mt-5 flex gap-3 rounded-[var(--radius-sm)] bg-amber-50 p-4 text-sm">
-              <input
-                checked={form.confirmSkuChange}
-                className="mt-1 h-4 w-4"
-                onChange={(event) =>
-                  updateForm((current) => ({
-                    ...current,
-                    confirmSkuChange: event.target.checked,
-                  }))
-                }
-                type="checkbox"
-              />
-              <span>
-                I confirm this replaces the canonical SKU{" "}
-                <strong>{baseline.variant?.sku}</strong>.
-              </span>
-            </label>
-          ) : null}
-          <FieldError errors={fieldErrors} field="variant" />
-        </Section>
+        {commercialOptions}
 
         <Section title="Specifications">
           <div className="grid gap-4">
