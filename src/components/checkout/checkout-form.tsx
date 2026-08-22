@@ -213,6 +213,26 @@ const getCustomerError = (
   return "We could not receive your order. Please try again later.";
 };
 
+const getPaymentProofError = (
+  status: number,
+  response: unknown,
+): string => {
+  const code = readResponseCode(response);
+  if (
+    status === 503 ||
+    code === "PAYMENT_PROOF_STORAGE_UNAVAILABLE"
+  ) {
+    return "Secure payment-proof storage is temporarily unavailable. Please keep the file and try again later.";
+  }
+  if (code === "INVALID_PAYMENT_PROOF") {
+    return "Choose a valid JPEG, PNG, WebP, or PDF proof no larger than 8 MB.";
+  }
+  if (code === "PAYMENT_NOT_AVAILABLE") {
+    return "This order is not available for a Maya proof attachment.";
+  }
+  return "The proof could not be attached. Please keep the file and try again.";
+};
+
 export function CheckoutForm({
   onlineOrderingEnabled,
 }: {
@@ -808,9 +828,15 @@ export function CheckoutForm({
         method: "POST",
         body: proofFormData,
       });
+      let responseBody: unknown;
+      try {
+        responseBody = (await response.json()) as unknown;
+      } catch {
+        responseBody = null;
+      }
       if (!response.ok) {
         setPaymentProofError(
-          "The proof could not be attached. Please keep the file and try again.",
+          getPaymentProofError(response.status, responseBody),
         );
         return;
       }
@@ -960,7 +986,7 @@ export function CheckoutForm({
                   }}
                   type="button"
                 >
-                  Remove selected file
+                  Remove
                 </button>
               </div>
             ) : null}

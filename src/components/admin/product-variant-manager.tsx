@@ -293,8 +293,8 @@ function ColorForm({
   return (
     <form className="admin-color-card" onSubmit={submit}>
       <div className="admin-color-card__swatch" style={{ background: color?.hexCode ?? "var(--color-ice)" }} />
+      <input name="hexCode" type="hidden" value={color?.hexCode ?? ""} />
       <label>Color name<input defaultValue={color?.name} name="name" required /></label>
-      <label>Hex (optional)<input defaultValue={color?.hexCode ?? ""} name="hexCode" placeholder="#4C91C8" /></label>
       <label>Sort order<input defaultValue={color?.sortOrder ?? nextSortOrder} inputMode="numeric" min="0" name="sortOrder" required type="number" /></label>
       <label className="admin-configuration-check"><input defaultChecked={color?.isActive ?? true} name="isActive" type="checkbox" />Active color</label>
       <div className="admin-configuration-actions">

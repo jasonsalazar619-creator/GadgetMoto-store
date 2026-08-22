@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 
-import { BrandLogoCarousel } from "@/components/storefront/brand-logo-carousel";
 import { BudgetGrid } from "@/components/storefront/budget-grid";
 import { ContactOrderSection } from "@/components/storefront/contact-order-section";
 import { DeliveryOptions } from "@/components/storefront/delivery-options";
@@ -41,7 +40,6 @@ export default async function Home() {
       <StorefrontHeader />
       <main className="storefront-main">
         <HeroSection />
-        <BrandLogoCarousel />
 
         <section className="py-[var(--space-section)]" id="new-arrivals">
           <Container className="storefront-container">
