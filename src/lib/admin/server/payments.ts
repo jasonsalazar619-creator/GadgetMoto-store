@@ -6,6 +6,8 @@ import {
   logManualPaymentReadinessCode,
 } from "@/lib/orders/server/database-diagnostics";
 import { getOrderDatabaseClient } from "@/lib/orders/server/postgres-client";
+import { paymentProofBucket } from "@/lib/payments/server/proof-storage";
+import { createClient } from "@/lib/supabase/server";
 import type {
   OrderStatus,
   PaymentMethod,
@@ -35,6 +37,8 @@ export type AdminPaymentReview = AdminPaymentSummary &
     deliveryFeeCentavos: number | null;
     vatRateBps: number | null;
     vatAmountCentavos: number | null;
+    proofAttached: boolean;
+    proofUrl: string | null;
     address: Readonly<{
       streetAddress: string;
       barangay: string;
@@ -84,6 +88,7 @@ type DetailRow = SummaryRow &
   Readonly<{
     customer_mobile: string;
     customer_email: string | null;
+    proof_storage_path: string | null;
     delivery_method: string;
     delivery_fee_centavos: string | number | null;
     vat_rate_bps: number | null;
@@ -269,6 +274,7 @@ export async function getAdminPaymentReviewDetail(
         orders.merchandise_subtotal_centavos,
         orders.final_total_centavos,
         payments.amount_centavos as payment_amount_centavos,
+        payments.proof_storage_path,
         orders.created_at,
         orders.delivery_method,
         orders.delivery_fee_centavos,
@@ -362,6 +368,24 @@ export async function getAdminPaymentReviewDetail(
           }
         : null;
 
+    const proofPathPattern = new RegExp(
+      `^${first.payment_id}/[0-9a-f-]{36}\\.(?:jpg|png|webp|pdf)$`,
+      "i",
+    );
+    const proofAttached =
+      typeof first.proof_storage_path === "string" &&
+      proofPathPattern.test(first.proof_storage_path);
+    let proofUrl: string | null = null;
+    if (proofAttached) {
+      const supabase = await createClient();
+      if (supabase) {
+        const { data, error } = await supabase.storage
+          .from(paymentProofBucket)
+          .createSignedUrl(first.proof_storage_path as string, 300);
+        if (!error) proofUrl = data.signedUrl;
+      }
+    }
+
     return {
       ...summary,
       customerMobile: first.customer_mobile,
@@ -370,6 +394,8 @@ export async function getAdminPaymentReviewDetail(
       deliveryFeeCentavos,
       vatRateBps: first.vat_rate_bps,
       vatAmountCentavos,
+      proofAttached,
+      proofUrl,
       address,
       items: items.map((item) => ({
         ...item,

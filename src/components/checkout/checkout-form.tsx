@@ -6,6 +6,7 @@ import {
   useEffect,
   useRef,
   useState,
+  type ChangeEvent,
   type FormEvent,
 } from "react";
 import { useCart } from "@/components/cart/cart-provider";
@@ -15,10 +16,7 @@ import { primaryPickupLocation } from "@/lib/storefront/pickup-location";
 
 type Delivery = "nationwide" | "same-day" | "store-pickup";
 type Payment =
-  | "maya-online"
   | "maya-transfer"
-  | "gcash"
-  | "bank"
   | "cash-on-pickup"
   | "financing"
   | "";
@@ -53,7 +51,9 @@ type OrderResult = Readonly<{
     address: string;
   }>;
   paymentLabel: string;
-  paymentStatus: "instructions_pending";
+  paymentStatus: "awaiting_payment" | "instructions_pending";
+  confirmationToken: string;
+  mayaProofAttached: boolean;
   items: readonly Readonly<{
     lineId: string;
     productName: string;
@@ -94,6 +94,15 @@ const money = new Intl.NumberFormat("en-PH", {
 const messengerUrl =
   "https://www.facebook.com/profile.php?id=100063905416187";
 const messengerConversationUrl = "https://m.me/100063905416187";
+const mayaInvoiceUrl =
+  "https://payments.maya.ph/invoice?id=59554947-7d76-439f-8cce-1f5ed5ebc676";
+const paymentProofMaximumBytes = 8 * 1024 * 1024;
+const acceptedPaymentProofTypes = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "application/pdf",
+]);
 const idempotencyStorageKey = "gadgetmoto:checkout:idempotency:v1";
 const uuidV4Pattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -106,25 +115,15 @@ const deliveryLabels: Record<Delivery, string> = {
   "store-pickup": "Store Pickup",
 };
 const paymentLabels: Record<Exclude<Payment, "">, string> = {
-  "maya-online": "Maya Online Payment",
-  "maya-transfer": "Maya Manual Transfer",
-  gcash: "GCash",
-  bank: "Bank Transfer",
+  "maya-transfer": "Maya Payment",
   "cash-on-pickup": "Cash on Store Pickup",
   financing: "Financing Inquiry via Messenger",
 };
 const paymentMethods: Record<
   Exclude<Payment, "" | "financing">,
-  | "maya_online"
-  | "maya_manual"
-  | "gcash"
-  | "bank_transfer"
-  | "cash_on_pickup"
+  "maya_manual" | "cash_on_pickup"
 > = {
-  "maya-online": "maya_online",
   "maya-transfer": "maya_manual",
-  gcash: "gcash",
-  bank: "bank_transfer",
   "cash-on-pickup": "cash_on_pickup",
 };
 
@@ -216,10 +215,8 @@ const getCustomerError = (
 
 export function CheckoutForm({
   onlineOrderingEnabled,
-  paymentGatewayEnabled,
 }: {
   onlineOrderingEnabled: boolean;
-  paymentGatewayEnabled: boolean;
 }) {
   const {
     items,
@@ -237,6 +234,10 @@ export function CheckoutForm({
   const [guidance, setGuidance] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submissionError, setSubmissionError] = useState("");
+  const [paymentProof, setPaymentProof] = useState<File | null>(null);
+  const [paymentProofError, setPaymentProofError] = useState("");
+  const [paymentProofPreviewUrl, setPaymentProofPreviewUrl] = useState("");
+  const [paymentProofUploading, setPaymentProofUploading] = useState(false);
   const [orderResult, setOrderResult] = useState<OrderResult | null>(
     null,
   );
@@ -245,6 +246,17 @@ export function CheckoutForm({
   const idempotencySignatureRef = useRef("");
   const submissionInFlightRef = useRef(false);
   const formRef = useRef<HTMLFormElement>(null);
+
+  const paymentProofPreviewRef = useRef("");
+
+  useEffect(
+    () => () => {
+      if (paymentProofPreviewRef.current) {
+        URL.revokeObjectURL(paymentProofPreviewRef.current);
+      }
+    },
+    [],
+  );
 
   const cartSignature = items
     .map(
@@ -329,6 +341,52 @@ export function CheckoutForm({
     setErrors((current) => ({ ...current, [name]: undefined }));
     setReviewed(false);
     setSubmissionError("");
+  };
+
+  const choosePayment = (payment: Exclude<Payment, "">) => {
+    update("payment", payment);
+    if (payment !== "maya-transfer") {
+      setPaymentProof(null);
+      setPaymentProofError("");
+      if (paymentProofPreviewRef.current) {
+        URL.revokeObjectURL(paymentProofPreviewRef.current);
+        paymentProofPreviewRef.current = "";
+      }
+      setPaymentProofPreviewUrl("");
+      return;
+    }
+
+    window.open(mayaInvoiceUrl, "_blank", "noopener,noreferrer");
+  };
+
+  const choosePaymentProof = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] ?? null;
+    if (paymentProofPreviewRef.current) {
+      URL.revokeObjectURL(paymentProofPreviewRef.current);
+      paymentProofPreviewRef.current = "";
+    }
+    setPaymentProofPreviewUrl("");
+    setPaymentProof(file);
+    setPaymentProofError("");
+    setReviewed(false);
+    setSubmissionError("");
+
+    if (!file) return;
+    if (
+      !acceptedPaymentProofTypes.has(file.type) ||
+      file.size <= 0 ||
+      file.size > paymentProofMaximumBytes
+    ) {
+      setPaymentProofError(
+        "Choose a JPEG, PNG, WebP, or PDF proof no larger than 8 MB.",
+      );
+      return;
+    }
+    if (file.type.startsWith("image/")) {
+      const previewUrl = URL.createObjectURL(file);
+      paymentProofPreviewRef.current = previewUrl;
+      setPaymentProofPreviewUrl(previewUrl);
+    }
   };
 
   const chooseDelivery = (delivery: Delivery) => {
@@ -577,8 +635,15 @@ export function CheckoutForm({
         !responseBody.publicOrderNumber ||
         !("wasReplay" in responseBody) ||
         typeof responseBody.wasReplay !== "boolean" ||
+        !("confirmationToken" in responseBody) ||
+        typeof responseBody.confirmationToken !== "string" ||
+        !/^[a-f0-9]{64}$/.test(responseBody.confirmationToken) ||
         !("paymentStatus" in responseBody) ||
-        responseBody.paymentStatus !== "instructions_pending"
+        (responseBody.paymentStatus !== "instructions_pending" &&
+          !(
+            values.payment === "maya-transfer" &&
+            responseBody.paymentStatus === "awaiting_payment"
+          ))
       ) {
         setSubmissionError(
           "We could not confirm that your order was received. Please try again.",
@@ -603,6 +668,10 @@ export function CheckoutForm({
         },
         paymentLabel: paymentLabels[values.payment],
         paymentStatus: responseBody.paymentStatus,
+        confirmationToken: responseBody.confirmationToken,
+        mayaProofAttached:
+          values.payment === "maya-transfer" &&
+          responseBody.paymentStatus === "awaiting_payment",
         items: items.map((item) => ({
           lineId: item.lineId,
           productName: item.product.name,
@@ -713,6 +782,66 @@ export function CheckoutForm({
     }
   };
 
+  const uploadPaymentProof = async () => {
+    if (!orderResult || orderResult.paymentLabel !== "Maya Payment") return;
+    if (
+      !paymentProof ||
+      !acceptedPaymentProofTypes.has(paymentProof.type) ||
+      paymentProof.size <= 0 ||
+      paymentProof.size > paymentProofMaximumBytes
+    ) {
+      setPaymentProofError(
+        "Choose a JPEG, PNG, WebP, or PDF proof no larger than 8 MB.",
+      );
+      return;
+    }
+
+    setPaymentProofUploading(true);
+    setPaymentProofError("");
+    setGuidance("");
+    try {
+      const proofFormData = new FormData();
+      proofFormData.set("publicOrderNumber", orderResult.publicOrderNumber);
+      proofFormData.set("confirmationToken", orderResult.confirmationToken);
+      proofFormData.set("proof", paymentProof);
+      const response = await fetch("/api/orders/payment-proof", {
+        method: "POST",
+        body: proofFormData,
+      });
+      if (!response.ok) {
+        setPaymentProofError(
+          "The proof could not be attached. Please keep the file and try again.",
+        );
+        return;
+      }
+
+      setOrderResult((current) =>
+        current
+          ? {
+              ...current,
+              paymentStatus: "awaiting_payment",
+              mayaProofAttached: true,
+            }
+          : current,
+      );
+      setGuidance(
+        "Proof attached securely. GadgetMoTo will verify the payment and confirmed amount manually.",
+      );
+      setPaymentProof(null);
+      if (paymentProofPreviewRef.current) {
+        URL.revokeObjectURL(paymentProofPreviewRef.current);
+        paymentProofPreviewRef.current = "";
+      }
+      setPaymentProofPreviewUrl("");
+    } catch {
+      setPaymentProofError(
+        "The proof could not be attached. Please keep the file and try again.",
+      );
+    } finally {
+      setPaymentProofUploading(false);
+    }
+  };
+
   if (orderResult) {
     return (
       <section
@@ -750,6 +879,116 @@ export function CheckoutForm({
             your order is submitted.
           </p>
         </section>
+        {orderResult.paymentLabel === "Maya Payment" ? (
+          <section
+            aria-labelledby="submitted-maya-payment-title"
+            className="checkout-maya-payment"
+          >
+            <div>
+              <strong id="submitted-maya-payment-title">
+                Attach proof of payment
+              </strong>
+              <p>
+                Your order has already been submitted. Continue to Maya,
+                complete only the amount GadgetMoTo has confirmed, then attach
+                your proof below. Returning from Maya or attaching a file does
+                not mark the payment as successful; an administrator must
+                verify the proof and amount.
+              </p>
+              <a
+                href={mayaInvoiceUrl}
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                Continue to Maya
+              </a>
+            </div>
+            <label className="checkout-payment-proof">
+              <span>
+                {orderResult.mayaProofAttached
+                  ? "Replace proof of payment"
+                  : "Proof of payment"}
+              </span>
+              <input
+                accept="image/jpeg,image/png,image/webp,application/pdf"
+                aria-describedby={
+                  paymentProofError
+                    ? "submitted-payment-proof-error"
+                    : "submitted-payment-proof-help"
+                }
+                aria-invalid={!!paymentProofError}
+                onChange={choosePaymentProof}
+                type="file"
+              />
+              <small id="submitted-payment-proof-help">
+                JPEG, PNG, WebP, or PDF. Maximum file size: 8 MB.
+              </small>
+              {paymentProofError ? (
+                <small id="submitted-payment-proof-error" role="alert">
+                  {paymentProofError}
+                </small>
+              ) : null}
+            </label>
+            {paymentProof ? (
+              <div className="checkout-payment-proof-preview">
+                {paymentProofPreviewUrl ? (
+                  // A local object URL is used only for the customer's preview.
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    alt="Selected proof of payment preview"
+                    src={paymentProofPreviewUrl}
+                  />
+                ) : (
+                  <span aria-hidden="true">PDF</span>
+                )}
+                <p>
+                  <strong>{paymentProof.name}</strong>
+                  <small>
+                    {(paymentProof.size / (1024 * 1024)).toFixed(2)} MB
+                  </small>
+                </p>
+                <button
+                  disabled={paymentProofUploading}
+                  onClick={() => {
+                    setPaymentProof(null);
+                    setPaymentProofError("");
+                    if (paymentProofPreviewRef.current) {
+                      URL.revokeObjectURL(paymentProofPreviewRef.current);
+                      paymentProofPreviewRef.current = "";
+                    }
+                    setPaymentProofPreviewUrl("");
+                  }}
+                  type="button"
+                >
+                  Remove selected file
+                </button>
+              </div>
+            ) : null}
+            <button
+              className="checkout-payment-proof-submit"
+              disabled={!paymentProof || paymentProofUploading}
+              onClick={() => void uploadPaymentProof()}
+              type="button"
+            >
+              {paymentProofUploading
+                ? "Attaching proof…"
+                : orderResult.mayaProofAttached
+                  ? "Replace attached proof"
+                  : "Attach proof of payment"}
+            </button>
+            {orderResult.mayaProofAttached ? (
+              <p className="checkout-payment-proof-success" role="status">
+                A proof is attached and waiting for administrator
+                verification.
+              </p>
+            ) : null}
+            {guidance ? (
+              <p className="checkout-payment-proof-success" role="status">
+                {guidance}
+              </p>
+            ) : null}
+          </section>
+        ) : null}
         <div className="checkout-review-grid">
           <section>
             <h3>Customer</h3>
@@ -1052,20 +1291,7 @@ export function CheckoutForm({
                 </p>
               </div>
               <div className="checkout-options">
-                {(
-                  paymentGatewayEnabled
-                    ? ([
-                        "maya-online",
-                        "maya-transfer",
-                        "gcash",
-                        "bank",
-                      ] as Exclude<Payment, "">[])
-                    : ([
-                        "maya-transfer",
-                        "gcash",
-                        "bank",
-                      ] as Exclude<Payment, "">[])
-                )
+                {(["maya-transfer"] as Exclude<Payment, "">[])
                   .concat(
                     selectedDelivery === "store-pickup"
                       ? ["cash-on-pickup", "financing"]
@@ -1080,15 +1306,15 @@ export function CheckoutForm({
                       checked={values.payment === method}
                       disabled={financingUnavailable}
                       name="payment"
-                      onChange={() => update("payment", method)}
+                      onChange={() => choosePayment(method)}
                       type="radio"
                       value={method}
                     />
                     <span>
                       <strong>{paymentLabels[method]}</strong>
                       <small>
-                        {method === "maya-online"
-                          ? "Automated Maya checkout is available only when the server-side gateway feature is enabled."
+                        {method === "maya-transfer"
+                            ? "Submit your order first, then attach your proof of payment on the confirmation page. Maya opens in a separate tab."
                           : method === "financing"
                             ? financingUnavailable
                               ? "One or more cart items are not currently marked as financing-eligible."

@@ -429,7 +429,7 @@ These do not block schema planning, but must be resolved before their relevant m
 - Pickup schedule and operating instructions for the approved Barangay Sabang, Dasmariñas branch
 - Courier providers and delivery-pricing rules
 - Maya webhook and checkout requirements
-- Manual payment proof-upload process
+- Manual payment proof uploads use a private `payment-proofs` Storage bucket and a trusted server route. Migration `20260822120000_manual_payment_proof_storage.sql` was manually deployed and verified as Migration 21. Customer proof files are limited to validated JPEG, PNG, WebP, or PDF content up to 8 MB; only the private object path is stored on `payments`. Active administrators receive short-lived signed read links. A proof attachment changes the payment to awaiting review and never establishes successful payment by itself.
 
 ## Pending storefront variant ordering
 

@@ -41,7 +41,7 @@ const paymentMethodLabels: Record<
   string
 > = {
   maya_online: "Maya Online",
-  maya_manual: "Maya Manual Transfer",
+  maya_manual: "Maya Payment",
   gcash: "GCash",
   bank_transfer: "Bank Transfer",
   cash_on_pickup: "Cash on Store Pickup",
@@ -229,6 +229,35 @@ function PaymentDetail({
           </dd>
         </div>
       </dl>
+
+      <section className="mt-5 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-ice)] p-4">
+        <h3 className="font-bold">Proof of payment</h3>
+        {review.proofUrl ? (
+          <>
+            <p className="mt-1 text-sm leading-6 text-[var(--color-muted)]">
+              The customer attached a private proof. The secure link expires
+              after five minutes and does not by itself confirm payment.
+            </p>
+            <a
+              className="mt-3 inline-flex min-h-10 items-center rounded-[var(--radius-round)] border border-[var(--color-action)] px-4 text-sm font-bold text-[var(--color-action)]"
+              href={review.proofUrl}
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              Open payment proof
+            </a>
+          </>
+        ) : review.proofAttached ? (
+          <p className="mt-1 text-sm text-[var(--color-muted)]">
+            A proof is attached, but its secure preview is temporarily
+            unavailable. Refresh the selected order and try again.
+          </p>
+        ) : (
+          <p className="mt-1 text-sm text-[var(--color-muted)]">
+            No payment proof is attached to this order.
+          </p>
+        )}
+      </section>
 
       <div className="mt-6 grid gap-5 border-t border-[var(--color-border)] pt-5 lg:grid-cols-[0.8fr_1.2fr]">
         <section aria-label="Delivery details">

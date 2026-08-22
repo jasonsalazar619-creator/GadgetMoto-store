@@ -26,7 +26,7 @@ export function PriceDisplay({
         <span className="font-[family-name:var(--font-heading)] text-2xl font-bold tracking-tight text-[var(--color-ink)]">
           {pesoFormatter.format(currentPrice)}
         </span>
-        {originalPrice ? (
+        {originalPrice && originalPrice > currentPrice ? (
           <del className="text-sm text-[var(--color-muted)]">
             <span className="sr-only">Original price: </span>
             {pesoFormatter.format(originalPrice)}

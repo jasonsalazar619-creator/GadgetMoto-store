@@ -145,6 +145,16 @@
   appends the existing variant sort order to the security-barrier storefront
   read model so an administrator-selected default is deterministic. It adds no
   table, policy, grant, public access, seed data, or write path.
-- Both migrations were manually deployed and verified. All 18 migration
-  versions now match in local and remote history. Future changes must use a new
-  timestamped migration; neither deployed file may be edited in place.
+- Both migrations were manually deployed and verified. At that stage, all 18
+  migration versions matched in local and remote history. Future changes must
+  use a new timestamped migration; neither deployed file may be edited in
+  place.
+- Payment-proof Storage migration
+  `20260822120000_manual_payment_proof_storage.sql` was manually deployed and
+  verified as Migration 21. All 21 migration versions now match in local and
+  remote history. It creates a private `payment-proofs` bucket,
+  administrator-only reads, and a least-privilege order-service update path
+  for proof metadata. The customer upload route additionally requires a
+  server-only `SUPABASE_SECRET_KEY` in each runtime environment; the value must
+  never be exposed to browser code, written to an environment file in Git,
+  logged, or documented.

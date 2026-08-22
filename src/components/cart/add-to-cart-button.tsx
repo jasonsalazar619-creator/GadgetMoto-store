@@ -82,6 +82,24 @@ function getConfigurationChoices(
 
 export function AddToCartButton({ product }: { product: PrototypeProduct }) {
   const choices = useMemo(() => getConfigurationChoices(product), [product]);
+  const colorChoices = useMemo(() => {
+    const colors = new Map<string, ProductColor>();
+    for (const choice of choices) {
+      if (choice.color && !colors.has(choice.color.id)) {
+        colors.set(choice.color.id, choice.color);
+      }
+    }
+    return [...colors.values()];
+  }, [choices]);
+  const variantChoices = useMemo(() => {
+    const variants = new Map<string, ProductVariant>();
+    for (const choice of choices) {
+      if (!variants.has(choice.variant.id)) {
+        variants.set(choice.variant.id, choice.variant);
+      }
+    }
+    return [...variants.values()];
+  }, [choices]);
   const defaultChoice = choices.find(({ isAvailable }) => isAvailable);
   const defaultVariant =
     product.variants.find((variant) => variant.isDefault && variant.isActive) ??
@@ -100,6 +118,30 @@ export function AddToCartButton({ product }: { product: PrototypeProduct }) {
     ) ?? defaultChoice;
   const selectedVariant = selectedChoice?.variant ?? defaultVariant;
   const selectedColor = selectedChoice?.color ?? null;
+  const selectColor = (colorId: string) => {
+    const nextChoice =
+      choices.find(
+        (choice) =>
+          choice.isAvailable &&
+          choice.color?.id === colorId &&
+          choice.variant.id === selectedVariant?.id,
+      ) ??
+      choices.find(
+        (choice) => choice.isAvailable && choice.color?.id === colorId,
+      );
+    if (nextChoice) setSelectedChoiceKey(nextChoice.key);
+  };
+  const selectVariant = (variantId: string) => {
+    const nextChoice = choices.find(
+      (choice) =>
+        choice.isAvailable &&
+        choice.variant.id === variantId &&
+        (selectedColor
+          ? choice.color?.id === selectedColor.id
+          : choice.color === null),
+    );
+    if (nextChoice) setSelectedChoiceKey(nextChoice.key);
+  };
   const canPurchase = Boolean(
     selectedChoice?.isAvailable &&
       selectedVariant?.purchasable &&
@@ -120,45 +162,81 @@ export function AddToCartButton({ product }: { product: PrototypeProduct }) {
 
   return (
     <div className="product-configurator">
-      <fieldset className="product-combination-selector">
+      {colorChoices.length ? (
+        <fieldset className="product-color-selector">
+          <legend>
+            Color{selectedColor ? `: ${selectedColor.name}` : ""}
+          </legend>
+          <div className="product-configurator__options product-configurator__options--colors">
+            {colorChoices.map((color) => {
+              const isAvailable = choices.some(
+                (choice) =>
+                  choice.isAvailable && choice.color?.id === color.id,
+              );
+              return (
+                <label key={color.id}>
+                  <input
+                    checked={selectedColor?.id === color.id}
+                    disabled={!isAvailable}
+                    name={`color-${product.slug}`}
+                    onChange={() => selectColor(color.id)}
+                    type="radio"
+                    value={color.id}
+                  />
+                  <span>
+                    <strong>
+                      <i
+                        aria-hidden="true"
+                        className="product-color-swatch"
+                        style={
+                          color.hexCode
+                            ? { backgroundColor: color.hexCode }
+                            : undefined
+                        }
+                      />
+                      {color.name}
+                    </strong>
+                    <small>{isAvailable ? "Available" : "Unavailable"}</small>
+                  </span>
+                </label>
+              );
+            })}
+          </div>
+        </fieldset>
+      ) : null}
+
+      <fieldset className="product-memory-selector">
         <legend>
-          Variant
-          {selectedChoice
-            ? `: ${selectedColor ? `${selectedColor.name}, ` : ""}${selectedVariant.name}`
-            : ""}
+          Memory / Storage{selectedChoice ? `: ${selectedVariant.name}` : ""}
         </legend>
-        <div className="product-configurator__options product-configurator__options--combinations">
-          {choices.length ? choices.map((choice) => (
-            <label key={choice.key}>
+        <div className="product-configurator__options product-configurator__options--memory">
+          {variantChoices.length ? variantChoices.map((variant) => {
+            const matchingChoice = choices.find(
+              (choice) =>
+                choice.variant.id === variant.id &&
+                (selectedColor
+                  ? choice.color?.id === selectedColor.id
+                  : choice.color === null),
+            );
+            const isAvailable = matchingChoice?.isAvailable === true;
+            return (
+              <label key={variant.id}>
               <input
-                checked={selectedChoice?.key === choice.key}
-                disabled={!choice.isAvailable}
-                name={`configuration-${product.slug}`}
-                onChange={() => setSelectedChoiceKey(choice.key)}
+                checked={selectedVariant.id === variant.id && isAvailable}
+                disabled={!isAvailable}
+                name={`memory-${product.slug}`}
+                onChange={() => selectVariant(variant.id)}
                 type="radio"
-                value={choice.key}
+                value={variant.id}
               />
               <span>
-                <strong>
-                  {choice.color ? (
-                    <i
-                      aria-hidden="true"
-                      className="product-color-swatch"
-                      style={
-                        choice.color.hexCode
-                          ? { backgroundColor: choice.color.hexCode }
-                          : undefined
-                      }
-                    />
-                  ) : null}
-                  {choice.color ? `${choice.color.name}, ` : ""}
-                  {choice.variant.name}
-                </strong>
-                <small>{choice.isAvailable ? "Available" : "Unavailable"}</small>
+                <strong>{variant.name}</strong>
+                <small>{isAvailable ? "Available" : "Unavailable"}</small>
               </span>
             </label>
-          )) : (
-            <p>No verified color and memory/storage combination is currently configured.</p>
+            );
+          }) : (
+            <p>No memory or storage configuration is currently configured.</p>
           )}
         </div>
       </fieldset>
