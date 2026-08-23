@@ -553,16 +553,6 @@ export async function saveProductAction(
   }
 
   if (
-    value.lifecycle === "active" &&
-    current.product.status !== "active"
-  ) {
-    return failure("INVALID_PRODUCT", invalidProductMessage, {
-      lifecycle:
-        "Use Make Official to validate and publish a Coming Soon product.",
-    });
-  }
-
-  if (
     value.slug !== current.product.slug &&
     !value.confirmSlugChange
   ) {
@@ -601,8 +591,11 @@ export async function saveProductAction(
       { slug: "Choose a unique slug." },
     );
   }
-  const targetActive = value.lifecycle === "active";
-  const targetPreview = value.lifecycle === "coming_soon";
+  const promotingToActive =
+    value.lifecycle === "active" && current.product.status !== "active";
+  const targetActive = value.lifecycle === "active" && !promotingToActive;
+  const targetPreview =
+    value.lifecycle === "coming_soon" || promotingToActive;
   const targetArchived = value.lifecycle === "archived";
   const oldSlug = current.product.slug;
   let workingProduct = current.product;
@@ -659,6 +652,40 @@ export async function saveProductAction(
     ))
   ) {
     return failure("PRODUCT_SAVE_FAILED", saveFailedMessage);
+  }
+
+  if (promotingToActive) {
+    const { data, error } = await context.supabase.rpc(
+      "promote_coming_soon_product",
+      { target_product_id: value.productId },
+    );
+
+    if (error) {
+      return failure(
+        "PRODUCT_SAVE_FAILED",
+        "The product details were saved, but it could not be published safely. Refresh and try again.",
+      );
+    }
+    if (data === "DUPLICATE_SLUG") {
+      return failure(
+        "DUPLICATE_PRODUCT_SLUG",
+        "The product was kept hidden because its slug is already in use.",
+        { slug: "Choose a unique slug before making this product live." },
+      );
+    }
+    if (data === "DUPLICATE_SKU") {
+      return failure(
+        "DUPLICATE_PRODUCT_SKU",
+        "The product was kept hidden because an active selling option has a duplicate SKU.",
+      );
+    }
+    if (data !== "PUBLISHED") {
+      return failure(
+        "INVALID_PRODUCT",
+        "The product was kept hidden. Add a primary image and complete at least one active memory/storage option with its SKU and selling price.",
+        { lifecycle: "Complete the required product details, then choose Live on website again." },
+      );
+    }
   }
 
   const product = await reloadEditor(context.supabase, value.productId);

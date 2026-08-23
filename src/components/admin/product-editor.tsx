@@ -9,7 +9,6 @@ import {
 } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { MakeOfficialButton } from "@/components/admin/make-official-button";
 import { ProductImageManager } from "@/components/admin/product-image-manager";
 import {
   archiveProductAction,
@@ -630,7 +629,7 @@ export function ProductEditor({
         </Section>
 
         <Section
-          description="Coming Soon products stay non-purchasable. Archive uses the separate confirmed action below."
+          description="Choose whether this product is live, shown as a preview, or hidden. Changes save automatically."
           title="Status and Visibility"
         >
           {baseline.lifecycle === "archived" ? (
@@ -656,21 +655,19 @@ export function ProductEditor({
                 }
                 value={form.lifecycle}
               >
-                <option value="draft">Draft — private</option>
+                <option value="active">Live on website — available</option>
                 <option value="coming_soon">
                   Coming Soon — public preview only
                 </option>
-                {baseline.lifecycle === "active" ? (
-                  <option value="active">Active — purchasable</option>
-                ) : null}
+                <option value="draft">Hidden — removed from website</option>
               </select>
               <FieldError errors={fieldErrors} field="lifecycle" />
               <p className="text-sm leading-6 text-[var(--color-muted)]">
                 {form.lifecycle === "draft"
-                  ? "Draft products are private and do not appear on the website. Choose Coming Soon and save when the preview is ready."
+                  ? "This product stays in Admin but is removed from the public website."
                   : form.lifecycle === "coming_soon"
-                    ? "This appears only in Coming Soon. Complete every checklist item, then use Make Official below to add it to the live shop."
-                    : "This product is visible in the live storefront catalog."}
+                    ? "This product appears only in Coming Soon and cannot be purchased."
+                    : "This product is published automatically to the live storefront when its required details and at least one active selling option are complete."}
               </p>
             </div>
           )}
@@ -764,40 +761,6 @@ export function ProductEditor({
             productName={form.name || baseline.name}
           />
         </Section>
-
-        {baseline.lifecycle === "coming_soon" ? (
-          <Section
-            description="Coming Soon products use the same saved configurations and colors as active products. Publish only when the product is ready for customers."
-            title="Publish to the live store"
-          >
-            {baseline.readiness.isReady ? (
-              <p className="rounded-[var(--radius-sm)] bg-emerald-50 p-4 text-sm font-semibold text-emerald-900">
-                Ready to publish. Saved memory, storage, pricing, SKU, and color
-                settings will become available on the storefront.
-              </p>
-            ) : (
-              <div className="rounded-[var(--radius-sm)] bg-amber-50 p-4 text-sm text-amber-950">
-                <p className="font-semibold">Finish these required details:</p>
-                <ul className="mt-2 list-disc space-y-1 pl-5">
-                  {baseline.readiness.items
-                    .filter((item) => !item.complete)
-                    .map((item) => (
-                      <li key={item.key}>{item.label}</li>
-                    ))}
-                </ul>
-              </div>
-            )}
-            <div className="mt-6">
-              <MakeOfficialButton
-                disabled={
-                  !baseline.readiness.isReady ||
-                  status !== "saved"
-                }
-                productId={baseline.id}
-              />
-            </div>
-          </Section>
-        ) : null}
 
         <Section
           description="Archive preserves history. Permanent deletion is restricted by the deployed database guard."
