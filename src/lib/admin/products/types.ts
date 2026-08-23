@@ -36,6 +36,7 @@ export type AdminProductReadinessItem = {
     | "category"
     | "description"
     | "primaryImage"
+    | "activeVariant"
     | "sku"
     | "uniqueSku"
     | "variantName"

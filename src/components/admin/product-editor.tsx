@@ -767,26 +767,26 @@ export function ProductEditor({
 
         {baseline.lifecycle === "coming_soon" ? (
           <Section
-            description="Publication is a separate confirmed transaction. Autosave never publishes this product."
-            title="Make this product official"
+            description="Coming Soon products use the same saved configurations and colors as active products. Publish only when the product is ready for customers."
+            title="Publish to the live store"
           >
-            <ul className="grid gap-3 sm:grid-cols-2">
-              {baseline.readiness.items.map((item) => (
-                <li
-                  className={`flex items-start gap-3 rounded-[var(--radius-sm)] p-3 text-sm ${
-                    item.complete
-                      ? "bg-emerald-50 text-emerald-900"
-                      : "bg-amber-50 text-amber-950"
-                  }`}
-                  key={item.key}
-                >
-                  <span aria-hidden="true" className="font-bold">
-                    {item.complete ? "✓" : "○"}
-                  </span>
-                  <span>{item.label}</span>
-                </li>
-              ))}
-            </ul>
+            {baseline.readiness.isReady ? (
+              <p className="rounded-[var(--radius-sm)] bg-emerald-50 p-4 text-sm font-semibold text-emerald-900">
+                Ready to publish. Saved memory, storage, pricing, SKU, and color
+                settings will become available on the storefront.
+              </p>
+            ) : (
+              <div className="rounded-[var(--radius-sm)] bg-amber-50 p-4 text-sm text-amber-950">
+                <p className="font-semibold">Finish these required details:</p>
+                <ul className="mt-2 list-disc space-y-1 pl-5">
+                  {baseline.readiness.items
+                    .filter((item) => !item.complete)
+                    .map((item) => (
+                      <li key={item.key}>{item.label}</li>
+                    ))}
+                </ul>
+              </div>
+            )}
             <div className="mt-6">
               <MakeOfficialButton
                 disabled={
@@ -796,11 +796,6 @@ export function ProductEditor({
                 productId={baseline.id}
               />
             </div>
-            {!baseline.readiness.isReady ? (
-              <p className="mt-3 text-sm text-[var(--color-muted)]">
-                Complete and save every checklist item to enable publication.
-              </p>
-            ) : null}
           </Section>
         ) : null}
 

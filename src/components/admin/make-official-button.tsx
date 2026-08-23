@@ -22,7 +22,7 @@ export function MakeOfficialButton({
 
   function makeOfficial() {
     const confirmed = window.confirm(
-      "Make this product official and publish it to the live GadgetMoTo catalog?",
+      "Publish this product and its available configurations to the live GadgetMoTo store?",
     );
     if (!confirmed) return;
 
@@ -48,7 +48,7 @@ export function MakeOfficialButton({
         onClick={makeOfficial}
         type="button"
       >
-        {pending ? "Publishing…" : "Make Official"}
+        {pending ? "Publishing…" : "Publish to live store"}
       </button>
       {message ? (
         <p

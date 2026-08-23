@@ -37,6 +37,7 @@ type ImageRow = Database["public"]["Tables"]["product_images"]["Row"];
 
 const unavailableMessage =
   "Product management data could not be loaded safely.";
+const canonicalSkuPattern = /^[A-Z0-9][A-Z0-9-]{2,79}$/;
 const emptyVariantDraft: AdminProductVariantDraft = {
   sku: null,
   variantName: null,
@@ -127,18 +128,42 @@ function draftFromVariant(variant: VariantRow): AdminProductVariantDraft {
   };
 }
 
+function isCommerciallyCompleteActiveVariant(variant: VariantRow): boolean {
+  return (
+    variant.is_active &&
+    variant.condition === "brand_new" &&
+    canonicalSkuPattern.test(variant.sku) &&
+    Boolean(variant.variant_name.trim()) &&
+    variant.storage_gb > 0 &&
+    variant.current_price_centavos > 0 &&
+    (variant.ram_gb === null || variant.ram_gb > 0) &&
+    (variant.extended_ram_gb === null || variant.extended_ram_gb > 0) &&
+    (variant.srp_centavos === null ||
+      variant.srp_centavos >= variant.current_price_centavos)
+  );
+}
+
+function readinessVariant(
+  variants: readonly VariantRow[],
+): VariantRow | null {
+  return (
+    variants.find(isCommerciallyCompleteActiveVariant) ??
+    variants.find((variant) => variant.is_active) ??
+    variants[0] ??
+    null
+  );
+}
+
 function commerceDraftForProduct(
   product: ProductRow,
   variant: VariantRow | null,
 ): AdminProductVariantDraft {
   const value = readCommerceDraft(product.commerce_draft);
-  const hasSavedDraft =
-    typeof product.commerce_draft === "object" &&
-    product.commerce_draft !== null &&
-    !Array.isArray(product.commerce_draft) &&
-    Object.keys(product.commerce_draft).length > 0;
 
-  return hasSavedDraft || !variant ? value : draftFromVariant(variant);
+  // Saved product variants are the canonical commercial settings for both
+  // active and Coming Soon products. The legacy JSON draft remains only as a
+  // compatibility fallback for older records that have no variant row yet.
+  return variant ? draftFromVariant(variant) : value;
 }
 
 function toBrand(row: Database["public"]["Tables"]["brands"]["Row"]): AdminBrand {
@@ -215,7 +240,7 @@ function toEditorData(
   slugIsUnique: boolean,
   skuIsUnique: boolean,
 ): AdminProductEditorData {
-  const variant = variantRows[0] ?? null;
+  const variant = readinessVariant(variantRows);
   const variantDraft = commerceDraftForProduct(product, variant);
   const images = imageRows.flatMap((image) => {
     const mapped = toImage(image);
@@ -233,6 +258,9 @@ function toEditorData(
         image.media_type === "image" &&
         image.is_published &&
         image.is_primary,
+    ),
+    hasCommerciallyCompleteActiveVariant: variantRows.some(
+      isCommerciallyCompleteActiveVariant,
     ),
     slugIsUnique,
     skuIsUnique,
@@ -476,7 +504,7 @@ async function loadEditorData(
   const variants = allVariantsResult.data ?? [];
   const variantDraft = commerceDraftForProduct(
     productResult.data,
-    variantResult.data?.[0] ?? null,
+    readinessVariant(variantResult.data ?? []),
   );
   const sku = normalizedSku(variantDraft.sku);
   const skuCounts = buildSkuCounts(products, variants);
@@ -552,11 +580,12 @@ export async function getAdminProductList(): Promise<{
   }
 
   const brandsById = new Map(brandResult.data.map((brand) => [brand.id, brand]));
-  const variantByProduct = new Map<string, VariantRow>();
+  const variantsByProduct = new Map<string, VariantRow[]>();
   variantResult.data.forEach((variant) => {
-    if (!variantByProduct.has(variant.product_id)) {
-      variantByProduct.set(variant.product_id, variant);
-    }
+    variantsByProduct.set(variant.product_id, [
+      ...(variantsByProduct.get(variant.product_id) ?? []),
+      variant,
+    ]);
   });
   const imagesByProduct = new Map<string, ImageRow[]>();
   imageResult.data.forEach((image) => {
@@ -570,7 +599,8 @@ export async function getAdminProductList(): Promise<{
   const slugCounts = buildSlugCounts(productResult.data);
 
   const products = productResult.data.map((product): AdminProductListItem => {
-    const variant = variantByProduct.get(product.id) ?? null;
+    const productVariants = variantsByProduct.get(product.id) ?? [];
+    const variant = readinessVariant(productVariants);
     const draft = commerceDraftForProduct(product, variant);
     const sku = normalizedSku(draft.sku);
     const imageRows = imagesByProduct.get(product.id) ?? [];
@@ -586,6 +616,9 @@ export async function getAdminProductList(): Promise<{
           image.media_type === "image" &&
           image.is_published &&
           image.is_primary,
+      ),
+      hasCommerciallyCompleteActiveVariant: productVariants.some(
+        isCommerciallyCompleteActiveVariant,
       ),
       slugIsUnique:
         (slugCounts.get(product.slug.toLocaleLowerCase()) ?? 0) === 1,

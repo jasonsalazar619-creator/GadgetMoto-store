@@ -14,6 +14,7 @@ type ReadinessInput = {
   shortDescription: string | null;
   fullDescription: string | null;
   hasPublishedPrimaryImage: boolean;
+  hasCommerciallyCompleteActiveVariant: boolean;
   slugIsUnique: boolean;
   skuIsUnique: boolean;
   variant: AdminProductVariantDraft;
@@ -30,6 +31,7 @@ export function assessAdminProductReadiness({
   shortDescription,
   fullDescription,
   hasPublishedPrimaryImage,
+  hasCommerciallyCompleteActiveVariant,
   slugIsUnique,
   skuIsUnique,
   variant,
@@ -77,6 +79,11 @@ export function assessAdminProductReadiness({
       key: "primaryImage",
       label: "Primary image available",
       complete: hasPublishedPrimaryImage,
+    },
+    {
+      key: "activeVariant",
+      label: "At least one complete active memory/storage configuration",
+      complete: hasCommerciallyCompleteActiveVariant,
     },
     {
       key: "sku",
